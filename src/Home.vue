@@ -1,7 +1,24 @@
 <template>
 <div class="ui twelve wide column">
         <div class="ui teal segment">
-                <h3>Resumen del mes</h3>
+          <div class="ui form">
+              <div class="two fields">
+            <div class="field">
+              <h3>Resumen del mes</h3>
+            </div>
+
+            <div class="field">
+                 <div class="ui blue inverted right floated main compact menu">
+                    <a class="item" @click="generarResumen">
+                      <i class="file text outline icon"> </i> Generar Resumen
+                    </a>
+                 
+                  </div>
+            </div>
+          </div>
+          </div>
+          
+                
   <div class="item">
           
     <div class="content">
@@ -71,6 +88,7 @@ export default {
   },
   methods: {
     generarResumen() {
+      this.informe.length = 0;
       var fecha = moment("05/11/2017", "DD/MM/YYYY").format("L");
       this.item.totalMes = this.getDiasMes(fecha) - this.getFeriados(fecha);
 

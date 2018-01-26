@@ -10,7 +10,7 @@
 
     <div class="ten wide field">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" >
+        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector" >
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario['.key']" v-bind:value="funcionario['.key']">{{funcionario.nombre}}</option>
         </select>
@@ -36,11 +36,22 @@
                 </div>
             </div>
 
-            <div class="eight wide field">
-                <div class="ui input" v-bind:class="{'disabled': disabledInput}">
-                <input type="text"  v-model="adelanto.monto">
+            <div class="four wide field">
+                <div class="ui input" >
+                <input type="text"  v-model="adelanto.monto" v-bind:class="{'disabled': disabledInput}">
             </div>
             </div>
+
+            <div class="four wide field">
+              
+               <select v-model="adelanto.moneda" class="ui dropdown" id="monedaSelector"   >
+                        <option disbled value="">Seleccionar Moneda..</option>
+                        <option value="Gs">Guaranies - Gs.</option>
+                        <option value="Us">Dolares - Us.</option>
+                        <option value="Rs">Reales - Rs.</option>
+              </select>
+
+            </div> 
 
             
         </div>
@@ -48,7 +59,7 @@
 
     
 
-    <div class="ui teal button" @click="guardarFeriado()">Guardar</div>
+    <div class="ui teal button" @click="guardarAdelanto()">Guardar</div>
     <div class="ui button" @click="cancelar()">Cancelar</div>
 </div>
 
@@ -61,6 +72,7 @@ import moment from "moment";
 import axios from "axios";
 import { db } from "./../.././config/firebase";
 let funcionariosRef = db.ref("/funcionarios");
+let adelantosRef = db.ref("/adelantos");
 export default {
   data() {
     return {
@@ -70,7 +82,7 @@ export default {
         funcionarioId: null,
         nombreFuncionario: null,
         tipoAdelanto: "quincena",
-
+        moneda: null,
         monto: null
       },
       disabledInput: true,
@@ -84,63 +96,49 @@ export default {
       console.log(this.$route.params.id);
 
       if (typeof this.$route.params.id !== "undefined") {
-        console.log(feriadoRef.child(this.$route.params.id));
-        feriadoRef.child(this.$route.params.id).once("value", snapshot => {
+        console.log(adelantosRef.child(this.$route.params.id));
+        adelantosRef.child(this.$route.params.id).once("value", snapshot => {
           console.log(snapshot.val());
-          this.feriado.fechaUtc = snapshot.val().fechaUtc;
-          this.feriado.tipoFeriado = snapshot.val().tipoFeriado;
-          this.feriado.sucursalesAfectadas = snapshot.val().sucursalesAfectadas;
+          this.adelanto.fechaUtc = snapshot.val().fechaUtc;
+          this.adelanto.tipoAdelanto = snapshot.val().tipoAdelanto;
+          this.disabledInput = true;
+          this.adelanto.monto = snapshot.val().monto;
+          this.adelanto.moneda = snapshot.val().moneda;
+          $(this.$el)
+            .find(".ui.dropdown")
+            .dropdown("refresh")
+            .dropdown("set selected", snapshot.val().funcionarioId);
         });
       }
     },
-    guardarFeriado() {
+    guardarAdelanto() {
       if (typeof this.$route.params.id !== null) {
-        var horaResult;
-        var horaResultUtc;
-        if (this.feriado.tipoFeriado === "parcial") {
-          horaResult = moment
-            .utc(this.feriado.horasUtc)
-            .local()
-            .format("HH:mm");
-          horaResultUtc = this.feriado.horasUtc.toString();
-        } else {
-          horaResult = null;
-          horaResultUtc = null;
-        }
-
-        this.feriado.fecha = moment(this.feriado.fechaUtc, "DD/MM/YYYY")
+        this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
           .format("L")
           .toString();
-        this.feriado.fechaUtc = this.feriado.fechaUtc.toString();
+        this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
+        this.adelanto.funcionarioId = this.funcionarioSeleccionado;
 
-        feriadoRef
+        adelantosRef
           .child(this.$route.params.id)
-          .update(this.feriado)
+          .update(this.adelanto)
           .then(response => {
-            this.success();
+            this.editSuccess();
             this.cancelar();
             console.log(response);
           });
       } else {
-        var horaResult;
-        var horaResultUtc;
-        if (this.feriado.tipoFeriado === "parcial") {
-          horaResult = moment
-            .utc(this.feriado.horasUtc)
-            .local()
-            .format("HH:mm");
-          horaResultUtc = this.feriado.horasUtc.toString();
-        } else {
-          horaResult = null;
-          horaResultUtc = null;
-        }
-
-        this.feriado.fecha = moment(this.feriado.fechaUtc, "DD/MM/YYYY")
+        this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
           .format("L")
           .toString();
-        this.feriado.fechaUtc = this.feriado.fechaUtc.toString();
-        feriadosRef.push(this.feriado).then(this.success(), this.cancelar());
-        console.log(JSON.stringify(this.sucursalesAfectadas));
+        this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
+        this.adelanto.funcionarioId = this.funcionarioSeleccionado;
+
+        adelantosRef.push(this.adelanto).then(res => {
+          console.log(res);
+          this.success();
+          this.cancelar();
+        });
       }
     },
     cancelar() {
@@ -153,6 +151,13 @@ export default {
         type: "success"
       });
     },
+    editSuccess() {
+      this.$notify({
+        title: "Exito!",
+        message: "El registro se ha actualizado correctamente",
+        type: "success"
+      });
+    },
     fail() {
       this.$notify.error({
         title: "Error!",
@@ -162,14 +167,19 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.fluid.dropdown")
+      .find(".ui.dropdown")
       .dropdown();
+    this.obtenerAdelanto();
+  },
+  updated() {
+    //this.obtenerAdelanto();
   },
   created() {
+    // this.obtenerAdelanto();
     this.$bindAsArray("funcionarios", funcionariosRef);
   },
   watch: {
-    $route: "obtenerFeriado",
+    $route: "obtenerAdelanto",
     funcionarioSeleccionado: function() {
       if (this.adelanto.tipoAdelanto === "quincena") {
         funcionariosRef
@@ -181,10 +191,16 @@ export default {
                 .val()
                 .salario.split(".")
                 .join("") / 2;
-            this.adelanto.monto =
-              quincena.toLocaleString() + " " + snap.val().moneda;
+            this.adelanto.monto = quincena.toLocaleString();
+            this.adelanto.moneda = snap.val().moneda;
+            this.adelanto.nombreFuncionario = snap.val().nombre;
           });
       }
+
+      $(this.$el)
+        .find("#monedaSelector")
+        .dropdown("refresh")
+        .dropdown("set selected", this.adelanto.moneda);
     }
   }
 };
