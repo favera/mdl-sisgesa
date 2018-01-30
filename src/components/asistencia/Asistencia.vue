@@ -133,7 +133,7 @@ export default {
         //       this.marcacion.salida
         //     ),
         //     horasExtras: this.getHorasExtras(
-        //       this.marc9+6666666666666666666666666666666666666666666666666666666666666666666666666666668acion.empleadoId,
+        //       this.marcacion.empleadoId,
         //       this.marcacion.entrada,
         //       this.marcacion.salida
         //     ),
@@ -160,6 +160,18 @@ export default {
         //   })
         //   .catch(e => console.log(e));
       } else {
+        this.marcacion.fecha = moment(
+          this.marcacion.fecha,
+          "DD/MM/YYYY"
+        ).format("L");
+        console.log(this.marcacion.fecha);
+        funcionariosRef
+          .child(this.marcacion.funcionarioId)
+          .once("value", snap => {
+            console.log(snap.val().nombre);
+            this.marcacion.nombreFuncionario = snap.val().nombre;
+          });
+        console.log(this.nombreFuncionario);
         this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
           this.marcacion.entrada,
           this.marcacion.salida

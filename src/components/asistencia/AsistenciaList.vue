@@ -317,6 +317,7 @@ export default {
       });
     },
     confirm(id) {
+      console.log("ID desde confirm", id);
       this.$confirm(
         "Este registro sera eliminado permanentemente. Continuar?",
         "Alerta",
@@ -341,10 +342,12 @@ export default {
         });
     },
     eliminarAsistencia(id) {
-      var index = this.marcaciones.findIndex(i => i.id === id);
+      asistenciasRef.child(id).remove();
+
+      /*var index = this.marcaciones.findIndex(i => i.id === id);
       axios
         .delete(url + "/marcaciones/" + id)
-        .then(console.log(this.marcaciones.splice(index, 1)));
+        .then(console.log(this.marcaciones.splice(index, 1)));*/
     },
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;

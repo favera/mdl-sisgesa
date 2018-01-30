@@ -113,7 +113,7 @@
                         <td>{{adelanto.tipoAdelanto}}</td>
                         <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
                         <td>
-                            <router-link :to="{name: 'editarAdelanto', params: { id: adelanto['.key']}}">
+                            <router-link :to="{name: 'editarPrestamo', params: { id: adelanto['.key']}}">
                                 <i class="edit row icon"></i>
                             </router-link>
                             
@@ -145,7 +145,7 @@ export default {
   },
   methods: {
     incluirAdelanto() {
-      this.$router.push({ name: "incluirAdelanto" });
+      this.$router.push({ name: "incluirPrestamo" });
     },
     listar() {
       /*Array.from(this.feriados).forEach(item => {

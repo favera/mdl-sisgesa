@@ -93,25 +93,7 @@
 
             
 
-            <div class="ten wide field">
-              <div class="field">
-                <label>Tipo de Hora Extra</label></div>
-              <div class="inline fields">
-                <div class="field">
-                   <div class="ui radio checkbox">
-                            <input type="radio" value="bancoHora" v-model="empleado.tipoHoraExtra">
-                            <label>Banco de Hora</label>
-                        </div>
-                </div>
-
-                <div class="field">
-                  <div class="ui radio checkbox">
-                            <input type="radio" value="efectivo" v-model="empleado.tipoHoraExtra">
-                            <label>Efectivo</label>
-                        </div>
-                </div>
-              </div>
-            </div>
+          
 
             <div class="two fields">
                 <div class="five wide field">
@@ -133,7 +115,7 @@
             <div class="ten wide field">
 
               <div class="field">
-                IPS sobre:
+                <label for="">IPS sobre:</label>
               </div>
 
               <div class="fields">
@@ -176,7 +158,7 @@ import { eventBus } from "./../../main";
 import { url } from "./../.././config/backend";
 
 import { db } from "./../.././config/firebase";
-let sucursalRef = db.ref("/sucursales");
+let sucursalesRef = db.ref("/sucursales");
 let funcionariosRef = db.ref("/funcionarios");
 
 export default {
@@ -245,14 +227,11 @@ export default {
 
         console.log("Test", this.empleado.sucursalId);
 
-        funcionariosRef
-          .push(this.empleado)
-          .then(alert("guardo"))
-          .then(res => {
-            this.success();
-            this.cancelar();
-            console.log(res);
-          });
+        funcionariosRef.push(this.empleado).then(res => {
+          this.success();
+          this.cancelar();
+          console.log(res);
+        });
       }
     },
     obtenerEmpleado() {
@@ -309,7 +288,7 @@ export default {
   },
   created() {
     this.obtenerEmpleado();
-    this.$bindAsArray("sucursales", sucursalRef);
+    this.$bindAsArray("sucursales", sucursalesRef);
   },
   watch: {
     $route: "obtenerEmpleado"

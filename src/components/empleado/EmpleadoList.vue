@@ -148,8 +148,8 @@ export default {
     },
     confirm(id) {
       this.$confirm(
-        "This will permanently delete the file. Continue?",
-        "Warning",
+        "Este registro sera eliminado permanentemente. Continuar?",
+        "Atencion!",
         {
           confirmButtonText: "OK",
           cancelButtonText: "Cancel",
@@ -160,23 +160,18 @@ export default {
           this.eliminarEmpleado(id);
           this.$message({
             type: "success",
-            message: "Delete completed"
+            message: "Registro Eliminado"
           });
         })
         .catch(() => {
           this.$message({
             type: "info",
-            message: "Delete canceled"
+            message: "Proceso cancelado"
           });
         });
     },
     eliminarEmpleado(id) {
-      var index = this.empleados.findIndex(i => i.id === id);
-      console.log(index);
-      db
-        .ref("/funcionarios/" + id)
-        .remove()
-        .then(this.empleados.splice(index, 1));
+      db.ref("/funcionarios/" + id).remove();
     },
     obtenerListadoEmpleado() {
       var page = JSON.parse(localStorage.getItem("page") || null);

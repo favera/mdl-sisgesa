@@ -3,7 +3,7 @@ import Vue from 'vue'
 import JsonExcel from 'vue-json-excel';
 import VueRouter from 'vue-router'
 import App from './App.vue'
-import { DatePicker, TimePicker, TimeSelect, MessageBox, Message, Notification } from 'element-ui'
+import { DatePicker, TimePicker, TimeSelect, InputNumber, MessageBox, Message, Notification } from 'element-ui'
 
 var VueFire = require("vuefire");
 var Firebase = require("firebase");
@@ -30,6 +30,7 @@ Vue.use(vueXlsxTable, { rABS: false });
 Vue.use(TimePicker);
 Vue.use(TimeSelect);
 Vue.use(DatePicker);
+Vue.use(InputNumber);
 Vue.component('downloadExcel', JsonExcel);
 
 Vue.prototype.moment = moment;

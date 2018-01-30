@@ -11,6 +11,8 @@ import Calendario from './components/calendario/Calendario.vue';
 import CalendarioList from './components/calendario/CalendarioList.vue';
 import Adelanto from './components/adelanto/Adelanto.vue';
 import AdelantoList from './components/adelanto/AdelantoList.vue';
+import Prestamo from './components/prestamo/Prestamo.vue';
+import PrestamoList from './components/prestamo/PrestamoList.vue';
 
 import Home from './Home.vue'
 
@@ -52,5 +54,8 @@ export const routes = [
     { path: '/editar-evento', component: Calendario, name: 'editarEvento' },
     { path: '/adelantos', component: AdelantoList, name: 'listadoAdelanto' },
     { path: '/incluir-adelanto', component: Adelanto, name: 'incluirAdelanto' },
-    { path: '/editar-adelanto', component: Adelanto, name: 'editarAdelanto' }
+    { path: '/editar-adelanto', component: Adelanto, name: 'editarAdelanto' },
+    { path: '/prestamos', component: PrestamoList, name: 'listadoPrestamo' },
+    { path: '/incluir-prestamo', component: Prestamo, name: 'incluirPrestamo' },
+    { path: '/editar-prestamo', component: Prestamo, name: 'editarPrestamo' }
 ]
