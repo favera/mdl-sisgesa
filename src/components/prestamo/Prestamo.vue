@@ -16,8 +16,10 @@
         </select>
     </div>
 
-    <div class="ten wide field">
-        <div class="field">
+    <div class="fifteen wide field">
+      <div class="two fields">
+        <div class="sixteen wide field">
+            <div class="field">
             <label for="">Monto del Prestamo:</label>
         </div>
 
@@ -28,7 +30,7 @@
 
             <div class="four wide field">
                 <div class="ui input" >
-                <input type="text"  v-model="prestamo.monto" v-bind:class="{'disabled': disabledInput}">
+                <input v-model.lazy="prestamo.monto" v-money="money"  >
             </div>
             </div>
 
@@ -45,32 +47,101 @@
 
             
         </div>
-    </div>
 
-    <div class="ten wide fields">
+
         <div class="two fields">
-            <div class="field">
+            <div class="five wide field">
                 <label for="">Fraccion de Cuotas:</label>
                 <div class="field">
-                    <el-input-number v-model="num1" @change="handleChange" :min="1" :max="10"></el-input-number>
+                    <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
                 </div>
 
             </div>
 
-            <div class="field">
+            <div class="five wide field">
                 <label for="">Iniciar Pago en:</label>
-                 <el-date-picker
-    v-model="value4"
+                <div class="field">
+                    <el-date-picker
+    v-model="prestamo.incioPago"
     type="month"
-    placeholder="Pick a month">
+    placeholder="Seleccionar mes">
   </el-date-picker>
+                </div>
+                 
             </div>
         </div>
+        
+        </div>
+
+
+        <div class="field">
+          <div class="ui card">
+  <div class="content">
+    <div class="header">Cuotas Generadas</div>
+  </div>
+  <div class="content">
+    <div class="ui divided items">
+      <div class="item">
+        <div class="middle aligned content"> <h5> Vencimiento</h5></div>
+      <div class="middle aligned content"><h5>Monto</h5></div>
+      <div class="middle aligned content" ><h5>Estado</h5></div>
+      </div>
+      
+  <div class="item" v-for="cuota in prestamo.cuotas">
+    <div class="middle aligned content">
+      <p>{{cuota.vencimiento}}</p>
     </div>
+    <div class="middle aligned content">
+      <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+    </div>
+
+    <div class="middle aligned content">
+       <div class="ui orange horizontal label">{{cuota.estado}}</div>
+    </div>
+  </div>
+
+   
+
+</div>
+  </div>
+
+</div>
+        </div>
+      </div>
+        
+    </div>
+
+    <!-- <div class="ten wide field">
+        <div class="two fields">
+            <div class="five wide field">
+                <label for="">Fraccion de Cuotas:</label>
+                <div class="field">
+                    <el-input-number v-model="prestamo.cuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
+                </div>
+
+            </div>
+
+            <div class="five wide field">
+                <label for="">Iniciar Pago en:</label>
+                <div class="field">
+                    <el-date-picker
+    v-model="prestamo.incioPago"
+    type="month"
+    placeholder="Seleccionar mes">
+  </el-date-picker>
+                </div>
+                 
+            </div>
+        </div>
+    </div> -->
 
     
 
-    <div class="ui teal button" @click="guardarAdelanto()">Guardar</div>
+    
+</div>
+
+<div class="field">
+  <div class="ui teal button" @click="guardarAdelanto()">Guardar</div>
     <div class="ui button" @click="cancelar()">Cancelar</div>
 </div>
 
@@ -81,9 +152,10 @@
 <script>
 import moment from "moment";
 import axios from "axios";
+import { VMoney } from "v-money";
 import { db } from "./../.././config/firebase";
 let funcionariosRef = db.ref("/funcionarios");
-let adelantosRef = db.ref("/adelantos");
+let prestamosRef = db.ref("/prestamos");
 export default {
   data() {
     return {
@@ -92,17 +164,56 @@ export default {
         fecha: null,
         funcionarioId: null,
         nombreFuncionario: null,
-        tipoAdelanto: "quincena",
         moneda: null,
-        monto: null
+        monto: null,
+        nroCuotas: 1,
+        incioPago: null,
+        cuotas: []
       },
       disabledInput: true,
       funcionarioSeleccionado: null,
       setDate: new Date(),
-      funcionarios: []
+      funcionarios: [],
+      money: {
+        decimal: ",",
+        thousands: ".",
+        prefix: "",
+        suffix: "",
+        precision: 0,
+        masked: false /* doesn't work with directive */
+      }
     };
   },
   methods: {
+    handleChange(value) {
+      this.generarCuotas(value);
+    },
+    generarCuotas(value) {
+      var cuota = {};
+      cuota.vencimiento = null;
+      cuota.monto = null;
+      cuota.moneda = null;
+      cuota.estado = null;
+      this.prestamo.cuotas.length = 0;
+
+      if (this.prestamo.monto && this.prestamo.incioPago) {
+        var i = 0;
+        cuota.monto = Math.floor(
+          parseInt(this.prestamo.monto.split(".").join("")) / value
+        );
+        cuota.moneda = this.prestamo.moneda;
+        cuota.estado = "pendiente";
+        do {
+          i++;
+          cuota.vencimiento = moment(this.prestamo.incioPago, "llll")
+            .add(i, "months")
+            .format("L");
+          console.log(cuota.vencimiento);
+
+          this.prestamo.cuotas.push(cuota);
+        } while (i < value);
+      }
+    },
     obtenerAdelanto() {
       console.log(this.$route.params.id);
 
@@ -153,7 +264,7 @@ export default {
       }
     },
     cancelar() {
-      this.$router.push({ name: "listadoAdelanto" });
+      this.$router.push({ name: "listadoPrestamo" });
     },
     success() {
       this.$notify({
@@ -213,7 +324,8 @@ export default {
         .dropdown("refresh")
         .dropdown("set selected", this.adelanto.moneda);
     }
-  }
+  },
+  directives: { money: VMoney }
 };
 </script>
 

@@ -2,7 +2,7 @@
     <div class="ui twelve wide column">
     
         <div class="ui form">
-            <h4 class="ui dividing header">Listado de Adelantos</h4>
+            <h4 class="ui dividing header">Listado de Prestamos</h4>
             <div class="two fields">
               <div class="field">
                   <div class="inline fields">
@@ -15,10 +15,14 @@
                   </div>
 
                   <div class="field">
+
+                  </div>
+
+                  <!-- <div class="field">
                      <a @click="busquedaAvanzada=true">Busqueda Avanzada</a>
                     
                   </div>
-    
+     -->
                     
                 </div>
               </div>
@@ -28,11 +32,11 @@
     
                 <div class="field">
                     <div class="ui right floated main menu">
-                    <a class="icon item" @click="incluirAdelanto">
+                    <a class="icon item" @click="incluirPrestamo">
                       <i class="plus icon"></i>
                     </a>
-                    <a class="icon item">
-                      <i class="print icon"></i>
+                    <a class="icon item" >
+                      <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
                     </a>
                   </div>
                    
@@ -40,7 +44,7 @@
                 </div>
             </div>
             <!-- <h4 class="ui dividing header"></h4> -->
-            <div class="two fields" v-show="busquedaAvanzada">
+            <!-- <div class="two fields" v-show="busquedaAvanzada">
               <div class="field">
                 <label for="">Rango de Fechas:</label>
                 <div class="inline fields">
@@ -78,7 +82,7 @@
             </div>
                   
               </div>
-            </div>
+            </div> -->
 
             
     
@@ -89,36 +93,26 @@
             <table class="ui teal celled table">
                 <thead>
                     <tr>
-                     <th class="collapsing">
-        <div class="ui fitted checkbox">
-          <input type="checkbox" @click="selectAll"> <label></label>
-        </div>
-      </th>
                         <th>Fecha</th>
                         <th>Funcionario</th>
-                        <th>Tipo de Adelanto</th>
-                        <th>Monto</th>
+                        <th>Monto del Prestamo</th>
+                        <th>Cuotas</th>
                         <th>Opciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="adelanto in adelantos" :key="adelanto['.key']">
-                      <td class="collapsing">
-        <div class="ui fitted checkbox">
-          <input type="checkbox" id="adelantoCheck"> <label></label>
-        </div>
-      </td>
-                        <td>{{adelanto.fecha}}</td>
-                        <td>{{adelanto.nombreFuncionario}}</td>
-                        <td>{{adelanto.tipoAdelanto}}</td>
-                        <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
+                    <tr v-for="prestamo in prestamos" :key="prestamo['.key']">
+      
+                        <td>{{prestamo.fecha}}</td>
+                        <td>{{prestamo.nombreFuncionario}}</td>
+                        <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
+                        <td> <i class="browser icon"></i> </td>
                         <td>
-                            <router-link :to="{name: 'editarPrestamo', params: { id: adelanto['.key']}}">
+                            <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
                                 <i class="edit row icon"></i>
                             </router-link>
                             
-                            <i class="trash icon" @click="confirm(adelanto['.key'])"></i>
-                            <i class="print icon"></i>
+                            <i class="trash icon" @click="confirm(prestamo['.key'])"></i>
                         </td>
                     </tr>
                   
@@ -134,17 +128,17 @@
 import axios from "axios";
 import { db } from "./../.././config/firebase";
 
-let adelantosRef = db.ref("/adelantos");
+let prestamosRef = db.ref("/prestamos");
 
 export default {
   data() {
     return {
-      adelantos: [],
+      prestamos: [],
       busquedaAvanzada: false
     };
   },
   methods: {
-    incluirAdelanto() {
+    incluirPrestamo() {
       this.$router.push({ name: "incluirPrestamo" });
     },
     listar() {
@@ -176,7 +170,7 @@ export default {
         }
       )
         .then(() => {
-          this.eliminarAdelanto(id);
+          this.eliminarPrestamo(id);
           this.$message({
             type: "success",
             message: "Registro Eliminado"
@@ -189,18 +183,14 @@ export default {
           });
         });
     },
-    eliminarFeriado(id) {
-      var index = this.sucursales.findIndex(i => i.id === id);
-      db.ref("/adelantos/" + id).remove();
-    },
-    selectAll() {
-      $(this.$el)
-        .find("#adelantoCheck")
-        .checkbox("set checked");
+    eliminarPrestamo(id) {
+      //var index = this.sucursales.findIndex(i => i.id === id);
+      prestamosRef.child(id).remove();
+      //db.ref("/adelantos/" + id).remove();
     }
   },
   created() {
-    this.$bindAsArray("adelantos", adelantosRef);
+    this.$bindAsArray("prestamos", prestamosRef);
   }
 };
 </script>

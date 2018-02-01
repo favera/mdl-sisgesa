@@ -15,7 +15,7 @@
                   </div>
 
                   <div class="field">
-                     <a @click="busquedaAvanzada=true">Busqueda Avanzada</a>
+                     <a @click="busquedaAvanzada= !busquedaAvanzada">Busqueda Avanzada</a>
                     
                   </div>
     
