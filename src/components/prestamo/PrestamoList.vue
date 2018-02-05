@@ -1,5 +1,7 @@
 <template>
     <div class="ui twelve wide column">
+
+      
     
         <div class="ui form">
             <h4 class="ui dividing header">Listado de Prestamos</h4>
@@ -106,7 +108,45 @@
                         <td>{{prestamo.fecha}}</td>
                         <td>{{prestamo.nombreFuncionario}}</td>
                         <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
-                        <td> <i class="browser icon"></i> </td>
+                         <div class="ui longer modal">
+                            <div class="header"> Cuotas generadas del Prestamo </div>
+                            <div class="scrolling content">
+                              <div class="ui segment">
+  <div class="content">
+    <div class="header">Cuotas Generadas</div>
+  </div>
+  <div class="content">
+    <div class="ui divided items">
+      <div class="item">
+        <div class="middle aligned content"> <h5> Vencimiento</h5></div>
+      <div class="middle aligned content"><h5>Monto</h5></div>
+      <div class="middle aligned content" ><h5>Estado</h5></div>
+      </div>
+      
+  <div class="item" v-for="cuota in prestamo.cuotas">
+    <div class="middle aligned content">
+      <p>{{cuota.vencimiento}}</p>
+    </div>
+    <div class="middle aligned content">
+      <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+    </div>
+
+    <div class="middle aligned content">
+       <div class="ui orange horizontal label">{{cuota.estado}}</div>
+    </div>
+  </div>
+
+   
+
+</div>
+  </div>
+
+</div>
+      
+                            </div>
+   
+  </div>
+                        <td> <i class="browser icon" @click="abrirModal"></i> </td>
                         <td>
                             <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
                                 <i class="edit row icon"></i>
@@ -134,6 +174,7 @@ export default {
   data() {
     return {
       prestamos: [],
+      modal: null,
       busquedaAvanzada: false
     };
   },
@@ -187,10 +228,19 @@ export default {
       //var index = this.sucursales.findIndex(i => i.id === id);
       prestamosRef.child(id).remove();
       //db.ref("/adelantos/" + id).remove();
+    },
+    abrirModal() {
+      this.modal
+        .modal("setting", { observeChanges: true })
+        .modal("show")
+        .modal("refresh");
     }
   },
   created() {
     this.$bindAsArray("prestamos", prestamosRef);
+  },
+  mounted() {
+    this.modal = $(this.$el).find(".ui.longer.modal");
   }
 };
 </script>

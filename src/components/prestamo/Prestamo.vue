@@ -50,15 +50,7 @@
 
 
         <div class="two fields">
-            <div class="five wide field">
-                <label for="">Fraccion de Cuotas:</label>
-                <div class="field">
-                    <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
-                </div>
-
-            </div>
-
-            <div class="five wide field">
+          <div class="five wide field">
                 <label for="">Iniciar Pago en:</label>
                 <div class="field">
                     <el-date-picker
@@ -69,6 +61,15 @@
                 </div>
                  
             </div>
+            <div class="five wide field">
+                <label for="">Fraccion de Cuotas:</label>
+                <div class="field">
+                    <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
+                </div>
+
+            </div>
+
+            
         </div>
         
         </div>
@@ -141,7 +142,7 @@
 </div>
 
 <div class="field">
-  <div class="ui teal button" @click="guardarAdelanto()">Guardar</div>
+  <div class="ui teal button" @click="guardarPrestamo()">Guardar</div>
     <div class="ui button" @click="cancelar()">Cancelar</div>
 </div>
 
@@ -189,43 +190,44 @@ export default {
       this.generarCuotas(value);
     },
     generarCuotas(value) {
-      var cuota = {};
-      cuota.vencimiento = null;
-      cuota.monto = null;
-      cuota.moneda = null;
-      cuota.estado = null;
       this.prestamo.cuotas.length = 0;
 
       if (this.prestamo.monto && this.prestamo.incioPago) {
         var i = 0;
-        cuota.monto = Math.floor(
-          parseInt(this.prestamo.monto.split(".").join("")) / value
-        );
-        cuota.moneda = this.prestamo.moneda;
-        cuota.estado = "pendiente";
         do {
+          var cuota = {};
+
+          cuota.monto = Math.floor(
+            parseInt(this.prestamo.monto.split(".").join("")) / value
+          ).toLocaleString();
+          cuota.moneda = this.prestamo.moneda;
+          cuota.estado = "pendiente";
           i++;
           cuota.vencimiento = moment(this.prestamo.incioPago, "llll")
             .add(i, "months")
             .format("L");
           console.log(cuota.vencimiento);
+          console.log(JSON.stringify(cuota, undefined, 2));
 
+          //test.push(cuota);
+
+          // console.log(JSON.stringify(test, undefined, 2));
           this.prestamo.cuotas.push(cuota);
         } while (i < value);
       }
     },
-    obtenerAdelanto() {
+    obtenerPrestamo() {
       console.log(this.$route.params.id);
 
       if (typeof this.$route.params.id !== "undefined") {
-        console.log(adelantosRef.child(this.$route.params.id));
-        adelantosRef.child(this.$route.params.id).once("value", snapshot => {
+        console.log(prestamosRef.child(this.$route.params.id));
+        prestamosRef.child(this.$route.params.id).once("value", snapshot => {
           console.log(snapshot.val());
-          this.adelanto.fechaUtc = snapshot.val().fechaUtc;
-          this.adelanto.tipoAdelanto = snapshot.val().tipoAdelanto;
-          this.disabledInput = true;
-          this.adelanto.monto = snapshot.val().monto;
-          this.adelanto.moneda = snapshot.val().moneda;
+          this.prestamo.fechaUtc = snapshot.val().fechaUtc;
+          this.prestamo.monto = snapshot.val().monto;
+          this.prestamo.moneda = snapshot.val().moneda;
+          this.prestamo.incioPago = snapshot.val().incioPago;
+          this.prestamo.nroCuotas = snapshot.val().nroCuotas;
           $(this.$el)
             .find(".ui.dropdown")
             .dropdown("refresh")
@@ -233,30 +235,47 @@ export default {
         });
       }
     },
-    guardarAdelanto() {
-      if (typeof this.$route.params.id !== null) {
-        this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
+    guardarPrestamo() {
+      console.log(this.$route.params.id);
+      if (
+        typeof this.$route.params.id !== "undefined" ||
+        this.$route.params.id
+      ) {
+        console.log("entra aca");
+        this.prestamo.fecha = moment(this.prestamo.fechaUtc, "DD/MM/YYYY")
           .format("L")
           .toString();
-        this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
-        this.adelanto.funcionarioId = this.funcionarioSeleccionado;
+        this.prestamo.fechaUtc = this.prestamo.fechaUtc.toString();
+        this.prestamo.funcionarioId = this.funcionarioSeleccionado;
 
-        adelantosRef
+        funcionariosRef
+          .child(this.funcionarioSeleccionado)
+          .once("value", snap => {
+            this.prestamo.nombreFuncionario = snap.val().nombre;
+          });
+
+        prestamosRef
           .child(this.$route.params.id)
-          .update(this.adelanto)
+          .update(this.prestamo)
           .then(response => {
             this.editSuccess();
             this.cancelar();
             console.log(response);
           });
       } else {
-        this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
+        this.prestamo.fecha = moment(this.prestamo.fechaUtc, "DD/MM/YYYY")
           .format("L")
           .toString();
-        this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
-        this.adelanto.funcionarioId = this.funcionarioSeleccionado;
+        this.prestamo.fechaUtc = this.prestamo.fechaUtc.toString();
+        this.prestamo.funcionarioId = this.funcionarioSeleccionado;
 
-        adelantosRef.push(this.adelanto).then(res => {
+        funcionariosRef
+          .child(this.funcionarioSeleccionado)
+          .once("value", snap => {
+            this.prestamo.nombreFuncionario = snap.val().nombre;
+          });
+
+        prestamosRef.push(this.prestamo).then(res => {
           console.log(res);
           this.success();
           this.cancelar();
@@ -291,7 +310,7 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
-    this.obtenerAdelanto();
+    this.obtenerPrestamo();
   },
   updated() {
     //this.obtenerAdelanto();
@@ -301,29 +320,29 @@ export default {
     this.$bindAsArray("funcionarios", funcionariosRef);
   },
   watch: {
-    $route: "obtenerAdelanto",
-    funcionarioSeleccionado: function() {
-      if (this.adelanto.tipoAdelanto === "quincena") {
-        funcionariosRef
-          .child(this.funcionarioSeleccionado)
-          .once("value", snap => {
-            console.log(snap.val().salario);
-            var quincena =
-              snap
-                .val()
-                .salario.split(".")
-                .join("") / 2;
-            this.adelanto.monto = quincena.toLocaleString();
-            this.adelanto.moneda = snap.val().moneda;
-            this.adelanto.nombreFuncionario = snap.val().nombre;
-          });
-      }
+    $route: "obtenerPrestamo"
+    // funcionarioSeleccionado: function() {
+    //   if (this.adelanto.tipoAdelanto === "quincena") {
+    //     funcionariosRef
+    //       .child(this.funcionarioSeleccionado)
+    //       .once("value", snap => {
+    //         console.log(snap.val().salario);
+    //         var quincena =
+    //           snap
+    //             .val()
+    //             .salario.split(".")
+    //             .join("") / 2;
+    //         this.adelanto.monto = quincena.toLocaleString();
+    //         this.adelanto.moneda = snap.val().moneda;
+    //         this.adelanto.nombreFuncionario = snap.val().nombre;
+    //       });
+    //   }
 
-      $(this.$el)
-        .find("#monedaSelector")
-        .dropdown("refresh")
-        .dropdown("set selected", this.adelanto.moneda);
-    }
+    //   $(this.$el)
+    //     .find("#monedaSelector")
+    //     .dropdown("refresh")
+    //     .dropdown("set selected", this.adelanto.moneda);
+    // }
   },
   directives: { money: VMoney }
 };
