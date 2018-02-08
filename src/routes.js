@@ -6,7 +6,8 @@ import Feriado from './components/feriados/Feriado.vue';
 import FeriadoList from './components/feriados/FeriadoList.vue'
 import Sucursal from './components/sucursal/Sucursal.vue';
 import SucursalList from './components/sucursal/SucursalList.vue';
-import Salario from './components/salario/Salarios.vue';
+import Salario from './components/salario/CrearPlanilla.vue';
+import PlanillaSalario from './components/salario/Salarios.vue';
 import Calendario from './components/calendario/Calendario.vue';
 import CalendarioList from './components/calendario/CalendarioList.vue';
 import Adelanto from './components/adelanto/Adelanto.vue';
@@ -57,5 +58,6 @@ export const routes = [
     { path: '/editar-adelanto', component: Adelanto, name: 'editarAdelanto' },
     { path: '/prestamos', component: PrestamoList, name: 'listadoPrestamo' },
     { path: '/incluir-prestamo', component: Prestamo, name: 'incluirPrestamo' },
-    { path: '/editar-prestamo', component: Prestamo, name: 'editarPrestamo' }
+    { path: '/editar-prestamo', component: Prestamo, name: 'editarPrestamo' },
+    { path: '/detalle-planilla-salario', component: PlanillaSalario, name: 'detallePlanilla'}
 ]

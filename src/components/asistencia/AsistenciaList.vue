@@ -4,7 +4,7 @@
        <div class="ui longer modal">
                             <div class="header"> Archivo Seleccionado </div>
                             <div class="scrolling content">
-                              <table class="ui celled padded table">
+                              <table class="ui celled  padded table">
                                 <thead>
                                   <tr>
                                     <th>Funcionario</th>
@@ -113,7 +113,7 @@
 
             <div class="field">
 
-                <table class="ui teal celled table">
+                <table class="ui teal celled striped table">
                     <thead>
                         <tr>
                             <th>Funcionario</th>

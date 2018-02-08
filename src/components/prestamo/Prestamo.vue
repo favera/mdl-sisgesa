@@ -1,118 +1,112 @@
 <template>
-<div class="ui twelve wide column">
+  <div class="ui twelve wide column">
     <div class="ui form">
-        <div class="ui dividing header">Incluir Prestamo</div>
+      <div class="ui dividing header">Incluir Prestamo</div>
 
-        <div class="ten wide field">
+      <div class="ten wide field">
         <label for="">Fecha:</label>
-        <el-date-picker v-model="prestamo.fechaUtc" format="dd/MM/yyyy" type="date" ></el-date-picker>
-    </div>
+        <el-date-picker v-model="prestamo.fechaUtc" format="dd/MM/yyyy" type="date"></el-date-picker>
+      </div>
 
-    <div class="ten wide field">
+      <div class="six wide field">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector" >
-            <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="funcionario in funcionarios" :key="funcionario['.key']" v-bind:value="funcionario['.key']">{{funcionario.nombre}}</option>
+        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector">
+          <option disabled value="">Seleccionar Funcionario..</option>
+          <option v-for="funcionario in funcionarios" :key="funcionario['.key']" v-bind:value="funcionario['.key']">{{funcionario.nombre}}</option>
         </select>
-    </div>
+      </div>
 
-    <div class="fifteen wide field">
-      <div class="two fields">
-        <div class="sixteen wide field">
-            <div class="field">
-            <label for="">Monto del Prestamo:</label>
-        </div>
-
-        <div class="inline fields">
-           
-
-          
-
-            <div class="four wide field">
-                <div class="ui input" >
-                <input v-model.lazy="prestamo.monto" v-money="money"  >
-            </div>
-            </div>
-
-            <div class="four wide field">
-              
-               <select v-model="prestamo.moneda" class="ui dropdown" id="monedaSelector"   >
-                        <option disbled value="">Seleccionar Moneda..</option>
-                        <option value="Gs">Guaranies - Gs.</option>
-                        <option value="Us">Dolares - Us.</option>
-                        <option value="Rs">Reales - Rs.</option>
-              </select>
-
-            </div> 
-
-            
-        </div>
-
-
+      <div class="fifteen wide field">
         <div class="two fields">
-          <div class="five wide field">
+          <div class="sixteen wide field">
+            <div class="field">
+              <label for="">Monto del Prestamo:</label>
+            </div>
+
+            <div class="inline fields">
+
+              <div class="five wide field">
+                <div class="ui input">
+                  <input v-model.lazy="prestamo.monto" v-money="money">
+                </div>
+              </div>
+
+              <div class="five wide field">
+
+                <select v-model="prestamo.moneda" class="ui dropdown" id="monedaSelector">
+                  <option disbled value="">Seleccionar Moneda..</option>
+                  <option value="Gs">Guaranies - Gs.</option>
+                  <option value="Us">Dolares - Us.</option>
+                  <option value="Rs">Reales - Rs.</option>
+                </select>
+
+              </div>
+
+            </div>
+
+            <div class="two fields">
+              <div class="five wide field">
                 <label for="">Iniciar Pago en:</label>
                 <div class="field">
-                    <el-date-picker
-    v-model="prestamo.incioPago"
-    type="month"
-    placeholder="Seleccionar mes">
-  </el-date-picker>
+                  <el-date-picker v-model="prestamo.incioPago" type="month" placeholder="Seleccionar mes">
+                  </el-date-picker>
                 </div>
-                 
-            </div>
-            <div class="five wide field">
+
+              </div>
+              <div class="five wide field">
                 <label for="">Fraccion de Cuotas:</label>
                 <div class="field">
-                    <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
+                  <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
                 </div>
+
+              </div>
 
             </div>
 
-            
-        </div>
-        
+          </div>
+
+          <div class="field">
+            <div class="ui card">
+              <div class="content">
+                <div class="header">Cuotas Generadas</div>
+              </div>
+              <div class="content">
+                <div class="ui divided items">
+                  <div class="item">
+                    <div class="middle aligned content">
+                      <h5> Vencimiento</h5>
+                    </div>
+                    <div class="middle aligned content">
+                      <h5>Monto</h5>
+                    </div>
+                    <div class="middle aligned content">
+                      <h5>Estado</h5>
+                    </div>
+                  </div>
+
+                  <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
+                    <div class="middle aligned content">
+                      <p>{{cuota.vencimiento}}</p>
+                    </div>
+                    <div class="middle aligned content">
+                      <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+                    </div>
+
+                    <div class="middle aligned content">
+                      <div class="ui orange horizontal label">{{cuota.estado}}</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
 
-
-        <div class="field">
-          <div class="ui card">
-  <div class="content">
-    <div class="header">Cuotas Generadas</div>
-  </div>
-  <div class="content">
-    <div class="ui divided items">
-      <div class="item">
-        <div class="middle aligned content"> <h5> Vencimiento</h5></div>
-      <div class="middle aligned content"><h5>Monto</h5></div>
-      <div class="middle aligned content" ><h5>Estado</h5></div>
       </div>
-      
-  <div class="item" v-for="cuota in prestamo.cuotas">
-    <div class="middle aligned content">
-      <p>{{cuota.vencimiento}}</p>
-    </div>
-    <div class="middle aligned content">
-      <p>{{cuota.monto}}-{{cuota.moneda}}</p>
-    </div>
 
-    <div class="middle aligned content">
-       <div class="ui orange horizontal label">{{cuota.estado}}</div>
-    </div>
-  </div>
-
-   
-
-</div>
-  </div>
-
-</div>
-        </div>
-      </div>
-        
-    </div>
-
-    <!-- <div class="ten wide field">
+      <!-- <div class="ten wide field">
         <div class="two fields">
             <div class="five wide field">
                 <label for="">Fraccion de Cuotas:</label>
@@ -136,18 +130,14 @@
         </div>
     </div> -->
 
-    
+    </div>
 
-    
-</div>
+    <div class="field">
+      <div class="ui teal button" @click="guardarPrestamo()">Guardar</div>
+      <div class="ui button" @click="cancelar()">Cancelar</div>
+    </div>
 
-<div class="field">
-  <div class="ui teal button" @click="guardarPrestamo()">Guardar</div>
-    <div class="ui button" @click="cancelar()">Cancelar</div>
-</div>
-
-    
-</div>
+  </div>
 </template>
 
 <script>
@@ -202,7 +192,7 @@ export default {
           ).toLocaleString();
           cuota.moneda = this.prestamo.moneda;
           cuota.estado = "pendiente";
-          i++;
+          
           cuota.vencimiento = moment(this.prestamo.incioPago, "llll")
             .add(i, "months")
             .format("L");
@@ -213,6 +203,7 @@ export default {
 
           // console.log(JSON.stringify(test, undefined, 2));
           this.prestamo.cuotas.push(cuota);
+          i++;
         } while (i < value);
       }
     },

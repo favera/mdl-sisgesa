@@ -1,52 +1,46 @@
 <template>
-    <div class="ui twelve wide column">
+  <div class="ui twelve wide column">
 
-      
-    
-        <div class="ui form">
-            <h4 class="ui dividing header">Listado de Prestamos</h4>
-            <div class="two fields">
-              <div class="field">
-                  <div class="inline fields">
-                  
-                  <div class="ten wide field">
-                      <div class="ui icon input">
-                        <input type="text" placeholder="Buscar por nombre del funcionario...">
-                        <i class="inverted teal circular search link icon" @click="listar"></i>
-                    </div>
-                  </div>
+    <div class="ui form">
+      <h4 class="ui dividing header">Listado de Prestamos</h4>
+      <div class="two fields">
+        <div class="field">
+          <div class="inline fields">
 
-                  <div class="field">
+            <div class="ten wide field">
+              <div class="ui icon input">
+                <input type="text" placeholder="Buscar por nombre del funcionario...">
+                <i class="inverted teal circular search link icon" @click="listar"></i>
+              </div>
+            </div>
 
-                  </div>
+            <div class="field">
 
-                  <!-- <div class="field">
+            </div>
+
+            <!-- <div class="field">
                      <a @click="busquedaAvanzada=true">Busqueda Avanzada</a>
                     
                   </div>
      -->
-                    
-                </div>
-              </div>
-                
 
-               
-    
-                <div class="field">
-                    <div class="ui right floated main menu">
-                    <a class="icon item" @click="incluirPrestamo">
-                      <i class="plus icon"></i>
-                    </a>
-                    <a class="icon item" >
-                      <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
-                    </a>
-                  </div>
-                   
-    
-                </div>
-            </div>
-            <!-- <h4 class="ui dividing header"></h4> -->
-            <!-- <div class="two fields" v-show="busquedaAvanzada">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="ui right floated main menu">
+            <a class="icon item" @click="incluirPrestamo">
+              <i class="plus icon"></i>
+            </a>
+            <a class="icon item">
+              <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
+            </a>
+          </div>
+
+        </div>
+      </div>
+      <!-- <h4 class="ui dividing header"></h4> -->
+      <!-- <div class="two fields" v-show="busquedaAvanzada">
               <div class="field">
                 <label for="">Rango de Fechas:</label>
                 <div class="inline fields">
@@ -86,82 +80,86 @@
               </div>
             </div> -->
 
-            
-    
-        </div>
-    
-        <div class="field">
-    
-            <table class="ui teal celled table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Funcionario</th>
-                        <th>Monto del Prestamo</th>
-                        <th>Cuotas</th>
-                        <th>Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="prestamo in prestamos" :key="prestamo['.key']">
-      
-                        <td>{{prestamo.fecha}}</td>
-                        <td>{{prestamo.nombreFuncionario}}</td>
-                        <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
-                         <div class="ui longer modal">
-                            <div class="header"> Cuotas generadas del Prestamo </div>
-                            <div class="scrolling content">
-                              <div class="ui segment">
-  <div class="content">
-    <div class="header">Cuotas Generadas</div>
-  </div>
-  <div class="content">
-    <div class="ui divided items">
-      <div class="item">
-        <div class="middle aligned content"> <h5> Vencimiento</h5></div>
-      <div class="middle aligned content"><h5>Monto</h5></div>
-      <div class="middle aligned content" ><h5>Estado</h5></div>
-      </div>
-      
-  <div class="item" v-for="cuota in prestamo.cuotas">
-    <div class="middle aligned content">
-      <p>{{cuota.vencimiento}}</p>
-    </div>
-    <div class="middle aligned content">
-      <p>{{cuota.monto}}-{{cuota.moneda}}</p>
     </div>
 
-    <div class="middle aligned content">
-       <div class="ui orange horizontal label">{{cuota.estado}}</div>
+    <div class="field">
+
+      <table class="ui teal celled table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Funcionario</th>
+            <th>Monto del Prestamo</th>
+            <th>Cuotas</th>
+            <th>Opciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="prestamo in prestamos" :key="prestamo['.key']">
+
+            <td>{{prestamo.fecha}}</td>
+            <td>{{prestamo.nombreFuncionario}}</td>
+            <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
+            <div class="ui longer modal">
+              <div class="header"> Cuotas generadas del Prestamo </div>
+              <div class="scrolling content">
+                <div class="ui segment">
+                  <div class="content">
+                    <div class="header">Cuotas Generadas</div>
+                  </div>
+                  <div class="content">
+                    <div class="ui divided items">
+                      <div class="item">
+                        <div class="middle aligned content">
+                          <h5> Vencimiento</h5>
+                        </div>
+                        <div class="middle aligned content">
+                          <h5>Monto</h5>
+                        </div>
+                        <div class="middle aligned content">
+                          <h5>Estado</h5>
+                        </div>
+                      </div>
+
+                      <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
+                        <div class="middle aligned content">
+                          <p>{{cuota.vencimiento}}</p>
+                        </div>
+                        <div class="middle aligned content">
+                          <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+                        </div>
+
+                        <div class="middle aligned content">
+                          <div class="ui orange horizontal label">{{cuota.estado}}</div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+            <td>
+              <i class="browser icon" @click="abrirModal"></i>
+            </td>
+            <td>
+              <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
+                <i class="edit row icon"></i>
+              </router-link>
+
+              <i class="trash icon" @click="confirm(prestamo['.key'])"></i>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
     </div>
-  </div>
 
-   
-
-</div>
   </div>
-
-</div>
-      
-                            </div>
-   
-  </div>
-                        <td> <i class="browser icon" @click="abrirModal"></i> </td>
-                        <td>
-                            <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
-                                <i class="edit row icon"></i>
-                            </router-link>
-                            
-                            <i class="trash icon" @click="confirm(prestamo['.key'])"></i>
-                        </td>
-                    </tr>
-                  
-                </tbody>
-            </table>
-    
-        </div>
-    
-    </div>
 </template>
 
 <script>
