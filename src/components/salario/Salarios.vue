@@ -1,109 +1,122 @@
 <template>
-    <div class="ui twelve wide column">
+  <div class="ui twelve wide column">
 
-        <div class="ui form">
-            <h4 class="ui dividing header">Listado de Salarios</h4>
-            <div class="two fields">
-                <div class="ui twelve wide field">
-                    <label for="salaryQuery">Introducir rango de fechas:</label>
-                    <div class="inline fields">
-                        
-                         <div class="field">
-                            <el-date-picker v-model="fechaInicio" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-                            </el-date-picker>
-                        </div>
+    <div class="ui form">
+      <h4 class="ui dividing header">Listado de Salarios</h4>
+      <div class="two fields">
+        <div class="ui twelve wide field">
+          <label for="salaryQuery">Introducir rango de fechas:</label>
+          <div class="inline fields">
 
-                        <div class="field">
-                            <el-date-picker v-model="fechaFin" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy" >
-                            </el-date-picker>
-                        </div>
-
-                        <div class="field">
-                          <div class="ui vertical teal button"  @click="calcularSalario(fechaInicio, fechaFin)">
-                            Generar Salario
-                          </div>
-                        </div>
-                        <div class="field">
-                            <button class="ui button" @click="limpiarCampos()">Limpiar</button>
-                          
-                        </div>
-                       
-
-                    </div>
-                    
-
-                </div>
-
-                <div class="ui four wide field">
-
-                  <div class="ui right floated main menu">
-                    <a class="icon item">
-                      <download-excel
-	                            :data   = "json_data"
-	                            :fields = "json_fields"
-	                            :meta   = "json_meta"
-	                            name    = "salario.xls">
-
-                            <i class="print icon"></i>
-
-
-                            </download-excel>
-                    </a>
-                  </div>
-
-                </div>
-
+            <div class="field">
+              <el-date-picker v-model="fechaInicio" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+              </el-date-picker>
             </div>
 
             <div class="field">
-
-                <table class="ui teal celled table">
-                    <thead>
-                        <tr>
-                            <th>Funcionario</th>
-                            <th>Carga Laboral del Mes</th>
-                            <th>Horas Trabajadas</th>
-                            <th>Horas Extras</th>
-                            <th>Horas Extras en Minutos</th>
-                            <!-- <th>Horas Extras Nocturnas</th> -->
-                            <th>Salario Base</th>
-                            <th>Descuentos</th>
-                            <th>Valor Ausencias</th>
-                            <th>Salario Neto</th>
-
-                        </tr>
-                    </thead>
-   
-                    <tbody>
-      
-                        <tr v-for="resultado in marcacionesEmpleado" :key="resultado.nombre">
-                            <td>{{resultado.nombre}}</td>
-                            <td>{{resultado.hmformat }}</td>
-                            <td>{{resultado.htformat}}</td>
-                            <td>{{resultado.heformat}}</td>
-                            <td>{{resultado.horasExtras}}</td>
-                            <!-- <td>{{resultado.horasExtrasNocturnas}}</td> -->
-                            <td>{{resultado.salarioBase}} {{resultado.moneda}}</td>
-                            <td>{{resultado.valorHoraExtra}} {{resultado.moneda}}</td>
-                            <td>{{resultado.valorAusencias}}</td>
-                            <td>{{resultado.salarioNeto}} {{resultado.moneda}}</td>
-
-                        </tr>
-
-                    </tbody>
-                </table>
- <div v-show="loading" class="ui segment large">
-  <div class="ui active inverted dimmer">
-    <div class="ui large text loader">Loading</div>
-  </div>
- 
-</div>
-
+              <el-date-picker v-model="fechaFin" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+              </el-date-picker>
             </div>
+
+            <div class="field" v-show="fechaInicio != null">
+              <i class="large circle remove grey icon"></i>
+            </div>
+
+            <!-- <div class="field">
+              <div class="ui vertical teal button" @click="calcularSalario(fechaInicio, fechaFin)">
+                Generar Salario
+              </div>
+            </div>
+            <div class="field">
+              <button class="ui button" @click="limpiarCampos()">Limpiar</button>
+
+            </div> -->
+
+          </div>
 
         </div>
 
+        <div class="ui four wide field">
+
+          <div class="ui right floated main menu">
+            <a class="icon item">
+              <i class="icons">
+  <i class="file icon"></i>
+  <i class="bottom left corner inverted refresh icon"></i>
+</i>
+              <!-- <i class="file outline icon"></i> -->
+            </a>
+
+            <a  class="icon item">
+              <i class="save icon"></i>
+            </a>
+
+            <a  class="icon item">
+              <i class="refresh icon"></i>
+            </a>
+
+            <a  class="icon item">
+              <i class="print icon"></i>
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <table class="ui teal celled table">
+          <thead>
+            <tr>
+              <th>Funcionario</th>
+              <th>Hs. del Mes</th>
+              <th>Hs. Trabajadas</th>
+              <th>Banco de Hs</th>
+              <th>Retrasos</th>
+              <th>Salario Base</th>
+              <th>IPS</th>
+              <th>Descuentos Ausencias</th>
+              <th>Hs. Extras</th>
+              <th>Adelantos</th>
+              <th>Prestamos</th>
+              <th>Salario Neto</th>
+              <th>Opciones</th>
+
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr v-for="resultado in marcacionesEmpleado" :key="resultado.nombre">
+              <td>{{resultado.nombre}}</td>
+              <td>{{resultado.hmformat }}</td>
+              <td>{{resultado.htformat}}</td>
+              <td>{{resultado.heformat}}</td>
+              <td>{{resultado.horasExtras}}</td>
+              <!-- <td>{{resultado.horasExtrasNocturnas}}</td> -->
+              <td>{{resultado.salarioBase}} {{resultado.moneda}}</td>
+              <td>{{resultado.valorHoraExtra}} {{resultado.moneda}}</td>
+              <td>{{resultado.valorAusencias}}</td>
+              <td>{{resultado.salarioNeto}} {{resultado.moneda}}</td>
+
+            </tr>
+
+          </tbody>
+        </table>
+        <div v-show="loading" class="ui segment large">
+          <div class="ui active inverted dimmer">
+            <div class="ui large text loader">Loading</div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+
+  </div>
 </template>
 <script>
 import moment from "moment";
@@ -113,8 +126,8 @@ import { url } from "./../.././config/backend";
 export default {
   data() {
     return {
-      fechaInicio: "",
-      fechaFin: "",
+      fechaInicio: null,
+      fechaFin: null,
       feriados: [],
       marcaciones: [],
       empleados: [],

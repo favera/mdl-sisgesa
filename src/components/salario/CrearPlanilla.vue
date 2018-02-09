@@ -57,25 +57,31 @@
                             <td>
                                 
                                 <i class="zoom icon pointer" @click="detallePlanilla"></i>
+                                <i class="plus icon"></i>
+                                <i class="edit icon"></i>
                                 <i class="checkmark box icon"></i>
                                 <i class="trash icon pointer"></i>
                             </td>
                         </tr>
                         <tr>
-                            <td>Febreo - 2018</td>
+                            <td>Febrero - 2018</td>
                             <td>Pendiente</td>
                             <td>
-                                <i class="zoom icon pointer"></i>
-                                <i class="checkmark box icon pointer"></i>
-                                <i class="trash icon"></i>
+                                <i class="zoom icon pointer" @click="detallePlanilla"></i>
+                                <i class="plus icon"></i>
+                                <i class="edit icon"></i>
+                                <i class="checkmark box icon"></i>
+                                <i class="trash icon pointer"></i>
                             </td>
                         </tr>
                         <tr>
                             <td>Marzo - 2018</td>
                             <td>Pendiente</td>
                             <td>
-                                <i class="zoom icon pointer"></i>
-                                <i class="checkmark box icon pointer"></i>
+                               <i class="zoom icon pointer" @click="detallePlanilla"></i>
+                                <i class="plus icon"></i>
+                                <i class="edit icon"></i>
+                                <i class="checkmark box icon"></i>
                                 <i class="trash icon pointer"></i>
                             </td>
                         </tr>

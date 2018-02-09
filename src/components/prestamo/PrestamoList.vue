@@ -35,6 +35,7 @@
             <a class="icon item">
               <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
             </a>
+         
           </div>
 
         </div>
