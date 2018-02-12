@@ -55,7 +55,7 @@
                             <td>Enero - 2018</td>
                             <td>Pendiente</td>
                             <td>
-                                
+
                                 <i class="zoom icon pointer" @click="detallePlanilla"></i>
                                 <i class="plus icon"></i>
                                 <i class="edit icon"></i>
@@ -67,8 +67,14 @@
                             <td>Febrero - 2018</td>
                             <td>Pendiente</td>
                             <td>
-                                <i class="zoom icon pointer" @click="detallePlanilla"></i>
-                                <i class="plus icon"></i>
+                                <router-link :to="{name: 'detallePlanilla', params: {enableView: false}}">
+                                    <i class="zoom icon pointer"></i>
+                                </router-link>
+
+                                <router-link :to="{name: 'detallePlanilla', params: {enableView: true}}">
+                                    <i class="plus icon"></i>
+                                </router-link>
+
                                 <i class="edit icon"></i>
                                 <i class="checkmark box icon"></i>
                                 <i class="trash icon pointer"></i>
@@ -78,7 +84,7 @@
                             <td>Marzo - 2018</td>
                             <td>Pendiente</td>
                             <td>
-                               <i class="zoom icon pointer" @click="detallePlanilla"></i>
+                                <i class="zoom icon pointer" @click="detallePlanilla"></i>
                                 <i class="plus icon"></i>
                                 <i class="edit icon"></i>
                                 <i class="checkmark box icon"></i>
@@ -105,22 +111,23 @@ export default {
     return {
       queryMonth: "",
       queryYear: ""
-    }
+    };
   },
   methods: {
-      detallePlanilla(){
-          this.$router.push({name: "detallePlanilla"})
-      }
+    detallePlanilla() {
+      this.$router.push({
+        name: "detallePlanilla",
+        props: { enableView: true }
+      });
+    }
   }
 };
 </script>
 
 <style>
-
 .pointer {
-	cursor: pointer;
+  cursor: pointer;
 }
-
 </style>
 
 

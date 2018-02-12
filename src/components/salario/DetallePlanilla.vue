@@ -2,8 +2,19 @@
   <div class="ui twelve wide column">
 
     <div class="ui form">
-      <h4 class="ui dividing header">Listado de Salarios</h4>
-      <div class="two fields">
+      <div class="field">
+        <div class="ui breadcrumb">
+          <a class="section" @click="returnList">Listado de Planillas de Salario</a>
+          <i class="right angle icon divider"></i>
+          <div class=" active section">Detalle de Planilla</div>
+
+        </div>
+      </div>
+
+      <h4 class="ui dividing header">
+        Detalle de la Planilla de Salarios
+      </h4>
+      <div class="two fields" v-show="enableView">
         <div class="ui twelve wide field">
           <label for="salaryQuery">Introducir rango de fechas:</label>
           <div class="inline fields">
@@ -41,21 +52,21 @@
           <div class="ui right floated main menu">
             <a class="icon item">
               <i class="icons">
-  <i class="file icon"></i>
-  <i class="bottom left corner inverted refresh icon"></i>
-</i>
+                <i class="file icon"></i>
+                <i class="bottom left corner inverted refresh icon"></i>
+              </i>
               <!-- <i class="file outline icon"></i> -->
             </a>
 
-            <a  class="icon item">
+            <a class="icon item">
               <i class="save icon"></i>
             </a>
 
-            <a  class="icon item">
+            <a class="icon item">
               <i class="refresh icon"></i>
             </a>
 
-            <a  class="icon item">
+            <a class="icon item" v-show="true">
               <i class="print icon"></i>
             </a>
 
@@ -124,6 +135,11 @@ import axios from "axios";
 import { url } from "./../.././config/backend";
 
 export default {
+  props: {
+    enableView: {
+      type: Boolean
+    }
+  },
   data() {
     return {
       fechaInicio: null,
@@ -165,6 +181,9 @@ export default {
       this.fechaInicio = null;
       this.fechaFin = null;
       marcacionesEmpleado.length = 0;
+    },
+    returnList() {
+      this.$router.push({ name: "listadoSalarios" });
     },
     getDomingos(fecha) {
       moment(fecha).date(1);

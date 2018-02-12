@@ -35,7 +35,7 @@
             <a class="icon item">
               <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
             </a>
-         
+
           </div>
 
         </div>
@@ -98,16 +98,11 @@
         <tbody>
           <tr v-for="prestamo in prestamos" :key="prestamo['.key']">
 
-            <td>{{prestamo.fecha}}</td>
-            <td>{{prestamo.nombreFuncionario}}</td>
-            <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
             <div class="ui longer modal">
               <div class="header"> Cuotas generadas del Prestamo </div>
               <div class="scrolling content">
                 <div class="ui segment">
-                  <div class="content">
-                    <div class="header">Cuotas Generadas</div>
-                  </div>
+
                   <div class="content">
                     <div class="ui divided items">
                       <div class="item">
@@ -143,8 +138,13 @@
               </div>
 
             </div>
+
+            <td>{{prestamo.fecha}}</td>
+            <td>{{prestamo.nombreFuncionario}}</td>
+            <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
+
             <td>
-              <i class="browser icon" @click="abrirModal"></i>
+              <i class="browser icon" @click="abrirModal()"></i>
             </td>
             <td>
               <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
