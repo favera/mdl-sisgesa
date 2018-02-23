@@ -32,7 +32,7 @@
 
         <div class="field">
 
-            <table class="ui teal celled table">
+            <table class="ui teal striped celled table">
                 <thead>
                     <tr>
                         <th>Nombre del Funcionario

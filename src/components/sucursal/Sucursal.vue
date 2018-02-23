@@ -1,54 +1,48 @@
 <template>
-    <div class="ui twelve wide column">
-        <div class="ui form">
-            <div class="ui dividing header">Registrar Sucursal</div>
-    
-            <div class="ten wide field">
-                <label for="">Nombre Sucursal:</label>
-                <input type="text" v-model="sucursal.nombre">
-            </div>
+  <div class="ui twelve wide column">
+    <div class="ui form">
+      <div class="ui dividing header">Registrar Sucursal</div>
 
-            <div class="ten wide field">
-                <div class="inline fields">
-                    <div class="eight wide field">
-                        <label for="">Horario Entrada</label>
-                    </div>
-                    <div class="eight wide field">
-                        <label for="">Horario Salida</label>
-                    </div>
-                </div>
-                 <div class="inline fields">
-                <div class="eight wide field">
-                    <el-time-picker v-model="sucursal.horarioEntradaUtc"  format="HH:mm"
-                    :picker-options="{
-                    format: 'HH:mm'
-                    }"
-                    placeholder="Asignar Horario Entrada">
-                </el-time-picker>
-                </div>
+      <div class="ten wide field">
+        <label for="">Nombre Sucursal:</label>
+        <input type="text" v-model="sucursal.nombre">
+      </div>
 
-                <div class="eight wide field">
-                    <el-time-picker v-model="sucursal.horarioSalidaUtc" format="HH:mm"
-                    :picker-options="{
-                    format: 'HH:mm'
-                    }"
-                    placeholder="Asignar Horario Entrada">
-                </el-time-picker>
-                </div>
-            </div>
-            </div>
-            
-           
-    
-            <div class="ten wide field">
-                <label for="">Telefono:</label>
-                <input type="text" v-model="sucursal.telefono">
-            </div>
-    
-            <div class="ui teal button" @click="guardarSucursal">Guardar</div>
-            <div class="ui button" @click="cancelar">Cancelar</div>
+      <div class="ten wide field">
+        <div class="inline fields">
+          <div class="eight wide field">
+            <label for="">Horario Entrada</label>
+          </div>
+          <div class="eight wide field">
+            <label for="">Horario Salida</label>
+          </div>
         </div>
+        <div class="inline fields">
+          <div class="eight wide field">
+            <el-time-picker v-model="sucursal.horarioEntradaUtc" format="HH:mm" :picker-options="{
+                    format: 'HH:mm'
+                    }" placeholder="Asignar Horario Entrada">
+            </el-time-picker>
+          </div>
+
+          <div class="eight wide field">
+            <el-time-picker v-model="sucursal.horarioSalidaUtc" format="HH:mm" :picker-options="{
+                    format: 'HH:mm'
+                    }" placeholder="Asignar Horario Entrada">
+            </el-time-picker>
+          </div>
+        </div>
+      </div>
+
+      <div class="ten wide field">
+        <label for="">Telefono:</label>
+        <input type="text" v-model="sucursal.telefono">
+      </div>
+
+      <div class="ui teal button" @click="guardarSucursal">Guardar</div>
+      <div class="ui button" @click="cancelar">Cancelar</div>
     </div>
+  </div>
 </template>
 <script>
 import axios from "axios";
@@ -74,7 +68,7 @@ export default {
   },
   methods: {
     guardarSucursal() {
-      if (typeof this.$route.params.id !== null) {
+      /*if (typeof this.$route.params.id !== null) {
         sucursalRef
           .child(this.$route.params.id)
           .update({
@@ -128,7 +122,17 @@ export default {
             this.cancelar();
             console.log(response);
           });
-      }
+      }*/
+
+      axios
+        .post("http://localhost:3000/sucursales/add", {
+          nombre: this.sucursal.nombre,
+          horaEntrada: this.sucursal.horarioEntradaUtc,
+          horaSalida: this.sucursal.horarioSalidaUtc,
+          telefono: this.sucursal.telefono
+        })
+        .then(response => console.log(response))
+        .catch(e => console.log(e));
     },
     obtenerSucursal() {
       if (typeof this.$route.params.id !== "undefined") {
@@ -173,5 +177,7 @@ export default {
 };
 </script>
 <style>
-
+.el-input--prefix .el-input__inner {
+  padding-left: 30px !important;
+}
 </style>

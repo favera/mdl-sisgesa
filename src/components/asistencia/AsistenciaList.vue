@@ -113,7 +113,7 @@
 
             <div class="field">
 
-                <table class="ui teal celled striped table">
+                <table class="ui teal celled table">
                     <thead>
                         <tr>
                             <th>Funcionario</th>

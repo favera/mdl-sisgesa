@@ -80,52 +80,76 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>John Lilki</td>
-                        <td>September 14, 2013</td>
-                        <td>jhlilk22@yahoo.com</td>
-                        <td>No</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Jamie Harington</td>
-                        <td>January 11, 2014</td>
-                        <td>jamieharingonton@yahoo.com</td>
-                        <td>Yes</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Jill Lewis</td>
-                        <td>May 11, 2014</td>
-                        <td>jilsewris22@yahoo.com</td>
-                        <td>Yes</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>John Lilki</td>
-                        <td>September 14, 2013</td>
-                        <td>jhlilk22@yahoo.com</td>
-                        <td>No</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>John Lilki</td>
-                        <td>September 14, 2013</td>
-                        <td>jhlilk22@yahoo.com</td>
-                        <td>No</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Jamie Harington</td>
-                        <td>January 11, 2014</td>
-                        <td>jamieharingonton@yahoo.com</td>
-                        <td>Yes</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Jill Lewis</td>
-                        <td>May 11, 2014</td>
-                        <td>jilsewris22@yahoo.com</td>
-                        <td>Yes</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                     <tr>
-                        <td>John Lilki</td>
-                        <td>September 14, 2013</td>
-                        <td>jhlilk22@yahoo.com</td>
-                        <td>No</td>
+                        <td>02/02/2018</td>
+                        <td>Obra Sucursal</td>
+                        <td>01:30 hs</td>
+                        <td>
+                            <i class="checkmark box icon"></i>
+                            <i class="remove icon"></i>
+                        </td>
                     </tr>
                 </tbody>
             </table>

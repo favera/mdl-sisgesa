@@ -156,7 +156,8 @@ export default {
     appPagination: Pagination
   },
   created() {
-    this.$bindAsArray("sucursales", sucursalesRef);
+    axios.get("http://localhost:3000")
+    // this.$bindAsArray("sucursales", sucursalesRef);
   },
   watch: {
     $route: "obtenerListadoSucursales"
