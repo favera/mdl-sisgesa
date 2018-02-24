@@ -515,6 +515,8 @@ export default {
               "[]"
             );
 
+            console.log("VACACIONES", fechaInicio, fechaFin, isFechaVacaciones, fecha);
+
             if (isFechaVacaciones) {
               this.marcacion.fecha = this.datosMarcaciones[0].fecha;
               this.marcacion.funcionarioId = funcionario[".key"];

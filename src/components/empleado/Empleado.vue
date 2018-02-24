@@ -1,154 +1,145 @@
 <template>
-    <div class="ui twelve wide column">
+  <div class="ui twelve wide column">
 
-        <div class="ui form">
-            <div class="ui dividing header">Registrar empleado</div>
+    <div class="ui form">
+      <div class="ui dividing header">Registrar empleado</div>
 
-            <div class="ten wide field">
-                <label for="">Nombre del empleado:</label>
-                <input type="text" v-model="empleado.nombre">
-            </div>
+      <div class="ten wide field">
+        <label for="">Nombre del empleado:</label>
+        <input type="text" v-model="empleado.nombre">
+      </div>
 
-            <div class="ten wide field">
-                <label for="">AC - No (Numero Identificador):</label>
-                <input type="text" v-model="empleado.acnro">
-            </div>
+      <div class="ten wide field">
+        <label for="">AC - No (Numero Identificador):</label>
+        <input type="text" v-model="empleado.acnro">
+      </div>
 
-            <div class="ten wide field">
-                <label for="">Numero de Cedula:</label>
-                <input type="text" v-model="empleado.nroCedula">
-            </div>
+      <div class="ten wide field">
+        <label for="">Numero de Cedula:</label>
+        <input type="text" v-model="empleado.nroCedula">
+      </div>
 
-            <div class="ten wide field">
-              <label for="">Fecha de Ingreso</label>
-                            <el-date-picker v-model="empleado.fechaIngreso" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-                            </el-date-picker>
-                        </div>
-            <div class="ten wide field">
-                <label for="">Sucursal:</label>
-                <select name="sucursales" v-model="sucursalkey" >
-                    <option disabled value="">Seleccionar Sucursal..</option>
-                    <option v-for="sucursal in sucursales" :key="sucursal['.key']" v-bind:value="sucursal['.key']" :selected="sucursal['.key'] === Object.keys(empleado.sucursalId)[0] ? true : false">{{sucursal.nombre}}</option>
-                    <option value=""></option>
-                </select>
-            </div>
+      <div class="ten wide field">
+        <label for="">Fecha de Ingreso</label>
+        <el-date-picker v-model="empleado.fechaIngreso" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+        </el-date-picker>
+      </div>
+      <div class="ten wide field">
+        <label for="">Sucursal:</label>
+        <select name="sucursales" v-model="sucursalkey">
+          <option disabled value="">Seleccionar Sucursal..</option>
+          <option v-for="sucursal in sucursales" :key="sucursal['.key']" v-bind:value="sucursal['.key']" :selected="sucursal['.key'] === Object.keys(empleado.sucursalId)[0] ? true : false">{{sucursal.nombre}}</option>
+          <option value=""></option>
+        </select>
+      </div>
 
-            <div class="ten wide field">
-              <div class="three fields">
-                <div class="field">
-                    <label>Carga laboral</label>
-                    <el-time-select v-model="empleado.cargaLaboral" :picker-options="{
+      <div class="ten wide field">
+        <div class="three fields">
+          <div class="field">
+            <label>Carga laboral</label>
+            <el-time-select v-model="empleado.cargaLaboral" :picker-options="{
                                                                                                                                                                                                                                                             start: '08:30',
                                                                                                                                                                                                                                                             step: '00:30',
                                                                                                                                                                                                                                                             end: '10:30'
                                                                                                                                                                                                                                                         }" placeholder="Selecccionar Horario">
-                        </el-time-select>
-                </div>
-                <div class="field">
-                    <label for="">Sabado medio tiempo</label>
-                    <div class="fields">
-                      <div class="field">
-                        <div class="ui radio checkbox">
-                            <input type="radio" value=true v-model="empleado.medioTiempo">
-                            <label>Si</label>
-                        </div>
-                      </div>
-
-                      <div class="field">
-                         <div class="ui radio checkbox">
-                            <input type="radio" value=false v-model="empleado.medioTiempo">
-                            <label>No</label>
-                        </div>
-                    </div>
-                      </div>
-                    </div>
-
-                    <div class="field">
-                      <label for="">Pago de Hora Extra:</label>
-                      <div class="fields">
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" value="bancoHora" v-model="empleado.tipoHoraExtra">
-                            <label for="">Banco de Hora</label>
-                          </div>
-                        </div>
-
-                         <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" value="efectivo" v-model="empleado.tipoHoraExtra">
-                            <label for="">Efectivo</label>
-                          </div>
-                        </div>
-                      </div>
-
-                     
-                    </div>
-                  
-
+            </el-time-select>
+          </div>
+          <div class="field">
+            <label for="">Sabado medio tiempo</label>
+            <div class="fields">
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" value=true v-model="empleado.medioTiempo">
+                  <label>Si</label>
                 </div>
               </div>
-                
-
-              
-
-            
-
-          
-
-            <div class="two fields">
-                <div class="five wide field">
-                    <label for="">Salario Base:</label>
-                    <input v-model.lazy="empleado.salario" v-money="money">
-                </div>
-                <div class="five wide field">
-                    <label for="">Moneda</label>
-                    <select v-model="empleado.moneda" class="ui fluid dropdown" >
-                        <option disbled value="">Seleccionar Moneda..</option>
-                        <option value="Gs">Guaranies - Gs.</option>
-                        <option value="Us">Dolares - Us.</option>
-                        <option value="Rs">Reales - Rs.</option>
-                    </select>
-                </div>
-
-            </div>
-
-            <div class="ten wide field">
 
               <div class="field">
-                <label for="">IPS sobre:</label>
+                <div class="ui radio checkbox">
+                  <input type="radio" value=false v-model="empleado.medioTiempo">
+                  <label>No</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="">Pago de Hora Extra:</label>
+            <div class="fields">
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" value="bancoHora" v-model="empleado.tipoHoraExtra">
+                  <label for="">Banco de Hora</label>
+                </div>
               </div>
 
-              <div class="fields">
-
-                <div class="field">
-                  <div class="ui radio checkbox">
-                    <input type="radio" value="salario" v-model="empleado.ips">
-                    <label>Salario</label>
-                  </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" value="efectivo" v-model="empleado.tipoHoraExtra">
+                  <label for="">Efectivo</label>
                 </div>
-
-                <div class="field">
-                  <div class="ui radio checkbox">
-                    <input type="radio" value="salarioMinimo" v-model="empleado.ips">
-                    <label>Salario Minimo</label>
-                  </div>
-                </div>
-
-                <div class="field">
-                  <div class="ui radio checkbox">
-                    <input type="radio" value="noAplica" v-model="empleado.ips">
-                    <label>No aplica</label>
-                  </div>
-                </div>
-
               </div>
-
             </div>
 
-            <div class="ui teal button" @click="guardarEmpleado">Guardar</div>
-            <div class="ui button" @click="cancelar">Cancelar</div>
+          </div>
+
         </div>
+      </div>
+
+      <div class="two fields">
+        <div class="five wide field">
+          <label for="">Salario Base:</label>
+          <input v-model.lazy="empleado.salario" v-money="money">
+        </div>
+        <div class="five wide field">
+          <label for="">Moneda</label>
+          <select v-model="empleado.moneda" class="ui fluid dropdown">
+            <option disbled value="">Seleccionar Moneda..</option>
+            <option value="Gs">Guaranies - Gs.</option>
+            <option value="Us">Dolares - Us.</option>
+            <option value="Rs">Reales - Rs.</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="ten wide field">
+
+        <div class="field">
+          <label for="">IPS sobre:</label>
+        </div>
+
+        <div class="fields">
+
+          <div class="field">
+            <div class="ui radio checkbox">
+              <input type="radio" value="salario" v-model="empleado.ips">
+              <label>Salario</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="ui radio checkbox">
+              <input type="radio" value="salarioMinimo" v-model="empleado.ips">
+              <label>Salario Minimo</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="ui radio checkbox">
+              <input type="radio" value="noAplica" v-model="empleado.ips">
+              <label>No aplica</label>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="ui teal button" @click="guardarEmpleado">Guardar</div>
+      <div class="ui button" @click="cancelar">Cancelar</div>
     </div>
+  </div>
 </template>
 <script>
 import { VMoney } from "v-money";
@@ -169,7 +160,8 @@ export default {
         nombre: "",
         acnro: "",
         nroCedula: null,
-        fechaIngreso: "",
+        fechaIngreso: null,
+        fechaIngresoUtc: null,
         medioTiempo: false,
         tipoHoraExtra: "bancoHora",
         cargaLaboral: "",
@@ -205,6 +197,8 @@ export default {
           .format("L")
           .toString();
 
+        this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
+
         this.empleado.sucursalId[this.sucursalkey] = true;
 
         funcionariosRef
@@ -222,6 +216,8 @@ export default {
         )
           .format("L")
           .toString();
+
+        this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
 
         this.empleado.sucursalId[this.sucursalkey] = true;
 
@@ -297,5 +293,7 @@ export default {
 };
 </script>
 <style>
-
+.ui.form .field > label {
+  margin: 0em 0em 1em;
+}
 </style>
