@@ -17,7 +17,7 @@
                                 <tbody>
                                   <tr v-for="dato in datosMarcaciones" :key="dato.id" >
                                     <td>{{dato.nombre}}</td>
-                                    <td>{{dato.fecha}}</td>
+                                    <td>{{moment(dato.fecha).format("L")}}</td>
                                     <td>{{(dato.entrada || "--") + " hs"}}</td>
                                     <td>{{(dato.salida || "--") + " hs"}}</td>
                                   </tr>
@@ -127,7 +127,27 @@
                             <th>Opciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                     <tbody>
+                        <tr v-for="marcacion in marcaciones" :key="marcacion._id" >
+                            <!-- <td>{{marcacion.nombreFuncionario}}</td> -->
+                            <td>{{moment(marcacion.fecha).format("L")}}</td>
+                            <td>{{(marcacion.entrada || "--") + " hs"}}</td>
+                            <td>{{(marcacion.salida || "--") + " hs"}}</td>
+                            <td>{{marcacion.funcionario}}</td>
+                             <!-- <td>{{(marcacion.horasTrabajadas || "--") + " hs"}}</td>
+                             <td>{{(marcacion.horasFaltantes || "--") + " hs"}}</td>
+                             <td>{{(marcacion.horasExtras || "--") + " hs"}}</td>
+                             <td>{{marcacion.observacion || "--"}}</td> -->
+                     
+                            <td>
+                                <i @click="guardarPaginacion(marcacion._id)" class="edit row icon"></i>
+                                <i @click="confirm(marcacion['.key'])" class="trash icon"></i>
+                                
+                            </td>
+                        </tr>
+
+                    </tbody>
+                    <!-- <tbody>
                         <tr v-for="marcacion in marcaciones" :key="marcacion['.key']" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}" >
                             <td>{{marcacion.nombreFuncionario}}</td>
                             <td>{{marcacion.fecha}}</td>
@@ -145,7 +165,7 @@
                             </td>
                         </tr>
 
-                    </tbody>
+                    </tbody> -->
 
                     <tfoot v-if="pageOne.totalItems > 0">
                         <tr v-show="totalRetraso">
@@ -261,6 +281,11 @@ export default {
         params: { id: marcacionId }
       });
     },
+    obtenerFuncionarios(){
+      axios.get(`${url}/funcionarios/full-list`).then(response => {
+        this.funcionarios = response.data;
+      })
+    },
     limpiarDatos() {
       this.json_data.length = 0;
       this.nombreBusqueda = null;
@@ -352,12 +377,13 @@ export default {
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
       // console.dir("####### Dtos " + JSON.stringify(convertedData));
+      //Pasamos los datos del archivo excel a preDatos
       this.preDatos = convertedData.body;
       this.funcionarios.forEach(value => {
-        console.log("Funcionario FIREBASE", value.acnro);
+        console.log("Funcionario", value.acnro);
         this.orderData(
           value.acnro,
-          value[".key"],
+          value._id,
           value.nombre,
           value.cargaLaboral,
           value.medioTiempo,
@@ -365,9 +391,10 @@ export default {
         );
       });
       this.abrirModal();
-      this.getSabados(this.datosMarcaciones[0].fecha);
-      this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
+      //this.getSabados(this.datosMarcaciones[0].fecha);
+      //this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
     },
+    //recibe datos de funcionarios desde el foreach de funcionarios
     orderData(
       acnro,
       empleadoId,
@@ -387,34 +414,41 @@ export default {
         isConfirmed: false
       };
 
-      this.applyCss = modelo.isConfirmed;
+      //this.applyCss = modelo.isConfirmed;
       console.log("Predatos", JSON.stringify(this.preDatos));
-      for (let arr of this.preDatos) {
-        if (acnro === arr["AC-No."]) {
+      //iteracion sobre el array de objetos de preDatos, preDatos contiene datos del archivo excel
+      for (let item of this.preDatos) {
+        //Compara si el acnro dado por el foreach de funcionario es igual al item del for de los datos del excel
+        if (acnro === item["AC-No."]) {
           console.log(
-            "acnro variable: " + acnro + "|" + "ACNRO array: " + arr["AC-No."]
+            "acnro variable: " + acnro + "|" + "ACNRO array: " + item["AC-No."]
           );
           modelo.empleadoId = empleadoId;
           modelo.nombre = nombre;
-          modelo.fecha = moment(arr.Horario, "DD/MM/YYYY").format("L");
+          modelo.fecha = moment(item.Horario, "DD/MM/YYYY").format();
           modelo.horasExtras = moment
             .duration(cargaLaboral, "HH:mm")
             .asMinutes();
+          //Se guardan todos los horarios del funcionario encontrados en la planilla en un array
           modelo.horarios.push(
-            moment(arr.Horario, "DD/MM/YYYY HH:mm a").format("LT")
+            moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
           );
           console.log("CARGA LABORAL" + cargaLaboral);
-          console.log("Horario sin formato " + arr.Horario);
+          console.log("Horario sin formato " + item.Horario);
           console.log(
-            "Horario: " + moment(arr.Horario, "DD/MM/YYYY HH:mm a").format("LT")
+            "Horario: " + moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
           );
         }
       }
+      //despues de recorrer todos los datos de la planilla, se verifica modelo, se tiene que validar los horarios
       if (modelo.empleadoId !== null) {
         console.log("####Marcaciones####" + modelo.horarios);
+        //si tiene solo una marcacion
         if (modelo.horarios.length == 1) {
           var fec = modelo.horarios[0];
           console.log(typeof fec);
+          //Preguntar la hora de marcacion de Paris turno noche
+          //verifica si la unica marcacion que posee es una entrada o salida
           if (
             moment.duration(fec, "HH:mm").asMinutes() <
             moment.duration("10:30", "HH:mm").asMinutes()
@@ -433,7 +467,7 @@ export default {
             this.datosMarcaciones.push(modelo);
           }
           console.log(
-            "Entrada Salida despues del if ############ " + modelo.entrada,
+            "Entrada Salida Una SOLA MARCACION" + modelo.entrada,
             modelo.salida
           );
         } else {
@@ -479,14 +513,67 @@ export default {
       }
     },
     postFirebase() {
+      //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
       this.funcionarios.forEach(funcionario => {
         var ausencia = this.datosMarcaciones.findIndex(item => {
-          console.log("comparacion", item.empleadoId, funcionario[".key"]);
-          return funcionario[".key"] === item.empleadoId;
+          console.log("comparacion", item.empleadoId, funcionario._id);
+          return funcionario._id === item.empleadoId;
         });
         console.log(ausencia);
         if (ausencia === -1) {
-          if (
+          //Verifica si el funcionario esta de vacaciones
+          if(funcionario.vacaciones !== "false"){
+            var fecha, fechaInicio, fechaFin, isFechaVacaciones;
+            axios.get(`${url}/eventos/edit/${funcionario.vacaciones}`).then(response => {
+                fechaInicio = moment(response.data.fechaInicio).format;
+                fechaFin = moment(response.data.fechaFin).format;
+                fecha = moment(this.datosMarcaciones[0].fecha).format();
+                isFechaVacaciones = moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]");
+            });
+            //si la fecha de la planilla se encuentra entre el rango de vacaciones, hace post vacaciones.
+            if (isFechaVacaciones) {
+              this.marcacion.fecha = this.datosMarcaciones[0].fecha;
+              this.marcacion.funcionario = funcionario._id;
+             // this.marcacion.nombreFuncionario = funcionario.nombre;
+              this.marcacion.entrada = null;
+              this.marcacion.salida = null;
+              this.marcacion.horasTrabajadas = null;
+              this.marcacion.horasExtras = null;
+              this.marcacion.horasFaltantes = null;
+              this.marcacion.observacion = "Vacaciones";
+              this.marcacion.estilo.ausente = false;
+              this.marcacion.estilo.incompleto = false;
+              this.marcacion.estilo.vacaciones = true;
+
+              axios.post(`${url}/asistencias/add`, this.marcacion).then(response => {
+                console.log(response);
+              })
+            }
+            
+          }
+
+          //si no cumplio condiciones anteriores, es una ausencia.
+            this.marcacion.fecha = this.datosMarcaciones[0].fecha;
+            this.marcacion.funcionario = funcionario._id;
+            //this.marcacion.nombreFuncionario = funcionario.nombre;
+            this.marcacion.entrada = false;
+            this.marcacion.salida = false;
+            this.marcacion.horasTrabajadas = false;
+            this.marcacion.horasExtras = false;
+            this.marcacion.horasFaltantes = false;
+            this.marcacion.observacion = "Ausencia";
+            this.marcacion.estilo.ausente = true;
+            this.marcacion.estilo.incompleto = false;
+            this.marcacion.estilo.vacaciones = false;
+
+            axios.post(`${url}/asistencias/add`, this.marcacion).then(response => {
+                console.log(response);
+              })
+
+
+
+
+          /*if (
             funcionario.hasOwnProperty("vacaciones") &&
             Object.keys(funcionario.vacaciones)[0]
           ) {
@@ -548,11 +635,56 @@ export default {
             this.marcacion.estilo.vacaciones = false;
 
             asistenciasRef.push(this.marcacion).then(res => console.log(res));
-          }
+          }*/
         }
       });
 
       this.datosMarcaciones.forEach(marcacion => {
+
+         this.marcacion.fecha = marcacion.fecha;
+          this.marcacion.funcionario = marcacion.empleadoId;
+          /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
+            marcacion.empleadoId
+          );*/
+          this.marcacion.entrada = marcacion.entrada;
+          this.marcacion.salida = marcacion.salida;
+          //calculo de Horas trabajadas
+          this.marcacion.horasTrabajadas = this.handleHorasTrabajadas(
+            marcacion.entrada,
+            marcacion.salida,
+            marcacion.fecha
+          );
+
+          this.marcacion.horasExtras = this.calculoBancoH(
+            marcacion.entrada,
+            marcacion.salida,
+            marcacion.empleadoId
+          );
+
+          this.marcacion.horasFaltantes = this.calculoHorasFaltantes(
+            marcacion.entrada,
+            marcacion.salida,
+            marcacion.empleadoId
+          );
+
+          this.marcacion.observacion = "";
+
+          if (marcacion.entrada == null || marcacion.salida == null) {
+            this.marcacion.estilo.ausente = false;
+            this.marcacion.estilo.incompleto = true;
+            this.marcacion.estilo.vacaciones = false;
+          } else {
+            this.marcacion.estilo.ausente = false;
+            this.marcacion.estilo.incompleto = false;
+            this.marcacion.estilo.vacaciones = false;
+          }
+
+          axios.post(`${url}/asistencias/add`, this.marcaciones).then(response => console.log(response))
+
+      })
+
+
+      /*this.datosMarcaciones.forEach(marcacion => {
         var fecha, keyVacaciones, fechaInicio, fechaFin, isFechaVacaciones;
         funcionariosRef.child(marcacion.empleadoId).once("value", snap => {
           if (snap.val().hasOwnProperty("vacaciones")) {
@@ -642,7 +774,7 @@ export default {
         }
 
         asistenciasRef.push(this.marcacion).then(res => console.log(res));
-      });
+      });*/
     },
     nombreFuncionario(empleadoId) {
       var nombre;
@@ -1176,13 +1308,21 @@ export default {
             });
         })
         .catch(e => conosle.log(e));
+    },
+    obtenerAsistencias(){
+      axios.get(`${url}/asistencias?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}`).then(response => {
+        this.marcaciones = response.data.docs;
+        this.pageOne.totalItems = response.data.total;
+      })
     }
   },
   created() {
+    this.obtenerAsistencias();
+    this.obtenerFuncionarios();
     //this.llamarFuncionarios();
     //this.obtenerDatos();
 
-    this.$bindAsArray("funcionarios", funcionariosRef);
+   /* this.$bindAsArray("funcionarios", funcionariosRef);
     this.$bindAsArray("eventos", calendarioRef);
     this.$bindAsArray("marcaciones", asistenciasRef.limitToLast(51));
 
@@ -1207,7 +1347,7 @@ export default {
       } else {
         this.pageOneChanged(this.pageOne.currentPage);
       }
-    });
+    });*/
 
     /*this.$bindAsArray(
       "marcaciones",

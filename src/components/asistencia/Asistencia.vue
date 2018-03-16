@@ -1,58 +1,55 @@
 <template>
-    <div class="ui twelve wide column">
-        <div class="ui form">
-            <div class="ui dividing header">Registrar Asistencia</div>
-            <div class="five wide field">
-                <label for="">Fecha:</label>
-                <el-date-picker v-model="marcacion.fecha" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-                            </el-date-picker>
-            </div>
-         
-            <div class="two fields">
-                <div class="six wide field">
-                    <label for="">Funcionario:</label>
-                <select v-model="marcacion.funcionarioId">
-                  <option disabled value="">Seleccionar Empleado..</option>
-                    <option v-for="empleado in empleados"  v-bind:value="empleado['.key']" :key="empleado['.key']" :selected="empleado['.key'] === marcacion.funcionarioId ? true : false" >{{empleado.nombre}}</option>
-                </select>
-                </div>
-                
-            </div>
+  <div class="ui twelve wide column">
+    <div class="ui form">
+      <div class="ui dividing header">Registrar Asistencia</div>
+      <div class="five wide field">
+        <label for="">Fecha:</label>
+        <el-date-picker v-model="marcacion.fecha" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+        </el-date-picker>
+      </div>
 
-            <div class="fields">
-                <div class="field">
-                    <label for="">Marcacion Entrada:</label>
-                    <el-time-picker  v-model="marcacion.entrada" format="HH:mm"
-                    :picker-options="{
-                    format: 'HH:mm'
-                    }"
-                    placeholder="Seleccionar hora">
-                </el-time-picker>
-                </div>
-                <div class="field">
-                    <label for="">Marcacion Salida</label>
-                    <el-time-picker  v-model="marcacion.salida" format="HH:mm"
-                    :picker-options="{
-                    format: 'HH:mm'
-                    }"
-                    placeholder="Seleccionar hora">
-                </el-time-picker>
-                </div>
-
-            </div>
-
-            <div class="ten wide field">
-                <label for="">Observacion:</label>
-                <textarea name="" id="" rows="2" v-model="marcacion.observacion"></textarea>
-            </div>
-            <div class="ui teal button" @click="guardarMarcacion">Guardar</div>
-            <div class="ui button" @click="cancelar">Cancelar</div>
+      <div class="two fields">
+        <div class="six wide field">
+          <label for="">Funcionario:</label>
+          <select v-model="marcacion.funcionarioId">
+            <option disabled value="">Seleccionar Empleado..</option>
+            <option v-for="empleado in empleados" v-bind:value="empleado['.key']" :key="empleado['.key']" :selected="empleado['.key'] === marcacion.funcionarioId ? true : false">{{empleado.nombre}}</option>
+          </select>
         </div>
+
+      </div>
+
+      <div class="fields">
+        <div class="field">
+          <label for="">Marcacion Entrada:</label>
+          <el-time-picker v-model="marcacion.entrada" format="HH:mm" :picker-options="{
+                    format: 'HH:mm'
+                    }" placeholder="Seleccionar hora" value-format="HH:mm">
+          </el-time-picker>
+        </div>
+        <div class="field">
+          <label for="">Marcacion Salida</label>
+          <el-time-picker v-model="marcacion.salida" format="HH:mm" value-format="HH:mm" :picker-options="{
+                    format: 'HH:mm'
+                    }" placeholder="Seleccionar hora">
+          </el-time-picker>
+        </div>
+
+      </div>
+
+      <div class="ten wide field">
+        <label for="">Observacion:</label>
+        <textarea name="" id="" rows="2" v-model="marcacion.observacion"></textarea>
+      </div>
+      <div class="ui teal button" @click="guardarMarcacion">Guardar</div>
+      <div class="ui button" @click="cancelar">Cancelar</div>
     </div>
+  </div>
 </template>
 <script>
 import axios from "axios";
 import moment from "moment";
+import { url } from "./../.././config/backend";
 import { db } from "./../.././config/firebase";
 let asistenciasRef = db.ref("/asistencias");
 let funcionariosRef = db.ref("/funcionarios");
@@ -107,58 +104,62 @@ export default {
 
         console.log(JSON.stringify(this.marcacion));
 
-        asistenciasRef
-          .child(this.$route.params.id)
-          .update(this.marcacion)
-          .then(response => {
-            this.success();
-            this.cancelar();
-            console.log(response);
-          });
-
-        // axios
-        //   .put(url + "/marcaciones/" + this.$route.params.id, {
-        //     fecha: moment(this.marcacion.fecha, "DD/MM/YYYY").format("L"),
-        //     empleadoId: this.marcacion.empleadoId,
-        //     entrada: moment
-        //       .utc(this.marcacion.entrada)
-        //       .local()
-        //       .format("HH:mm"),
-        //     salida: moment
-        //       .utc(this.marcacion.salida)
-        //       .local()
-        //       .format("HH:mm"),
-        //     horasTrabajadas: this.getHorasTrabajadas(
-        //       this.marcacion.entrada,
-        //       this.marcacion.salida
-        //     ),
-        //     horasExtras: this.getHorasExtras(
-        //       this.marcacion.empleadoId,
-        //       this.marcacion.entrada,
-        //       this.marcacion.salida
-        //     ),
-        //     retraso: this.calcularRetraso(
-        //       this.marcacion.empleadoId,
-        //       this.marcacion.entrada,
-        //       this.marcacion.salida
-        //     ),
-        //     bancoHora: this.calculoBancoHora(
-        //       this.marcacion.empleadoId,
-        //       this.marcacion.entrada,
-        //       this.marcacion.salida
-        //     ),
-        //     isConfirmed: true,
-        //     estilo: this.aplicarEstilo(
-        //       this.marcacion.entrada,
-        //       this.marcacion.salida
-        //     )
-        //   })
+        // asistenciasRef
+        //   .child(this.$route.params.id)
+        //   .update(this.marcacion)
         //   .then(response => {
-        //     console.log(response);
         //     this.success();
         //     this.cancelar();
-        //   })
-        //   .catch(e => console.log(e));
+        //     console.log(response);
+        //   });
+
+        axios
+          .put(url + "/marcaciones/" + this.$route.params.id, {
+            fecha: this.marcacion.fecha,
+            entrada: moment(this.marcacion.entrada).format("HH:mm"),
+            salida: moment(this.marcacion.salida).format("HH:mm"),
+            funcionario: this.marcacion.funcionario
+            /*fecha: moment(this.marcacion.fecha, "DD/MM/YYYY").format("L"),
+            empleadoId: this.marcacion.empleadoId,
+            entrada: moment
+              .utc(this.marcacion.entrada)
+              .local()
+              .format("HH:mm"),
+            salida: moment
+              .utc(this.marcacion.salida)
+              .local()
+              .format("HH:mm"),
+            horasTrabajadas: this.getHorasTrabajadas(
+              this.marcacion.entrada,
+              this.marcacion.salida
+            ),
+            horasExtras: this.getHorasExtras(
+              this.marcacion.empleadoId,
+              this.marcacion.entrada,
+              this.marcacion.salida
+            ),
+            retraso: this.calcularRetraso(
+              this.marcacion.empleadoId,
+              this.marcacion.entrada,
+              this.marcacion.salida
+            ),
+            bancoHora: this.calculoBancoHora(
+              this.marcacion.empleadoId,
+              this.marcacion.entrada,
+              this.marcacion.salida
+            ),
+            isConfirmed: true,
+            estilo: this.aplicarEstilo(
+              this.marcacion.entrada,
+              this.marcacion.salida
+            )*/
+          })
+          .then(response => {
+            console.log(response);
+            this.success();
+            this.cancelar();
+          })
+          .catch(e => console.log(e));
       } else {
         this.marcacion.fecha = moment(
           this.marcacion.fecha,
@@ -447,54 +448,60 @@ export default {
       }
     },
     obtenerMarcacion() {
-      var offset = moment().utcOffset();
-      console.log(offset);
-      if (typeof this.$route.params.id != "undefined") {
-        console.log(this.$route.params.id);
-        asistenciasRef.child(this.$route.params.id).once("value", snap => {
-          this.marcacion.fecha = snap.val().fecha;
-          this.marcacion.funcionarioId = snap.val().funcionarioId;
-          this.marcacion.entrada = moment(
-            snap.val().entrada,
-            "HH:mm"
-          ).toISOString();
-          this.marcacion.salida = moment(
-            snap.val().salida,
-            "HH:mm"
-          ).toISOString();
-          this.marcacion.observacion = snap.val().observacion;
+      axios
+        .get(`${url}/asistencias/edit/${this.$route.params.id}`)
+        .then(response => {
+          this.marcacion.fecha = response.data.fecha;
+          this.marcacion.entrada = response.data.entrada;
+          this.marcacion.salida = response.data.salida;
         });
-        // axios
-        //   .get(url + "/marcaciones/" + this.$route.params.id)
-        //   .then(response => {
-        //     this.marcacion.fecha = response.data.fecha;
-        //     this.marcacion.empleadoId = response.data.empleadoId;
-        //     this.marcacion.entrada = moment(
-        //       response.data.entrada,
-        //       "HH:mm"
-        //     ).toISOString();
-        //     this.marcacion.salida = moment(
-        //       response.data.salida,
-        //       "HH:mm"
-        //     ).toISOString();
-        //     this.marcacion.horasTrabajadas = response.data.horasTrabajadas;
-        //     this.marcacion.horasExtras = response.data.horasExtras;
-        //     this.marcacion.observacion = response.data.observacion;
-        //     console.log(response.data);
-        //     console.log(
-        //       "Fecha UTC " +
-        //         moment(response.data.entrada, "HH:mm").toISOString()
-        //     );
-        //     console.log(
-        //       "Fecha UTC offset " +
-        //         moment
-        //           .utc(response.data.entrada, "HH:mm")
-        //           .utcOffset(offset)
-        //           .format()
-        //     );
-        //   })
-        //   .catch(e => console.log(e));
-      }
+      // var offset = moment().utcOffset();
+      // console.log(offset);
+      // if (typeof this.$route.params.id != "undefined") {
+      //   console.log(this.$route.params.id);
+      //   asistenciasRef.child(this.$route.params.id).once("value", snap => {
+      //     this.marcacion.fecha = snap.val().fecha;
+      //     this.marcacion.funcionarioId = snap.val().funcionarioId;
+      //     this.marcacion.entrada = moment(
+      //       snap.val().entrada,
+      //       "HH:mm"
+      //     ).toISOString();
+      //     this.marcacion.salida = moment(
+      //       snap.val().salida,
+      //       "HH:mm"
+      //     ).toISOString();
+      //     this.marcacion.observacion = snap.val().observacion;
+      //   });
+      // axios
+      //   .get(url + "/marcaciones/" + this.$route.params.id)
+      //   .then(response => {
+      //     this.marcacion.fecha = response.data.fecha;
+      //     this.marcacion.empleadoId = response.data.empleadoId;
+      //     this.marcacion.entrada = moment(
+      //       response.data.entrada,
+      //       "HH:mm"
+      //     ).toISOString();
+      //     this.marcacion.salida = moment(
+      //       response.data.salida,
+      //       "HH:mm"
+      //     ).toISOString();
+      //     this.marcacion.horasTrabajadas = response.data.horasTrabajadas;
+      //     this.marcacion.horasExtras = response.data.horasExtras;
+      //     this.marcacion.observacion = response.data.observacion;
+      //     console.log(response.data);
+      //     console.log(
+      //       "Fecha UTC " +
+      //         moment(response.data.entrada, "HH:mm").toISOString()
+      //     );
+      //     console.log(
+      //       "Fecha UTC offset " +
+      //         moment
+      //           .utc(response.data.entrada, "HH:mm")
+      //           .utcOffset(offset)
+      //           .format()
+      //     );
+      //   })
+      //   .catch(e => console.log(e));
     },
     // obtenerFuncionario() {
     //   axios
@@ -505,6 +512,11 @@ export default {
     //     })
     //     .catch(e => console.log(e));
     // },
+    obtenerFuncionarios() {
+      axios.get(`${url}/funcionarios/full-list/`).then(response => {
+        this.empleados = response.data;
+      });
+    },
     cancelar() {
       this.$router.push({ name: "listadoAsistencia" });
     },
@@ -515,6 +527,7 @@ export default {
         type: "success"
       });
     },
+
     fail() {
       this.$notify.error({
         title: "Error!",
@@ -524,7 +537,8 @@ export default {
   },
   created() {
     this.obtenerMarcacion();
-    this.$bindAsArray("empleados", funcionariosRef);
+    this.obtenerFuncionarios();
+    //this.$bindAsArray("empleados", funcionariosRef);
   },
   watch: {
     $route: "obtenerMarcacion"

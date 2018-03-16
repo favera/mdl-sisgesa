@@ -1,80 +1,80 @@
 <template>
-    <div class="ui twelve wide column">
-        <div class="ui form">
-            <h4 class="ui dividing header">Listado de Funcionarios</h4>
-            <div class="two fields">
-                <div class="field">
+  <div class="ui twelve wide column">
+    <div class="ui form">
+      <h4 class="ui dividing header">Listado de Funcionarios</h4>
+      <div class="two fields">
+        <div class="field">
 
-                    <div class="ui icon input">
-                        <input v-model="parametro" type="text" placeholder="Buscar Funcionario...">
-                        <i @click="consultarEmpleado(parametro)" class="inverted teal circular search link icon"></i>
-                    </div>
-
-                </div>
-
-
-                <div class="field">
-
-                  <div class="ui right floated main menu">
-                    <a class="icon item" @click="nuevoEmpleado">
-                      <i class="plus icon"></i>
-                    </a>
-                    <a class="icon item" @click="insertarFirebase">
-                      <i class="print icon"></i>
-                    </a>
-                  </div>
-
-
-                </div>
-            </div>
+          <div class="ui icon input">
+            <input v-model="search" type="text" placeholder="Buscar Funcionario..." @keydown="consultarEmpleado">
+            <i @click="consultarEmpleado()" class="inverted teal circular search link icon"></i>
+          </div>
 
         </div>
 
         <div class="field">
 
-            <table class="ui teal striped celled table">
-                <thead>
-                    <tr>
-                        <th>Nombre del Funcionario
-                            <i class="sort content descending icon"></i>
-                        </th>
-                        <th>Numero Identificador</th>
-                        <th>Carga Laboral</th>
-                        <th>Salario Base</th>
-                        <!-- <th>Sucursal</th> -->
-                        <th>Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="empleado in empleados" :key="empleado['.key']"  >
-                        <td> {{empleado.nombre}}</td>
-                        <td> {{empleado.acnro}}</td>
-                        <td> {{empleado.cargaLaboral}}</td>
-                        <td> {{empleado.salario}}{{empleado.moneda}}</td>
-                        <!-- <td> {{empleado.sucursal.nombre}}</td> -->
-                        <td>
-                            <span class="item" @click="guardarPaginacion(empleado['.key'])">
-                                <i class="edit row icon"></i>
-                            </span>
-
-                            <i class="trash icon" @click="confirm(empleado['.key'])"></i>
-                        </td>
-                    </tr>
-
-                </tbody>
-
-                <tfoot>
-                    <tr>
-                        <th colspan="7">
-                            <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
-                            </app-pagination>
-                        </th>
-                    </tr>
-                </tfoot>
-            </table>
+          <div class="ui right floated main menu">
+            <a class="icon item" @click="nuevoEmpleado">
+              <i class="plus icon"></i>
+            </a>
+            <a class="icon item" @click="insertarFirebase">
+              <i class="print icon"></i>
+            </a>
+          </div>
 
         </div>
+      </div>
+
     </div>
+
+    <div class="field">
+
+      <table class="ui teal striped celled table">
+        <thead>
+          <tr>
+            <th @click="sortName">
+              <i class="sort up icon"></i>
+              Nombre del Funcionario
+
+            </th>
+            <th>Sucursal</th>
+            <th>Carga Laboral</th>
+            <th>Salario Base</th>
+            <!-- <th>Sucursal</th> -->
+            <th>Opciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="empleado in empleados" :key="empleado._id">
+            <td> {{empleado.nombre}}</td>
+            <td> {{empleado.sucursal.nombre}}</td>
+            <td> {{empleado.cargaLaboral}}</td>
+            <td> {{empleado.salario}}{{empleado.moneda}}</td>
+            <!-- <td> {{empleado.sucursal.nombre}}</td> -->
+            <td>
+              <span class="item" @click="guardarPaginacion(empleado._id)">
+                <i class="edit row icon"></i>
+              </span>
+
+              <i class="trash icon" @click="confirm(empleado._id)"></i>
+            </td>
+          </tr>
+
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <th colspan="7">
+              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              </app-pagination>
+            </th>
+          </tr>
+        </tfoot>
+      </table>
+
+    </div>
+  </div>
 </template>
 
 <script>
@@ -90,6 +90,8 @@ export default {
   data() {
     return {
       parametro: "",
+      search: null,
+      sortNameParam: 1,
       empleados: [],
       empleadosFirebase: [],
       keyPagination: [],
@@ -124,13 +126,36 @@ export default {
         });
       });
     },
-    consultarEmpleado(parametro) {
-      funcionariosRef
-        .orderByChild("nombre")
-        .startAt(parametro)
-        .on("child_added", function(snapshot) {
-          console.log(snapshot.val());
-        });
+    sortName() {
+      this.sortNameParam = this.sortNameParam * -1;
+    },
+    consultarEmpleado(e) {
+      if (e.keyCode === 13) {
+        axios
+          .get(
+            url +
+              `/funcionarios?search=${this.search}&page=${
+                this.pageOne.currentPage
+              }&limit=${this.pageOne.itemsPerPage}&sort=${this.sortNameParam}`
+          )
+          .then(response => {
+            console.log("respnose mongo Computed", response);
+
+            this.pageOne.totalItems = response.data.total;
+            this.empleados = response.data.docs;
+          })
+          .catch(e => {
+            console.log(e);
+          });
+        return;
+      }
+
+      // funcionariosRef
+      //   .orderByChild("nombre")
+      //   .startAt(parametro)
+      //   .on("child_added", function(snapshot) {
+      //     console.log(snapshot.val());
+      //   });
     },
     guardarPaginacion(empleadoId) {
       console.log("IDDD", empleadoId);
@@ -147,15 +172,11 @@ export default {
       this.$router.push({ name: "incluirEmpleado" });
     },
     confirm(id) {
-      this.$confirm(
-        "Este registro sera eliminado permanentemente. Continuar?",
-        "Atencion!",
-        {
-          confirmButtonText: "OK",
-          cancelButtonText: "Cancel",
-          type: "warning"
-        }
-      )
+      this.$confirm("Este registro sera desactivado. Continuar?", "Atencion!", {
+        confirmButtonText: "OK",
+        cancelButtonText: "Cancel",
+        type: "warning"
+      })
         .then(() => {
           this.eliminarEmpleado(id);
           this.$message({
@@ -171,47 +192,59 @@ export default {
         });
     },
     eliminarEmpleado(id) {
-      db.ref("/funcionarios/" + id).remove();
+      console.log("DESACTIVAR EMPLEADO", id);
+      var index = this.empleados.findIndex(i => i.id === id);
+      this.empleados.splice(index, 1);
+
+      axios.put(`${url}/funcionarios/deactivate/${id}`, { activo: false });
+      // db.ref("/funcionarios/" + id).remove();
     },
     obtenerListadoEmpleado() {
-      var page = JSON.parse(localStorage.getItem("page") || null);
-      console.log("Pagina" + page);
+      // var page = JSON.parse(localStorage.getItem("page") || null);
+      // console.log("Pagina" + page);
 
-      if (page !== null) {
-        this.pageOne.currentPage = page.currentPage;
-        this.pageOne.itemsPerPage = page.itemsPerPage;
-        this.pageOne.totalItems = page.totalItems;
+      // if (page !== null) {
+      //   this.pageOne.currentPage = page.currentPage;
+      //   this.pageOne.itemsPerPage = page.itemsPerPage;
+      //   this.pageOne.totalItems = page.totalItems;
 
-        this.pageOneChanged(page.currentPage);
-      } else {
-        axios
-          .get(url + "/empleados?_expand=sucursal")
-          .then(response => {
-            console.log(response);
-            this.empleados = response.data.slice(
-              0,
-              this.pageOne.itemsPerPage - 1
-            );
-            this.pageOne.totalItems = response.data.length;
-          })
-          .catch(e => {
-            console.log(e);
-          });
-      }
+      //   this.pageOneChanged(page.currentPage);
+      // } else {
+      axios
+        .get(
+          url +
+            `/funcionarios?page=${this.pageOne.currentPage}&limit=${
+              this.pageOne.itemsPerPage
+            }&sort=${this.sortNameParam}`
+        )
+        .then(response => {
+          console.log("respnose mongo", response);
+          this.empleados = response.data.docs.slice(
+            0,
+            this.pageOne.itemsPerPage - 1
+          );
+          this.pageOne.totalItems = response.data.total;
+        })
+        .catch(e => {
+          console.log(e);
+        });
+      // }
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      this.$bindAsArray(
-        "empleados",
-        funcionariosRef
-          .orderByKey()
-          .limitToFirst(this.pageOne.itemsPerPage)
-          .startAt(this.keyPagination[pageNum - 1])
-      );
+      this.obtenerListadoEmpleado();
+      // this.$bindAsArray(
+      //   "empleados",
+      //   funcionariosRef
+      //     .orderByKey()
+      //     .limitToFirst(this.pageOne.itemsPerPage)
+      //     .startAt(this.keyPagination[pageNum - 1])
+      // );
     }
   },
   created() {
-    axios.get(funcionariosRef + ".json?shallow=true").then(res => {
+    this.obtenerListadoEmpleado();
+    /*axios.get(funcionariosRef + ".json?shallow=true").then(res => {
       this.pageOne.totalItems = Object.keys(res.data).length;
 
       var keys = Object.keys(res.data).sort(); // Notice the .sort()!
@@ -232,7 +265,7 @@ export default {
       } else {
         this.pageOneChanged(this.pageOne.currentPage);
       }
-    });
+    });*/
   },
   updated() {
     // var page = JSON.parse(localStorage.getItem("page") || null);
@@ -241,6 +274,11 @@ export default {
     //   this.pageOne.currentPage = page.currentPage;
     //   this.pageOneChanged(page.currentPage);
     // }
+  },
+  computed: {
+    filteredList() {
+      return this.empleados;
+    }
   },
   watch: {
     $route: "obtenerListadoEmpleado"

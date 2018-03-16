@@ -19,14 +19,14 @@
         </div>
         <div class="inline fields">
           <div class="eight wide field">
-            <el-time-picker v-model="sucursal.horarioEntradaUtc" format="HH:mm" :picker-options="{
+            <el-time-picker v-model="sucursal.horaEntrada" format="HH:mm" value-format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Asignar Horario Entrada">
             </el-time-picker>
           </div>
 
           <div class="eight wide field">
-            <el-time-picker v-model="sucursal.horarioSalidaUtc" format="HH:mm" :picker-options="{
+            <el-time-picker v-model="sucursal.horaSalida" format="HH:mm" value-format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Asignar Horario Entrada">
             </el-time-picker>
@@ -56,9 +56,8 @@ export default {
     return {
       sucursal: {
         nombre: null,
-        horarioEntradaUtc: null,
-        horarioSalidaUtc: null,
-        horaLaboral: null,
+        horaEntrada: null,
+        horaSalida: null,
         telefono: null
       },
       firebase: {
@@ -123,31 +122,63 @@ export default {
             console.log(response);
           });
       }*/
-
-      axios
-        .post("http://localhost:3000/sucursales/add", {
-          nombre: this.sucursal.nombre,
-          horaEntrada: this.sucursal.horarioEntradaUtc,
-          horaSalida: this.sucursal.horarioSalidaUtc,
-          telefono: this.sucursal.telefono
-        })
-        .then(response => console.log(response))
-        .catch(e => console.log(e));
+      if (this.$route.params.id) {
+        axios
+          .put(
+            "http://localhost:3000/sucursales/update/" + this.$route.params.id,
+            {
+              nombre: this.sucursal.nombre,
+              horaEntrada: this.sucursal.horaEntrada,
+              horaSalida: this.sucursal.horaSalida,
+              telefono: this.sucursal.telefono
+            }
+          )
+          .then(response => {
+            this.success();
+            this.cancelar();
+            console.log(response);
+          });
+      } else {
+        axios
+          .post("http://localhost:3000/sucursales/add", {
+            nombre: this.sucursal.nombre,
+            horaEntrada: this.sucursal.horaEntrada,
+            horaSalida: this.sucursal.horaSalida,
+            telefono: this.sucursal.telefono
+          })
+          .then(response => {
+            this.success();
+            this.cancelar();
+            console.log(response);
+          })
+          .catch(e => console.log(e));
+      }
     },
     obtenerSucursal() {
-      if (typeof this.$route.params.id !== "undefined") {
-        console.log(sucursalRef.child(this.$route.params.id));
-        sucursalRef.child(this.$route.params.id).once("value", snapshot => {
-          console.log(snapshot.val());
-          this.sucursal.nombre = snapshot.val().nombre;
-          this.sucursal.horarioEntradaUtc = snapshot.val().horarioEntradaUtc;
-          this.sucursal.horarioSalidaUtc = snapshot.val().horarioSalidaUtc;
-          this.sucursal.telefono = snapshot.val().telefono;
-        });
-        /*db.ref("/sucursal/" + this.$route.params.id).on("value", snapshot => {
-          console.log(snapshot.val());
-          this.sucursal.nombre = snapshot.val().nombre;
-        });*/
+      // if (typeof this.$route.params.id !== "undefined") {
+      //   console.log(sucursalRef.child(this.$route.params.id));
+      //   sucursalRef.child(this.$route.params.id).once("value", snapshot => {
+      //     console.log(snapshot.val());
+      //     this.sucursal.nombre = snapshot.val().nombre;
+      //     this.sucursal.horarioEntradaUtc = snapshot.val().horarioEntradaUtc;
+      //     this.sucursal.horarioSalidaUtc = snapshot.val().horarioSalidaUtc;
+      //     this.sucursal.telefono = snapshot.val().telefono;
+      //   });
+      //   /*db.ref("/sucursal/" + this.$route.params.id).on("value", snapshot => {
+      //     console.log(snapshot.val());
+      //     this.sucursal.nombre = snapshot.val().nombre;
+      //   });*/
+      // }
+
+      if (this.$route.params.id) {
+        axios
+          .get("http://localhost:3000/sucursales/edit/" + this.$route.params.id)
+          .then(response => {
+            this.sucursal.nombre = response.data.nombre;
+            this.sucursal.horaEntrada = response.data.horaEntrada;
+            this.sucursal.horaSalida = response.data.horaSalida;
+            this.sucursal.telefono = response.data.telefono;
+          });
       }
     },
     cancelar() {

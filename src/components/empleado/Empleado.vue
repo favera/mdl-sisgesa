@@ -21,16 +21,21 @@
 
       <div class="ten wide field">
         <label for="">Fecha de Ingreso</label>
-        <el-date-picker v-model="empleado.fechaIngreso" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+        <el-date-picker v-model="empleado.fechaIngreso" placeholder="Seleccionar fecha" format="dd/MM/yyyy" value-format="dd/MM/yyyy">
         </el-date-picker>
       </div>
       <div class="ten wide field">
         <label for="">Sucursal:</label>
-        <select name="sucursales" v-model="sucursalkey">
+        <select name="sucursales" v-model="empleado.sucursal">
+          <option disabled value="">Seleccionar Sucursal..</option>
+          <option v-for="sucursal in sucursales" :key="sucursal._id" v-bind:value="sucursal._id">{{sucursal.nombre}}</option>
+
+        </select>
+        <!-- <select name="sucursales" v-model="sucursalkey">
           <option disabled value="">Seleccionar Sucursal..</option>
           <option v-for="sucursal in sucursales" :key="sucursal['.key']" v-bind:value="sucursal['.key']" :selected="sucursal['.key'] === Object.keys(empleado.sucursalId)[0] ? true : false">{{sucursal.nombre}}</option>
           <option value=""></option>
-        </select>
+        </select> -->
       </div>
 
       <div class="ten wide field">
@@ -161,14 +166,13 @@ export default {
         acnro: "",
         nroCedula: null,
         fechaIngreso: null,
-        fechaIngresoUtc: null,
         medioTiempo: false,
         tipoHoraExtra: "bancoHora",
         cargaLaboral: "",
         salario: "",
         moneda: "",
         ips: "salario",
-        sucursalId: {}
+        sucursal: null
       },
       money: {
         decimal: ",",
@@ -190,65 +194,129 @@ export default {
     },
     guardarEmpleado() {
       if (typeof this.$route.params.id !== "undefined") {
-        this.empleado.fechaIngreso = moment(
-          this.empleado.fechaIngreso,
-          "DD/MM/YYYY"
-        )
-          .format("L")
-          .toString();
-
-        this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
-
-        this.empleado.sucursalId[this.sucursalkey] = true;
-
-        funcionariosRef
-          .child(this.$route.params.id)
-          .update(this.empleado)
+        axios
+          .put(`${url}/funcionarios/update/${this.$route.params.id}`, {
+            nombre: this.empleado.nombre,
+            acnro: this.empleado.acnro,
+            nroCedula: this.empleado.nroCedula,
+            fechaIngreso: this.empleado.fechaIngreso,
+            medioTiempo: this.empleado.medioTiempo,
+            tipoHoraExtra: this.empleado.tipoHoraExtra,
+            cargaLaboral: this.empleado.cargaLaboral,
+            salario: this.empleado.salario,
+            salarioMinuto: this.calcularSalarioMinuto(this.empleado.salario),
+            moneda: this.empleado.moneda,
+            ips: this.empleado.ips,
+            sucursal: this.empleado.sucursal,
+            activo: true
+          })
           .then(response => {
-            this.editSuccess();
-            this.cancelar();
             console.log(response);
+            this.success();
+            this.cancelar();
+          })
+          .catch(e => {
+            console.log(e);
+            this.fail();
+            this.cancelar();
           });
+        // this.empleado.fechaIngreso = moment(
+        //   this.empleado.fechaIngreso,
+        //   "DD/MM/YYYY"
+        // )
+        //   .format("L")
+        //   .toString();
+        // this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
+        // this.empleado.sucursalId[this.sucursalkey] = true;
+        // funcionariosRef
+        //   .child(this.$route.params.id)
+        //   .update(this.empleado)
+        //   .then(response => {
+        //     this.editSuccess();
+        //     this.cancelar();
+        //     console.log(response);
+        //   });
       } else {
-        this.empleado.fechaIngreso = moment(
-          this.empleado.fechaIngreso,
-          "DD/MM/YYYY"
-        )
-          .format("L")
-          .toString();
+        axios
+          .post(`${url}/funcionarios/add`, {
+            nombre: this.empleado.nombre,
+            acnro: this.empleado.acnro,
+            nroCedula: this.empleado.nroCedula,
+            fechaIngreso: this.empleado.fechaIngreso,
+            medioTiempo: this.empleado.medioTiempo,
+            tipoHoraExtra: this.empleado.tipoHoraExtra,
+            cargaLaboral: this.empleado.cargaLaboral,
+            salario: this.empleado.salario,
+            salarioMinuto: this.calcularSalarioMinuto(this.empleado.salario),
+            moneda: this.empleado.moneda,
+            ips: this.empleado.ips,
+            sucursal: this.empleado.sucursal,
+            activo: true
+          })
+          .then(response => {
+            console.log(response);
+            this.success();
+            this.cancelar();
+          });
+        // this.empleado.fechaIngreso = moment(
+        //   this.empleado.fechaIngreso,
+        //   "DD/MM/YYYY"
+        // )
+        //   .format("L")
+        //   .toString();
 
-        this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
+        // this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
 
-        this.empleado.sucursalId[this.sucursalkey] = true;
+        // this.empleado.sucursalId[this.sucursalkey] = true;
 
-        console.log("Test", this.empleado.sucursalId);
+        // console.log("Test", this.empleado.sucursalId);
 
-        funcionariosRef.push(this.empleado).then(res => {
-          this.success();
-          this.cancelar();
-          console.log(res);
-        });
+        // funcionariosRef.push(this.empleado).then(res => {
+        //   this.success();
+        //   this.cancelar();
+        //   console.log(res);
+        // });
       }
     },
     obtenerEmpleado() {
       if (typeof this.$route.params.id != "undefined") {
-        console.log(funcionariosRef.child(this.$route.params.id));
-        funcionariosRef.child(this.$route.params.id).once("value", snapshot => {
-          console.log(snapshot.val());
-          this.empleado.nombre = snapshot.val().nombre;
-          this.empleado.acnro = snapshot.val().acnro;
-          this.empleado.nroCedula = snapshot.val().nroCedula;
-          this.empleado.fechaIngreso = snapshot.val().fechaIngreso;
-          this.empleado.medioTiempo = snapshot.val().medioTiempo;
-          this.empleado.tipoHoraExtra = snapshot.val().tipoHoraExtra;
-          this.empleado.cargaLaboral = snapshot.val().cargaLaboral;
-          this.empleado.salario = snapshot.val().salario;
-          this.empleado.moneda = snapshot.val().moneda;
-          this.empleado.ips = snapshot.val().ips;
-          this.empleado.sucursalId = snapshot.val().sucursalId;
-          this.sucursalkey = Object.keys(snapshot.val().sucursalId)[0] || "";
-        });
+        axios
+          .get(`${url}/funcionarios/edit/${this.$route.params.id}`)
+          .then(response => {
+            this.empleado.nombre = response.data.nombre;
+            this.empleado.acnro = response.data.acnro;
+            this.empleado.nroCedula = response.data.nroCedula;
+            this.empleado.fechaIngreso = response.data.fechaIngreso;
+            this.empleado.medioTiempo = response.data.medioTiempo;
+            this.empleado.tipoHoraExtra = response.data.tipoHoraExtra;
+            this.empleado.cargaLaboral = response.data.cargaLaboral;
+            this.empleado.salario = response.data.salario;
+            this.empleado.moneda = response.data.moneda;
+            this.empleado.ips = response.data.ips;
+            this.empleado.sucursal = response.data.sucursal;
+          });
+        // console.log(funcionariosRef.child(this.$route.params.id));
+        // funcionariosRef.child(this.$route.params.id).once("value", snapshot => {
+        //   console.log(snapshot.val());
+        //   this.empleado.nombre = snapshot.val().nombre;
+        //   this.empleado.acnro = snapshot.val().acnro;
+        //   this.empleado.nroCedula = snapshot.val().nroCedula;
+        //   this.empleado.fechaIngreso = snapshot.val().fechaIngreso;
+        //   this.empleado.medioTiempo = snapshot.val().medioTiempo;
+        //   this.empleado.tipoHoraExtra = snapshot.val().tipoHoraExtra;
+        //   this.empleado.cargaLaboral = snapshot.val().cargaLaboral;
+        //   this.empleado.salario = snapshot.val().salario;
+        //   this.empleado.moneda = snapshot.val().moneda;
+        //   this.empleado.ips = snapshot.val().ips;
+        //   this.empleado.sucursalId = snapshot.val().sucursalId;
+        //   this.sucursalkey = Object.keys(snapshot.val().sucursalId)[0] || "";
+        // });
       }
+    },
+    obtenerSucursales() {
+      axios.get(`${url}/sucursales/`).then(response => {
+        this.sucursales = response.data;
+      });
     },
     returnList() {
       this.$router.push({ name: "listadoEmpleado" });
@@ -284,7 +352,8 @@ export default {
   },
   created() {
     this.obtenerEmpleado();
-    this.$bindAsArray("sucursales", sucursalesRef);
+    this.obtenerSucursales();
+    //this.$bindAsArray("sucursales", sucursalesRef);
   },
   watch: {
     $route: "obtenerEmpleado"
