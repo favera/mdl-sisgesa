@@ -391,8 +391,9 @@ export default {
         );
       });
       this.abrirModal();
-      //this.getSabados(this.datosMarcaciones[0].fecha);
-      //this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
+      console.log("Fecha Planilla", this.datosMarcaciones[0].fecha)
+      this.getSabados(this.datosMarcaciones[0].fecha);
+      this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
     },
     //recibe datos de funcionarios desde el foreach de funcionarios
     orderData(
@@ -414,7 +415,6 @@ export default {
         isConfirmed: false
       };
 
-      //this.applyCss = modelo.isConfirmed;
       console.log("Predatos", JSON.stringify(this.preDatos));
       //iteracion sobre el array de objetos de preDatos, preDatos contiene datos del archivo excel
       for (let item of this.preDatos) {
@@ -512,7 +512,7 @@ export default {
           .format("HH:mm");
       }
     },
-    postFirebase() {
+    async postFirebase() {
       //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
       this.funcionarios.forEach(funcionario => {
         var ausencia = this.datosMarcaciones.findIndex(item => {
@@ -545,7 +545,7 @@ export default {
               this.marcacion.estilo.incompleto = false;
               this.marcacion.estilo.vacaciones = true;
 
-              axios.post(`${url}/asistencias/add`, this.marcacion).then(response => {
+              axios.post(url + "/asistencias/add", this.marcacion).then(response => {
                 console.log(response);
               })
             }
@@ -569,212 +569,100 @@ export default {
             axios.post(`${url}/asistencias/add`, this.marcacion).then(response => {
                 console.log(response);
               })
-
-
-
-
-          /*if (
-            funcionario.hasOwnProperty("vacaciones") &&
-            Object.keys(funcionario.vacaciones)[0]
-          ) {
-            var fechaInicio, fechaFin, fecha;
-            calendarioRef
-              .child(Object.keys(funcionario.vacaciones)[0])
-              .once("value", snap => {
-                console.log(snap.val());
-                fechaInicio = moment(
-                  snap.val().fechaInicio,
-                  "DD/MM/YYYY"
-                ).format("L");
-                fechaFin = moment(snap.val().fechaFin, "DD/MM/YYYY").format(
-                  "L"
-                );
-              });
-
-            fecha = moment(this.datosMarcaciones[0].fecha, "DD/MM/YYYY").format(
-              "L"
-            );
-
-            var isFechaVacaciones = moment(fecha).isBetween(
-              fechaInicio,
-              fechaFin,
-              null,
-              "[]"
-            );
-
-            console.log("VACACIONES", fechaInicio, fechaFin, isFechaVacaciones, fecha);
-
-            if (isFechaVacaciones) {
-              this.marcacion.fecha = this.datosMarcaciones[0].fecha;
-              this.marcacion.funcionarioId = funcionario[".key"];
-              this.marcacion.nombreFuncionario = funcionario.nombre;
-              this.marcacion.entrada = false;
-              this.marcacion.salida = false;
-              this.marcacion.horasTrabajadas = false;
-              this.marcacion.horasExtras = false;
-              this.marcacion.horasFaltantes = false;
-              this.marcacion.observacion = "Vacaciones";
-              this.marcacion.estilo.ausente = false;
-              this.marcacion.estilo.incompleto = false;
-              this.marcacion.estilo.vacaciones = true;
-
-              asistenciasRef.push(this.marcacion).then(res => console.log(res));
-            }
-          } else {
-            this.marcacion.fecha = this.datosMarcaciones[0].fecha;
-            this.marcacion.funcionarioId = funcionario[".key"];
-            this.marcacion.nombreFuncionario = funcionario.nombre;
-            this.marcacion.entrada = false;
-            this.marcacion.salida = false;
-            this.marcacion.horasTrabajadas = false;
-            this.marcacion.horasExtras = false;
-            this.marcacion.horasFaltantes = false;
-            this.marcacion.observacion = "Ausencia";
-            this.marcacion.estilo.ausente = true;
-            this.marcacion.estilo.incompleto = false;
-            this.marcacion.estilo.vacaciones = false;
-
-            asistenciasRef.push(this.marcacion).then(res => console.log(res));
-          }*/
         }
       });
 
-      this.datosMarcaciones.forEach(marcacion => {
-
-         this.marcacion.fecha = marcacion.fecha;
-          this.marcacion.funcionario = marcacion.empleadoId;
+      await Promise.all(
+        this.datosMarcaciones.map(async marcacion => {
+          try {
+            let response = await axios.post(`${url/asistencias/add}`, {
+              fecha : marcacion.fecha,
+              funcionario : marcacion.empleadoId,
           /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
             marcacion.empleadoId
           );*/
-          this.marcacion.entrada = marcacion.entrada;
-          this.marcacion.salida = marcacion.salida;
+              entrada : marcacion.entrada,
+              salida : marcacion.salida,
           //calculo de Horas trabajadas
-          this.marcacion.horasTrabajadas = this.handleHorasTrabajadas(
+              horasTrabajadas : this.handleHorasTrabajadas(
             marcacion.entrada,
-            marcacion.salida,
-            marcacion.fecha
-          );
+            marcacion.salida
+          ),
 
-          this.marcacion.horasExtras = this.calculoBancoH(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          );
-
-          this.marcacion.horasFaltantes = this.calculoHorasFaltantes(
+          horasExtras : this.calculoBancoH(
             marcacion.entrada,
             marcacion.salida,
             marcacion.empleadoId
-          );
+          ),
 
-          this.marcacion.observacion = "";
+          horasFaltantes : this.calculoHorasFaltantes(
+            marcacion.entrada,
+            marcacion.salida,
+            marcacion.empleadoId
+          ),
 
-          if (marcacion.entrada == null || marcacion.salida == null) {
-            this.marcacion.estilo.ausente = false;
-            this.marcacion.estilo.incompleto = true;
-            this.marcacion.estilo.vacaciones = false;
-          } else {
-            this.marcacion.estilo.ausente = false;
-            this.marcacion.estilo.incompleto = false;
-            this.marcacion.estilo.vacaciones = false;
+          observacion : "",
+
+          estilo: this.aplicarEstiloMarcacion(marcacion.entrada, marcacion.salida)
+
+         
+            }).then(function(response) {
+                console.log("from async" + response);
+              })
+              .catch(function(error) {
+                console.log(error);
+              });
+          } catch (error) {
+            console.log(error);
           }
+        })
+      )
 
-          axios.post(`${url}/asistencias/add`, this.marcaciones).then(response => console.log(response))
+      //this.insertarMarcaciones();
 
-      })
+      // this.datosMarcaciones.forEach(marcacion => {
+
+      //    this.marcacion.fecha = marcacion.fecha;
+      //    this.marcacion.funcionario = marcacion.empleadoId;
+      //     /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
+      //       marcacion.empleadoId
+      //     );*/
+      //     this.marcacion.entrada = marcacion.entrada;
+      //     this.marcacion.salida = marcacion.salida;
+      //     //calculo de Horas trabajadas
+      //     this.marcacion.horasTrabajadas = this.handleHorasTrabajadas(
+      //       marcacion.entrada,
+      //       marcacion.salida
+      //     );
+
+      //     this.marcacion.horasExtras = this.calculoBancoH(
+      //       marcacion.entrada,
+      //       marcacion.salida,
+      //       marcacion.empleadoId
+      //     );
+
+      //     this.marcacion.horasFaltantes = this.calculoHorasFaltantes(
+      //       marcacion.entrada,
+      //       marcacion.salida,
+      //       marcacion.empleadoId
+      //     );
+
+      //     this.marcacion.observacion = "";
+
+      //     if (marcacion.entrada == null || marcacion.salida == null) {
+      //       this.marcacion.estilo.ausente = false;
+      //       this.marcacion.estilo.incompleto = true;
+      //       this.marcacion.estilo.vacaciones = false;
+      //     } else {
+      //       this.marcacion.estilo.ausente = false;
+      //       this.marcacion.estilo.incompleto = false;
+      //       this.marcacion.estilo.vacaciones = false;
+      //     }
+
+      //     axios.post(`${url}/asistencias/add`, this.marcaciones).then(response => console.log(response))
+      // })
 
 
-      /*this.datosMarcaciones.forEach(marcacion => {
-        var fecha, keyVacaciones, fechaInicio, fechaFin, isFechaVacaciones;
-        funcionariosRef.child(marcacion.empleadoId).once("value", snap => {
-          if (snap.val().hasOwnProperty("vacaciones")) {
-            for (var prop in snap.val().vacaciones) {
-              console.log("Valor Propiedad", prop);
-              if (prop) {
-                keyVacaciones = Object.keys(prop)[0];
-              }
-            }
-          } else {
-            keyVacaciones = false;
-          }
-        });
-
-        if (keyVacaciones) {
-          calendarioRef.child(keyVacaciones).once("value", snapvac => {
-            fechaInicio = moment(
-              snapvac.val().fechaInicio,
-              "DD/MM/YYYY"
-            ).format("L");
-            fechaFin = moment(snapvac.val().fechaFin, "DD/MM/YYYY").format("L");
-          });
-
-          fecha = moment(fecha, "DD/MM/YYYY").format("L");
-
-          isFechaVacaciones = moment(fecha).isBetween(
-            fechaInicio,
-            fechaFin,
-            null,
-            "[]"
-          );
-        }
-
-        if (isFechaVacaciones) {
-          this.marcacion.fecha = marcacion.fecha;
-          this.marcacion.funcionarioId = marcacion.empleadoId;
-          this.marcacion.nombreFuncionario = this.nombreFuncionario(
-            marcacion.empleadoId
-          );
-          this.marcacion.entrada = false;
-          this.marcacion.salida = false;
-          this.marcacion.horasTrabajadas = false;
-          this.marcacion.horasExtras = false;
-          this.marcacion.horasFaltantes = false;
-          this.marcacion.observacion = "Vacaciones";
-          this.marcacion.estilo.ausente = false;
-          this.marcacion.estilo.incompleto = false;
-          this.marcacion.estilo.vacaciones = true;
-        } else {
-          this.marcacion.fecha = marcacion.fecha;
-          this.marcacion.funcionarioId = marcacion.empleadoId;
-          this.marcacion.nombreFuncionario = this.nombreFuncionario(
-            marcacion.empleadoId
-          );
-          this.marcacion.entrada = marcacion.entrada;
-          this.marcacion.salida = marcacion.salida;
-          //calculo de Horas trabajadas
-          this.marcacion.horasTrabajadas = this.handleHorasTrabajadas(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.fecha
-          );
-
-          this.marcacion.horasExtras = this.calculoBancoH(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          );
-
-          this.marcacion.horasFaltantes = this.calculoHorasFaltantes(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          );
-
-          this.marcacion.observacion = "";
-
-          if (marcacion.entrada == null || marcacion.salida == null) {
-            this.marcacion.estilo.ausente = false;
-            this.marcacion.estilo.incompleto = true;
-            this.marcacion.estilo.vacaciones = false;
-          } else {
-            this.marcacion.estilo.ausente = false;
-            this.marcacion.estilo.incompleto = false;
-            this.marcacion.estilo.vacaciones = false;
-          }
-        }
-
-        asistenciasRef.push(this.marcacion).then(res => console.log(res));
-      });*/
     },
     nombreFuncionario(empleadoId) {
       var nombre;
@@ -785,18 +673,20 @@ export default {
       return nombre;
     },
     getSabados(fec) {
-      var fecha = moment(fec, "DD/MM/YYYY").toDate();
-      console.log(fecha.toString());
+      console.log("Fecha Recibidad", fec);
+      //var fecha = moment(fec, "DD/MM/YYYY").toDate();
+      var fecha = new Date(fec);
+      console.log(fecha);
       var month = fecha.getMonth();
 
       fecha.setDate(1);
 
-      // Get the first Monday in the month
+      // Get the first Saturday in the month
       while (fecha.getDay() !== 6) {
         fecha.setDate(fecha.getDate() + 1);
       }
 
-      // Get all the other Mondays in the month
+      // Get all the other Saturday in the month
       while (fecha.getMonth() === month) {
         this.sabados.push(new Date(fecha.getTime()));
         fecha.setDate(fecha.getDate() + 7);
@@ -808,13 +698,27 @@ export default {
       var sabadoMedioTiempo;
       var cargaLaboral;
 
-      funcionariosRef.child(funcionarioId).once("value", snap => {
+      var funcionario = this.funcionarios.find(funcionario => {
+        if(funcionario._id === funcionarioId){
+          return funcionario
+        }
+        return null
+      });
+
+      if(funcionario){
+        sabadoMedioTiempo = funcionario.medioTiempo;
+        cargaLaboral = funcionario.cargaLaboral;
+      }
+
+      /*funcionariosRef.child(funcionarioId).once("value", snap => {
         sabadoMedioTiempo = snap.val().medioTiempo;
         cargaLaboral = snap.val().cargaLaboral;
         console.log("SNAP", cargaLaboral, sabadoMedioTiempo);
-      });
+      });*/
 
+      //si isSabado es true, si el dia es sabado
       if (this.isSabado !== -1) {
+        //si el funcionario tiene habilitado sabado medio tiempo
         if (sabadoMedioTiempo) {
           var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
@@ -831,6 +735,8 @@ export default {
             return this.handleNegative(horasExtras);
           }
           return false;
+
+          //else del no tiene sabado habilitado
         } else {
           var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
@@ -849,12 +755,12 @@ export default {
           console.log("Resultado Horas Extras", horasExtras);
 
           if (horasExtras > 0) {
-            console.log("Entro pero no Retorno segundo else horas Trabajadas");
             return this.handleNegative(horasExtras);
           }
 
           return false;
         }
+        //else del verificar si es dia sabado
       } else {
         var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
@@ -870,7 +776,6 @@ export default {
         console.log("Resultado Horas Extras", horasExtras);
 
         if (horasExtras > 0) {
-          console.log("Entro pero no Retorno tercer else horas Trabajadas");
           return this.handleNegative(horasExtras);
         }
 
@@ -881,10 +786,22 @@ export default {
     calculoHorasFaltantes(entrada, salida, funcionarioId) {
       var sabadoMedioTiempo;
       var cargaLaboral;
-      funcionariosRef.child(funcionarioId).once("value", snap => {
+
+      var funcionario = this.funcionarios.find(funcionario => {
+        if(funcionario._id === funcionarioId){
+          return funcionario
+        }
+        return null
+      });
+
+      if(funcionario){
+        sabadoMedioTiempo = funcionario.medioTiempo;
+        cargaLaboral = funcionario.cargaLaboral;
+      }
+      /*funcionariosRef.child(funcionarioId).once("value", snap => {
         sabadoMedioTiempo = snap.val().medioTiempo;
         cargaLaboral = snap.val().cargaLaboral;
-      });
+      });*/
 
       if (this.isSabado !== -1) {
         if (sabadoMedioTiempo) {
@@ -934,7 +851,9 @@ export default {
       }
     },
     findSabado(fecha) {
-      var findFecha = moment(fecha, "DD/MM/YYYY").toDate();
+      //var findFecha = moment(fecha, "DD/MM/YYYY").toDate();
+
+      var findFecha = new Date(fecha);
 
       var fechaSabado = this.sabados.findIndex(element => {
         console.log(findFecha);
@@ -943,6 +862,64 @@ export default {
       });
       console.log("INDICE SABADO", fechaSabado);
       return fechaSabado;
+    },
+    aplicarEstiloMarcacion(entrada, salida){
+       if (entrada == null || salida == null) {
+            return {ausente : false,
+            incompleto : true,
+            vacaciones : false}
+          } else {
+            return {ausente : false,
+            incompleto : false,
+            vacaciones : false}
+          }
+    },
+    async insertarMarcaciones(){
+      await Promise.all(
+        this.marcaciones.map(async marcacion => {
+          try {
+            let response = await axios.post(`${url/asistencias/add}`, {
+              fecha : marcacion.fecha,
+              funcionario : marcacion.empleadoId,
+          /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
+            marcacion.empleadoId
+          );*/
+              entrada : marcacion.entrada,
+              salida : marcacion.salida,
+          //calculo de Horas trabajadas
+              horasTrabajadas : this.handleHorasTrabajadas(
+            marcacion.entrada,
+            marcacion.salida
+          ),
+
+          horasExtras : this.calculoBancoH(
+            marcacion.entrada,
+            marcacion.salida,
+            marcacion.empleadoId
+          ),
+
+          horasFaltantes : this.calculoHorasFaltantes(
+            marcacion.entrada,
+            marcacion.salida,
+            marcacion.empleadoId
+          ),
+
+          observacion : "",
+
+          estilo: this.aplicarEstiloMarcacion(marcacion.entrada, marcacion.salida)
+
+         
+            }).then(function(response) {
+                console.log("from async" + response);
+              })
+              .catch(function(error) {
+                console.log(error);
+              });
+          } catch (error) {
+            console.log(error);
+          }
+        })
+      )
     },
     //Hace post al array marcaciones y luego llama la lista, por eso es asincronico
     async confirmData() {
@@ -1070,6 +1047,7 @@ export default {
       }
       return estilo;
     },
+    //retorna las horas que trabajo en el dia horaSalida - horaEntrada
     handleHorasTrabajadas(entrada, salida) {
       var result = moment("00:00", "hh:mm").format("00:00");
       if (entrada !== null && salida !== null) {
