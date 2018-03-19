@@ -82,40 +82,49 @@
           <tr>
             <th class="collapsing">
               <div class="ui fitted checkbox">
-                <input type="checkbox" :checked="checkedAll" @click="checkedAll=!checkedAll">
+                <!-- <input type="checkbox" :checked="checkedAll" @click="checkedAll=!checkedAll"> -->
+                <input type="checkbox" v-model="selectall">
                 <label></label>
               </div>
             </th>
             <th>Fecha</th>
             <th>Funcionario</th>
-            <th>Tipo de Adelanto</th>
+            <!-- <th>Tipo de Adelanto</th> -->
             <th>Monto</th>
             <th>Opciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="adelanto in adelantos" :key="adelanto['.key']">
+          <tr v-for="adelanto in adelantos" :key="adelanto._id">
             <td class="collapsing">
               <div class="ui fitted checkbox">
-                <input type="checkbox" :checked="checkedAll">
+                <input type="checkbox" :value="adelanto._id" v-model="seleccionados" >
                 <label></label>
               </div>
             </td>
-            <td>{{adelanto.fecha}}</td>
-            <td>{{adelanto.nombreFuncionario}}</td>
-            <td>{{adelanto.tipoAdelanto}}</td>
+            <td>{{moment(adelanto.fecha).format("L")}}</td>
+            <td>{{adelanto.funcionario.nombre}}</td>
+            <!-- <td>{{adelanto.tipoAdelanto}}</td> -->
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
             <td>
-              <router-link :to="{name: 'editarAdelanto', params: { id: adelanto['.key']}}">
+              <router-link :to="{name: 'editarAdelanto', params: { id: adelanto._id}}">
                 <i class="edit row icon"></i>
               </router-link>
 
-              <i class="trash icon" @click="confirm(adelanto['.key'])"></i>
+              <i class="trash icon" @click="confirm(adelanto._id)"></i>
               <i class="print icon"></i>
             </td>
           </tr>
 
         </tbody>
+        <tfoot v-show="pageOne.totalItems > 10">
+           <tr>
+                <th colspan="5">
+                    <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+                    </app-pagination>
+                </th>
+            </tr>
+        </tfoot>
       </table>
 
     </div>
@@ -126,6 +135,8 @@
 <script>
 import axios from "axios";
 import { db } from "./../.././config/firebase";
+import {url} from "./../.././config/backend";
+import Pagination from ".././shared/Pagination.vue"
 
 let adelantosRef = db.ref("/adelantos");
 
@@ -138,12 +149,38 @@ export default {
       fechaInicio: "",
       fechaFin: "",
       checked: false,
-      checkedAll: false 
+      checkedAll: false,
+      seleccionados: [],
+      pageOne: {
+        currentPage: 1,
+        itemsPerPage: 10,
+        totalItems: 0
+      }
     };
   },
   methods: {
     incluirAdelanto() {
       this.$router.push({ name: "incluirAdelanto" });
+    },
+    // selectall(checkedAll){
+    //   if(checkedAll){
+    //     $(this.$el).find('.ui.checkbox').checkbox('check');
+    //   }
+    //   if(!checkedAll){
+    //     $(this.$el).find('.ui.checkbox').checkbox('uncheck');
+    //   }
+      
+    // },
+    pageOneChanged(pageNum) {
+      this.pageOne.currentPage = pageNum;
+      this.obtenerListadoAdelanto();
+     
+    },
+    obtenerListadoAdelanto(){
+      axios.get(`${url}/adelantos/?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}`).then(response=> {
+        this.adelantos = response.data.docs;
+        this.pageOne.totalItems= response.data.total;
+      })
     },
     listar() {
       /*Array.from(this.feriados).forEach(item => {
@@ -187,16 +224,38 @@ export default {
           });
         });
     },
-    eliminarFeriado(id) {
-      var index = this.sucursales.findIndex(i => i.id === id);
-      db.ref("/adelantos/" + id).remove();
-    },
-    selectAll() {
-      this.checkedAll = true;
+    eliminarAdelanto(id) {
+      var index = this.adelantos.findIndex(i => i.id === id);
+      this.adelantos.splice(index, 1);
+
+      axios.delete(`${url}/adelantos/delete/${id}`)
+      // db.ref("/adelantos/" + id).remove();
     }
   },
+  components: {
+    appPagination: Pagination
+  },
+  computed: {
+    selectall: {
+            get: function () {
+                return this.adelantos ? this.seleccionados.length == this.adelantos.length : false;
+            },
+            set: function (value) {
+                var seleccionados = [];
+
+                if (value) {
+                    this.adelantos.forEach(function (adelanto) {
+                        seleccionados.push(adelanto._id);
+                    });
+                }
+
+                this.seleccionados = seleccionados;
+            }
+        }
+  },
   created() {
-    this.$bindAsArray("adelantos", adelantosRef);
+    // this.$bindAsArray("adelantos", adelantosRef);
+    this.obtenerListadoAdelanto();
    
   }
 };

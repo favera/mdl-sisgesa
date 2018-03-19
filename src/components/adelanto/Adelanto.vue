@@ -5,16 +5,23 @@
 
         <div class="ten wide field">
         <label for="">Fecha:</label>
-        <el-date-picker v-model="adelanto.fechaUtc" format="dd/MM/yyyy" type="date" ></el-date-picker>
+        <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date" ></el-date-picker>
+    </div>
+    <div class="ten wide field">
+        <label for="">Seleccionar Funcionario</label>
+        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector" >
+            <option disabled value="">Seleccionar Funcionario..</option>
+            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+        </select>
     </div>
 
-    <div class="ten wide field">
+    <!-- <div class="ten wide field">
         <label for="">Seleccionar Funcionario</label>
         <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector" >
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario['.key']" v-bind:value="funcionario['.key']">{{funcionario.nombre}}</option>
         </select>
-    </div>
+    </div> -->
 
     <div class="ten wide field">
         <div class="field">
@@ -70,6 +77,7 @@
 <script>
 import moment from "moment";
 import axios from "axios";
+import {url} from "./../.././config/backend";
 import { db } from "./../.././config/firebase";
 let funcionariosRef = db.ref("/funcionarios");
 let adelantosRef = db.ref("/adelantos");
@@ -77,10 +85,9 @@ export default {
   data() {
     return {
       adelanto: {
-        fechaUtc: new Date(),
-        fecha: null,
-        funcionarioId: null,
-        nombreFuncionario: null,
+        //fechaUtc: new Date(),
+        fecha: new Date(),
+        funcionario: null,
         tipoAdelanto: "quincena",
         moneda: null,
         monto: null
@@ -95,51 +102,76 @@ export default {
     obtenerAdelanto() {
       console.log(this.$route.params.id);
 
-      if (typeof this.$route.params.id !== "undefined") {
-        console.log(adelantosRef.child(this.$route.params.id));
-        adelantosRef.child(this.$route.params.id).once("value", snapshot => {
-          console.log(snapshot.val());
-          this.adelanto.fechaUtc = snapshot.val().fechaUtc;
-          this.adelanto.tipoAdelanto = snapshot.val().tipoAdelanto;
+      if(this.$route.params.id){
+        axios.get(`${url}/adelantos/edit/${this.$route.params.id}`).then(response => {
+          this.adelanto.fecha = response.data.fecha;
+          this.adelanto.tipoAdelanto = response.data.tipoAdelanto;
+          this.adelanto.monto = response.data.monto;
+          this.adelanto.moneda = response.data.moneda;
           this.disabledInput = true;
-          this.adelanto.monto = snapshot.val().monto;
-          this.adelanto.moneda = snapshot.val().moneda;
-          $(this.$el)
-            .find(".ui.dropdown")
-            .dropdown("refresh")
-            .dropdown("set selected", snapshot.val().funcionarioId);
-        });
+          $(this.$el).find(".ui.dropdown").dropdown("refresh").dropdown("set selected", response.data.funcionario);
+          $(this.$el).find("#monedaSelector").dropdown("refresh").dropdown("set selected", response.data.moneda);
+        })
       }
+
+
+      // if (typeof this.$route.params.id !== "undefined") {
+      //   console.log(adelantosRef.child(this.$route.params.id));
+      //   adelantosRef.child(this.$route.params.id).once("value", snapshot => {
+      //     console.log(snapshot.val());
+      //     this.adelanto.fechaUtc = snapshot.val().fechaUtc;
+      //     this.adelanto.tipoAdelanto = snapshot.val().tipoAdelanto;
+      //     this.disabledInput = true;
+      //     this.adelanto.monto = snapshot.val().monto;
+      //     this.adelanto.moneda = snapshot.val().moneda;
+      //     $(this.$el)
+      //       .find(".ui.dropdown")
+      //       .dropdown("refresh")
+      //       .dropdown("set selected", snapshot.val().funcionarioId);
+      //   });
+      // }
+    },
+    obtenerFuncionarios(){
+      axios.get(`${url}/funcionarios/full-list`).then(response => {
+        this.funcionarios = response.data;
+      }).catch(e => console.log(e));
     },
     guardarAdelanto() {
-      if (typeof this.$route.params.id !== null) {
-        this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
-          .format("L")
-          .toString();
-        this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
-        this.adelanto.funcionarioId = this.funcionarioSeleccionado;
-
-        adelantosRef
-          .child(this.$route.params.id)
-          .update(this.adelanto)
-          .then(response => {
-            this.editSuccess();
-            this.cancelar();
-            console.log(response);
-          });
-      } else {
-        this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
-          .format("L")
-          .toString();
-        this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
-        this.adelanto.funcionarioId = this.funcionarioSeleccionado;
-
-        adelantosRef.push(this.adelanto).then(res => {
-          console.log(res);
-          this.success();
-          this.cancelar();
-        });
+      if(this.$route.params.id){
+        this.adelanto.funcionario = this.funcionarioSeleccionado;
+        axios.put(`${url}/adelantos/update/${this.$route.params.id}`, this.adelanto).then(response=> {console.log(response); this.editSuccess(); this.cancelar()}).catch(e => {console.log(e); this.fail()});
+      }else{
+        this.adelanto.funcionario = this.funcionarioSeleccionado;
+        axios.post(`${url}/adelantos/add`, this.adelanto).then(response => {console.log(response); this.success(); this.cancelar()}).catch(e => {console.log(e); this.fail()})
       }
+      // if (typeof this.$route.params.id !== null) {
+      //   this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
+      //     .format("L")
+      //     .toString();
+      //   this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
+      //   this.adelanto.funcionarioId = this.funcionarioSeleccionado;
+
+      //   adelantosRef
+      //     .child(this.$route.params.id)
+      //     .update(this.adelanto)
+      //     .then(response => {
+      //       this.editSuccess();
+      //       this.cancelar();
+      //       console.log(response);
+      //     });
+      // } else {
+      //   this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
+      //     .format("L")
+      //     .toString();
+      //   this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
+      //   this.adelanto.funcionarioId = this.funcionarioSeleccionado;
+
+      //   adelantosRef.push(this.adelanto).then(res => {
+      //     console.log(res);
+      //     this.success();
+      //     this.cancelar();
+      //   });
+      // }
     },
     cancelar() {
       this.$router.push({ name: "listadoAdelanto" });
@@ -176,25 +208,22 @@ export default {
   },
   created() {
     // this.obtenerAdelanto();
-    this.$bindAsArray("funcionarios", funcionariosRef);
+    //this.$bindAsArray("funcionarios", funcionariosRef);
+    this.obtenerFuncionarios();
+
   },
   watch: {
     $route: "obtenerAdelanto",
     funcionarioSeleccionado: function() {
       if (this.adelanto.tipoAdelanto === "quincena") {
-        funcionariosRef
-          .child(this.funcionarioSeleccionado)
-          .once("value", snap => {
-            console.log(snap.val().salario);
-            var quincena =
-              snap
-                .val()
-                .salario.split(".")
-                .join("") / 2;
-            this.adelanto.monto = quincena.toLocaleString();
-            this.adelanto.moneda = snap.val().moneda;
-            this.adelanto.nombreFuncionario = snap.val().nombre;
-          });
+        var quincena;
+        var funcionario = this.funcionarios.find(funcionario => {
+          if(funcionario._id === this.funcionarioSeleccionado){
+            this.adelanto.monto = (funcionario.salario.split(".").join("") / 2).toLocaleString();
+            $(this.$el).find("#monedaSelector").dropdown("refresh").dropdown("set selected", funcionario.moneda);
+          }
+        });
+       
       }
 
       $(this.$el)
