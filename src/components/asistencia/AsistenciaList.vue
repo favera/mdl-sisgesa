@@ -27,7 +27,7 @@
       </div>
       <div class="actions">
 
-        <button class="ui positive teal button" @click="postFirebase">Aceptar</button>
+        <button class="ui positive teal button" @click="guardarMarcaciones">Aceptar</button>
         <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
       </div>
     </div>
@@ -244,6 +244,10 @@ export default {
     appPagination: Pagination
   },
   methods: {
+    pageOneChanged(pageNum) {
+      this.pageOne.currentPage = pageNum;
+      this.obtenerAsistencias();
+    },
     guardarPaginacion(marcacionId) {
       var page = {};
       page.itemsPerPage = this.pageOne.itemsPerPage;
@@ -261,6 +265,18 @@ export default {
         this.funcionarios = response.data;
       });
     },
+    obtenerAsistencias() {
+      axios
+        .get(
+          `${url}/asistencias?page=${this.pageOne.currentPage}&limit=${
+            this.pageOne.itemsPerPage
+          }`
+        )
+        .then(response => {
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = response.data.total;
+        });
+    },
     limpiarDatos() {
       this.json_data.length = 0;
       this.nombreBusqueda = null;
@@ -276,38 +292,176 @@ export default {
         .modal("show")
         .modal("refresh");
     },
-    confirmarArchivo() {
-      this.funcionarios.forEach(value => {
-        console.log("EMPLEADO " + value.nombre + value[".key"]);
+     //retorna las horas que trabajo en el dia horaSalida - horaEntrada
+    handleHorasTrabajadas(entrada, salida) {
+      var result = moment("00:00", "hh:mm").format("00:00");
+      if (entrada !== null && salida !== null) {
+        result =
+          moment.duration(salida, "HH:mm").asMinutes() -
+          moment.duration(entrada, "HH:mm").asMinutes();
+        console.log("Horas trabajadas " + result);
+        return moment.utc(result * 1000 * 60).format("HH:mm");
+      }
+      console.log("Horas trabajadas " + result);
+      return result;
+    },
+    //retorna el valor en horas de horas extras para el banco de horas
+    calculoBancoH(entrada, salida, funcionarioId) {
+      var sabadoMedioTiempo;
+      var cargaLaboral;
 
-        var ausencia = this.datosMarcaciones.findIndex(item => {
-          return item.empleadoId === value.id;
-        });
-
-        if (ausencia === -1) {
-          var funcionarioAusente = {};
-          funcionarioAusente.fecha = this.datosMarcaciones[0].fecha;
-          funcionarioAusente.empleadoId = value.id;
-          funcionarioAusente.nombre = value.nombre;
-          funcionarioAusente.horasExtras = moment
-            .duration(value.cargaLaboral, "HH:mm")
-            .asMinutes();
-          funcionarioAusente.entrada = null;
-          funcionarioAusente.salida = null;
-          funcionarioAusente.isConfirmed = false;
-          console.log("AUSENTES " + value.nombre);
-          this.ausencias.push(funcionarioAusente);
+      var funcionario = this.funcionarios.find(funcionario => {
+        if (funcionario._id === funcionarioId) {
+          return funcionario;
         }
+        return null;
       });
 
-      this.marcaciones = this.datosMarcaciones.concat(this.ausencias);
+      if (funcionario) {
+        sabadoMedioTiempo = funcionario.medioTiempo;
+        cargaLaboral = funcionario.cargaLaboral;
+      }
 
-      console.log(
-        "Contenido de Array Marcaciones" + JSON.stringify(this.marcaciones)
-      );
-      this.confirmData();
-      this.datosMarcaciones.length = 0;
+      //si isSabado es true, si el dia es sabado
+      if (this.isSabado !== -1) {
+        //si el funcionario tiene habilitado sabado medio tiempo
+        if (sabadoMedioTiempo) {
+          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+
+          console.log("Resultado Horas Trabajadas", horasTrabajadas);
+
+          if (!horasTrabajadas.localeCompare("00:00")) {
+            console.log("ENTRO al COMPARE");
+            return false;
+          }
+          var horasExtras =
+            moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
+          console.log("Resultado Horas Extras", horasExtras);
+          if (horasExtras > 0) {
+            return this.handleNegative(horasExtras);
+          }
+          return false;
+
+          //else del no tiene sabado habilitado
+        } else {
+          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+
+          console.log("Resultado Horas Trabajadas", horasTrabajadas);
+
+          if (!horasTrabajadas.localeCompare("00:00")) {
+            return false;
+          }
+
+          console.log("Carga Laboral", cargaLaboral);
+
+          var horasExtras =
+            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+            moment.duration(cargaLaboral, "HH:mm").asMinutes();
+          console.log(moment.duration(cargaLaboral, "HH:mm").asMinutes());
+          console.log("Resultado Horas Extras", horasExtras);
+
+          if (horasExtras > 0) {
+            return this.handleNegative(horasExtras);
+          }
+
+          return false;
+        }
+        //else del verificar si es dia sabado
+      } else {
+        var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+
+        console.log("Resultado Horas Trabajadas", horasTrabajadas);
+
+        if (!horasTrabajadas.localeCompare("00:00")) {
+          return false;
+        }
+        var horasExtras =
+          moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+          moment.duration(cargaLaboral, "HH:mm").asMinutes();
+
+        console.log("Resultado Horas Extras", horasExtras);
+
+        if (horasExtras > 0) {
+          return this.handleNegative(horasExtras);
+        }
+
+        return false;
+      }
     },
+    //Retorna el valor en horas de las horas faltantes del funcionario
+    calculoHorasFaltantes(entrada, salida, funcionarioId) {
+      var sabadoMedioTiempo;
+      var cargaLaboral;
+
+      var funcionario = this.funcionarios.find(funcionario => {
+        if (funcionario._id === funcionarioId) {
+          return funcionario;
+        }
+        return null;
+      });
+
+      if (funcionario) {
+        sabadoMedioTiempo = funcionario.medioTiempo;
+        cargaLaboral = funcionario.cargaLaboral;
+      }
+     
+      if (this.isSabado !== -1) {
+        if (sabadoMedioTiempo) {
+          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
+            result;
+          console.log("Horas trabajadas " + horasTrabajadas);
+          if (!horasTrabajadas.localeCompare("00:00")) {
+            return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
+          }
+          result = moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
+
+          if (result < 0) {
+            return this.handleNegative(result);
+          }
+          return false;
+        } else {
+          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+
+          if (!horasTrabajadas.localeCompare("00:00")) {
+            return "-" + cargaLaboral;
+          }
+          var horasExtras =
+            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+            moment.duration(cargaLaboral, "HH:mm").asMinutes();
+
+          if (horasExtras < 0) {
+            return this.handleNegative(horasExtras);
+          }
+
+          return false;
+        }
+      } else {
+        var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+
+        if (!horasTrabajadas.localeCompare("00:00")) {
+          return "-" + cargaLaboral;
+        }
+        var horasExtras =
+          moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+          moment.duration(cargaLaboral, "HH:mm").asMinutes();
+
+        if (horasExtras < 0) {
+          return this.handleNegative(horasExtras);
+        }
+
+        return false;
+      }
+    },
+    //verifica si es domingo o no para insertar texto en observacion
+    handleObservacion(fecha){
+      var domingo= new Date(fecha);
+      if(domingo.getDay() === 0){
+        return "Hora Extra Domingo"
+      }
+
+      return "";
+    },
+    
     nuevaAsistencia() {
       this.$router.push({ name: "incluirAsistencia" });
     },
@@ -351,7 +505,6 @@ export default {
     },
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
-      // console.dir("####### Dtos " + JSON.stringify(convertedData));
       //Pasamos los datos del archivo excel a preDatos
       this.preDatos = convertedData.body;
       this.funcionarios.forEach(value => {
@@ -488,213 +641,7 @@ export default {
           .format("HH:mm");
       }
     },
-    async postFirebase() {
-      var marcacion = {};
-      marcacion.fecha = null;
-      marcacion.funcionario = null;
-      marcacion.entrada = null;
-      marcacion.salida = null;
-      marcacion.horasTrabajadas = null;
-      marcacion.horasExtras = null;
-      marcacion.horasFaltantes = null;
-      marcacion.observacion = null;
-      marcacion.estilo = {};
-      marcacion.estilo.ausente = null;
-      marcacion.estilo.incompleto = null;
-      marcacion.estilo.vacaciones = null;
-      //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
-      this.funcionarios.forEach(funcionario => {
-        var ausencia = this.datosMarcaciones.findIndex(item => {
-          console.log("comparacion", item.empleadoId, funcionario._id);
-          return funcionario._id === item.empleadoId;
-        });
-        console.log("Ausente:", ausencia);
-        if (ausencia === -1) {
-          console.log(
-            "Funcionario Ausente, verificar si esta de vacaciones",
-            funcionario._id
-          );
-          //Verifica si el funcionario esta de vacaciones
-          if (funcionario.vacaciones !== "false") {
-            console.log("Esta de vacaciones");
-            var fecha, fechaInicio, fechaFin, isFechaVacaciones;
-            axios
-              .get(`${url}/eventos/edit/${funcionario.vacaciones}`)
-              .then(response => {
-                fechaInicio = response.data.fechaInicio;
-                console.log(
-                  "Fecha Incio Vacaciones",
-                  fechaInicio,
-                  typeof fechaInicio
-                );
-                fechaFin = response.data.fechaFin;
-                console.log("Fecha Fin Vacaciones", fechaFin, typeof fechaFin);
-                fecha = moment(this.datosMarcaciones[0].fecha).format();
-                console.log("Fecha a comparar", fecha, typeof fecha);
-                isFechaVacaciones = moment(fecha).isBetween(
-                  fechaInicio,
-                  fechaFin,
-                  null,
-                  "[]"
-                );
-                console.log(
-                  "Resultado de evaluacion fecha vacaciones",
-                  isFechaVacaciones
-                );
-                if (
-                  moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]")
-                ) {
-                  marcacion.fecha = this.datosMarcaciones[0].fecha;
-                  marcacion.funcionario = funcionario._id;
-                  marcacion.entrada = null;
-                  marcacion.salida = null;
-                  marcacion.horasTrabajadas = null;
-                  marcacion.horasExtras = null;
-                  marcacion.horasFaltantes = null;
-                  marcacion.observacion = "Vacaciones";
-                  marcacion.estilo.ausente = false;
-                  marcacion.estilo.incompleto = false;
-                  marcacion.estilo.vacaciones = true;
-                  this.ausencias.push(marcacion);
-
-                  axios
-                    .post(url + "/asistencias/add", marcacion)
-                    .then(response => {
-                      console.log(response);
-                    });
-                }
-              });
-          } else {
-            console.log("Entro en el Else");
-            //si no cumplio condiciones anteriores, es una ausencia.
-            marcacion.fecha = this.datosMarcaciones[0].fecha;
-            marcacion.funcionario = funcionario._id;
-            marcacion.entrada = false;
-            marcacion.salida = false;
-            marcacion.horasTrabajadas = false;
-            marcacion.horasExtras = false;
-            marcacion.horasFaltantes = false;
-            marcacion.observacion = "Ausencia";
-            marcacion.estilo.ausente = true;
-            marcacion.estilo.incompleto = false;
-            marcacion.estilo.vacaciones = false;
-
-            this.ausencias.push(marcacion);
-
-            axios.post(`${url}/asistencias/add`, marcacion).then(response => {
-              console.log(response);
-            });
-          }
-        }
-      });
-
-      axios
-        .post(`${url}/asistencias/test-data`, this.ausencias)
-        .then(response => {
-          console.log(response);
-        });
-
-      await Promise.all(
-        this.datosMarcaciones.map(async marcacion => {
-          try {
-            let response = await axios
-              .post(`${url}/asistencias/add`, {
-                fecha: marcacion.fecha,
-                funcionario: marcacion.empleadoId,
-                /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
-            marcacion.empleadoId
-          );*/
-                entrada: marcacion.entrada,
-                salida: marcacion.salida,
-                //calculo de Horas trabajadas
-                horasTrabajadas: this.handleHorasTrabajadas(
-                  marcacion.entrada,
-                  marcacion.salida
-                ),
-
-                horasExtras: this.calculoBancoH(
-                  marcacion.entrada,
-                  marcacion.salida,
-                  marcacion.empleadoId
-                ),
-
-                horasFaltantes: this.calculoHorasFaltantes(
-                  marcacion.entrada,
-                  marcacion.salida,
-                  marcacion.empleadoId
-                ),
-
-                observacion: "",
-
-                estilo: this.aplicarEstiloMarcacion(
-                  marcacion.entrada,
-                  marcacion.salida
-                )
-              })
-              .then(function(response) {
-                console.log("from async" + response);
-              })
-              .catch(function(error) {
-                console.log(error);
-              });
-          } catch (error) {
-            console.log(error);
-          }
-        })
-      );
-
-      //this.insertarMarcaciones();
-
-      // this.datosMarcaciones.forEach(marcacion => {
-
-      //    this.marcacion.fecha = marcacion.fecha;
-      //    this.marcacion.funcionario = marcacion.empleadoId;
-      //     /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
-      //       marcacion.empleadoId
-      //     );*/
-      //     this.marcacion.entrada = marcacion.entrada;
-      //     this.marcacion.salida = marcacion.salida;
-      //     //calculo de Horas trabajadas
-      //     this.marcacion.horasTrabajadas = this.handleHorasTrabajadas(
-      //       marcacion.entrada,
-      //       marcacion.salida
-      //     );
-
-      //     this.marcacion.horasExtras = this.calculoBancoH(
-      //       marcacion.entrada,
-      //       marcacion.salida,
-      //       marcacion.empleadoId
-      //     );
-
-      //     this.marcacion.horasFaltantes = this.calculoHorasFaltantes(
-      //       marcacion.entrada,
-      //       marcacion.salida,
-      //       marcacion.empleadoId
-      //     );
-
-      //     this.marcacion.observacion = "";
-
-      //     if (marcacion.entrada == null || marcacion.salida == null) {
-      //       this.marcacion.estilo.ausente = false;
-      //       this.marcacion.estilo.incompleto = true;
-      //       this.marcacion.estilo.vacaciones = false;
-      //     } else {
-      //       this.marcacion.estilo.ausente = false;
-      //       this.marcacion.estilo.incompleto = false;
-      //       this.marcacion.estilo.vacaciones = false;
-      //     }
-
-      //     axios.post(`${url}/asistencias/add`, this.marcaciones).then(response => console.log(response))
-      // })
-    },
-    nombreFuncionario(empleadoId) {
-      var nombre;
-      funcionariosRef.child(empleadoId).once("value", snap => {
-        nombre = snap.val().nombre;
-        console.log("Usuario retornado de firebase", snap.val().nombre);
-      });
-      return nombre;
-    },
+    //Obtenien los sabados del mes
     getSabados(fec) {
       console.log("Fecha Recibidad", fec);
       //var fecha = moment(fec, "DD/MM/YYYY").toDate();
@@ -717,162 +664,6 @@ export default {
 
       //return sabados;
     },
-    calculoBancoH(entrada, salida, funcionarioId) {
-      var sabadoMedioTiempo;
-      var cargaLaboral;
-
-      var funcionario = this.funcionarios.find(funcionario => {
-        if (funcionario._id === funcionarioId) {
-          return funcionario;
-        }
-        return null;
-      });
-
-      if (funcionario) {
-        sabadoMedioTiempo = funcionario.medioTiempo;
-        cargaLaboral = funcionario.cargaLaboral;
-      }
-
-      /*funcionariosRef.child(funcionarioId).once("value", snap => {
-        sabadoMedioTiempo = snap.val().medioTiempo;
-        cargaLaboral = snap.val().cargaLaboral;
-        console.log("SNAP", cargaLaboral, sabadoMedioTiempo);
-      });*/
-
-      //si isSabado es true, si el dia es sabado
-      if (this.isSabado !== -1) {
-        //si el funcionario tiene habilitado sabado medio tiempo
-        if (sabadoMedioTiempo) {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
-
-          console.log("Resultado Horas Trabajadas", horasTrabajadas);
-
-          if (!horasTrabajadas.localeCompare("00:00")) {
-            console.log("ENTRO al COMPARE");
-            return false;
-          }
-          var horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
-          console.log("Resultado Horas Extras", horasExtras);
-          if (horasExtras > 0) {
-            return this.handleNegative(horasExtras);
-          }
-          return false;
-
-          //else del no tiene sabado habilitado
-        } else {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
-
-          console.log("Resultado Horas Trabajadas", horasTrabajadas);
-
-          if (!horasTrabajadas.localeCompare("00:00")) {
-            return false;
-          }
-
-          console.log("Carga Laboral", cargaLaboral);
-
-          var horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-            moment.duration(cargaLaboral, "HH:mm").asMinutes();
-          console.log(moment.duration(cargaLaboral, "HH:mm").asMinutes());
-          console.log("Resultado Horas Extras", horasExtras);
-
-          if (horasExtras > 0) {
-            return this.handleNegative(horasExtras);
-          }
-
-          return false;
-        }
-        //else del verificar si es dia sabado
-      } else {
-        var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
-
-        console.log("Resultado Horas Trabajadas", horasTrabajadas);
-
-        if (!horasTrabajadas.localeCompare("00:00")) {
-          return false;
-        }
-        var horasExtras =
-          moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-          moment.duration(cargaLaboral, "HH:mm").asMinutes();
-
-        console.log("Resultado Horas Extras", horasExtras);
-
-        if (horasExtras > 0) {
-          return this.handleNegative(horasExtras);
-        }
-
-        return false;
-      }
-    },
-
-    calculoHorasFaltantes(entrada, salida, funcionarioId) {
-      var sabadoMedioTiempo;
-      var cargaLaboral;
-
-      var funcionario = this.funcionarios.find(funcionario => {
-        if (funcionario._id === funcionarioId) {
-          return funcionario;
-        }
-        return null;
-      });
-
-      if (funcionario) {
-        sabadoMedioTiempo = funcionario.medioTiempo;
-        cargaLaboral = funcionario.cargaLaboral;
-      }
-      /*funcionariosRef.child(funcionarioId).once("value", snap => {
-        sabadoMedioTiempo = snap.val().medioTiempo;
-        cargaLaboral = snap.val().cargaLaboral;
-      });*/
-
-      if (this.isSabado !== -1) {
-        if (sabadoMedioTiempo) {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
-            result;
-          console.log("Horas trabajadas " + horasTrabajadas);
-          if (!horasTrabajadas.localeCompare("00:00")) {
-            return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
-          }
-          result = moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
-
-          if (result < 0) {
-            return this.handleNegative(result);
-          }
-          return false;
-        } else {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
-
-          if (!horasTrabajadas.localeCompare("00:00")) {
-            return "-" + cargaLaboral;
-          }
-          var horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-            moment.duration(cargaLaboral, "HH:mm").asMinutes();
-
-          if (horasExtras < 0) {
-            return this.handleNegative(horasExtras);
-          }
-
-          return false;
-        }
-      } else {
-        var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
-
-        if (!horasTrabajadas.localeCompare("00:00")) {
-          return "-" + cargaLaboral;
-        }
-        var horasExtras =
-          moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-          moment.duration(cargaLaboral, "HH:mm").asMinutes();
-
-        if (horasExtras < 0) {
-          return this.handleNegative(horasExtras);
-        }
-
-        return false;
-      }
-    },
     findSabado(fecha) {
       //var findFecha = moment(fecha, "DD/MM/YYYY").toDate();
 
@@ -886,7 +677,7 @@ export default {
       console.log("INDICE SABADO", fechaSabado);
       return fechaSabado;
     },
-    aplicarEstiloMarcacion(entrada, salida) {
+     aplicarEstiloMarcacion(entrada, salida) {
       if (entrada == null || salida == null) {
         return {
           ausente: false,
@@ -901,434 +692,669 @@ export default {
         };
       }
     },
-    async insertarMarcaciones() {
-      await Promise.all(
-        this.marcaciones.map(async marcacion => {
-          try {
-            let response = await axios
-              .post(`${url / asistencias / add}`, {
-                fecha: marcacion.fecha,
-                funcionario: marcacion.empleadoId,
-                /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
-            marcacion.empleadoId
-          );*/
-                entrada: marcacion.entrada,
-                salida: marcacion.salida,
-                //calculo de Horas trabajadas
-                horasTrabajadas: this.handleHorasTrabajadas(
-                  marcacion.entrada,
-                  marcacion.salida
-                ),
+    guardarMarcaciones() {
+      this.datosMarcaciones.forEach(dato => {
+        var marcacion = {}
 
-                horasExtras: this.calculoBancoH(
-                  marcacion.entrada,
-                  marcacion.salida,
-                  marcacion.empleadoId
-                ),
+        marcacion.fecha = dato.fecha;
+        marcacion.funcionario = dato.empleadoId;
+        marcacion.entrada = dato.entrada;
+        marcacion.salida = dato.salida;
+        //calculo de Horas trabajadas
+        marcacion.horasTrabajadas = this.handleHorasTrabajadas(
+                  dato.entrada,
+                  dato.salida
+                );
 
-                horasFaltantes: this.calculoHorasFaltantes(
-                  marcacion.entrada,
-                  marcacion.salida,
-                  marcacion.empleadoId
-                ),
+        marcacion.horasExtras = this.calculoBancoH(
+                  dato.entrada,
+                  dato.salida,
+                  dato.empleadoId
+                );
 
-                observacion: "",
+        marcacion.horasFaltantes = this.calculoHorasFaltantes(
+                  dato.entrada,
+                  dato.salida,
+                  dato.empleadoId
+                );
 
-                estilo: this.aplicarEstiloMarcacion(
-                  marcacion.entrada,
-                  marcacion.salida
+        marcacion.observacion = this.handleObservacion(dato.fecha);
+        marcacion.estilo = this.aplicarEstiloMarcacion(
+                  dato.entrada,
+                  dato.salida
                 )
-              })
-              .then(function(response) {
-                console.log("from async" + response);
-              })
-              .catch(function(error) {
-                console.log(error);
-              });
-          } catch (error) {
-            console.log(error);
-          }
-        })
-      );
-    },
-    //Hace post al array marcaciones y luego llama la lista, por eso es asincronico
-    async confirmData() {
-      await Promise.all(
-        this.marcaciones.map(async marcacion => {
-          try {
-            let response = await axios
-              .post(url + "/marcaciones", {
-                fecha: marcacion.fecha,
-                empleadoId: marcacion.empleadoId,
-                entrada: marcacion.entrada,
-                salida: marcacion.salida,
-                //calculo de Horas trabajadas
-                horasTrabajadas: this.handleHorasTrabajadas(
-                  marcacion.entrada,
-                  marcacion.salida
-                ),
 
-                //calculo de horas Extras
-                horasExtras: this.handleHorasExtras(
-                  marcacion.entrada,
-                  marcacion.salida,
-                  marcacion.horasExtras
-                ),
-                //calculo de retraso
-                retraso: this.calcularRetraso(
-                  marcacion.entrada,
-                  marcacion.horaEntrada,
-                  marcacion.salida,
-                  marcacion.horaSalida
-                ),
-                //calculo de Banco de Hora
-                bancoHora: this.calculoBancoHora(
-                  marcacion.entrada,
-                  marcacion.horaEntrada,
-                  marcacion.salida,
-                  marcacion.horaSalida
-                ),
-                isConfirmed: true,
-                estilo: this.aplicarEstilo(marcacion.entrada, marcacion.salida)
-              })
-              .then(function(response) {
-                console.log("from async" + response);
-              })
-              .catch(function(error) {
-                console.log(error);
-              });
-          } catch (error) {
-            console.log(error);
-          }
-        })
-      );
+        this.marcaciones.push(marcacion);
+      });
+      console.log(this.datosMarcaciones[0].fecha);
+      var fecha = new Date(this.datosMarcaciones[0].fecha)
+      //si no es domingo verificar si esta de vacaciones o ausente
+      if ( fecha.getDay() !== 0) {
+        //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
+        this.funcionarios.forEach(funcionario => {
+          var ausencia = this.datosMarcaciones.findIndex(item => {
+            console.log("comparacion", item.empleadoId, funcionario._id);
+            return funcionario._id === item.empleadoId;
+          });
+          console.log("Ausente:", ausencia);
+          if (ausencia === -1) {
+            console.log(
+              "Funcionario Ausente, verificar si esta de vacaciones",
+              funcionario._id
+            );
+            var marcacion = {};
+            marcacion.estilo = {};
 
-      // this.obtenerDatos();
-      //cambia de color en la lista
-      this.applyCss = true;
-      console.log("after async");
-    },
-    calculoBancoHora(entrada, horaEntrada, salida, horaSalida) {
-      var entradaBH = moment.duration(entrada, "HH:mm").asMinutes();
-      var horaEntradaBH = moment.duration(horaEntrada, "HH:mm").asMinutes();
-      var salidaBH = moment.duration(salida, "HH:mm").asMinutes();
-      var horaSalida = moment.duration(horaSalida, "HH:mm").asMinutes();
-
-      var calculoEntrada = horaEntradaBH - entradaBH;
-      var calculoSalida = salidaBH - horaSalida;
-
-      var total = 0;
-
-      if (calculoEntrada > 0) {
-        total = total + calculoEntrada;
-      }
-
-      if (calculoSalida > 0) {
-        total = total + calculoSalida;
-      }
-
-      if (total === 0) {
-        return null;
-      } else {
-        return this.handleNegative(total);
-      }
-    },
-    calcularRetraso(entrada, horaEntrada, salida, horaSalida) {
-      var entradaBH = moment.duration(entrada, "HH:mm").asMinutes();
-      var horaEntradaBH = moment.duration(horaEntrada, "HH:mm").asMinutes();
-      var salidaBH = moment.duration(salida, "HH:mm").asMinutes();
-      var horaSalida = moment.duration(horaSalida, "HH:mm").asMinutes();
-
-      var calculoEntrada = horaEntradaBH - entradaBH;
-      var calculoSalida = salidaBH - horaSalida;
-
-      var total = 0;
-
-      if (calculoEntrada < 0) {
-        total = total + calculoEntrada;
-      }
-
-      if (calculoSalida < 0) {
-        total = total + calculoSalida;
-      }
-
-      if (total === 0) {
-        return null;
-      } else {
-        return this.handleNegative(total);
-      }
-    },
-    aplicarEstilo(entrada, salida) {
-      var estilo = {};
-      estilo.ausente = false;
-      estilo.incompleto = false;
-      if (entrada == null && salida == null) {
-        console.log("DESDE ESTILO " + entrada, salida);
-        estilo.ausente = true;
-        estilo.incompleto = false;
-        return estilo;
-      } else {
-        if (entrada == null || salida == null) {
-          console.log("DESDE ESTILO " + entrada, salida);
-          estilo.ausente = false;
-          estilo.incompleto = true;
-          return estilo;
-        }
-      }
-      return estilo;
-    },
-    //retorna las horas que trabajo en el dia horaSalida - horaEntrada
-    handleHorasTrabajadas(entrada, salida) {
-      var result = moment("00:00", "hh:mm").format("00:00");
-      if (entrada !== null && salida !== null) {
-        result =
-          moment.duration(salida, "HH:mm").asMinutes() -
-          moment.duration(entrada, "HH:mm").asMinutes();
-        console.log("Horas trabajadas " + result);
-        return moment.utc(result * 1000 * 60).format("HH:mm");
-      }
-      console.log("Horas trabajadas " + result);
-      return result;
-    },
-    handleHorasExtras(entrada, salida, horasExtras) {
-      var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
-        result;
-      console.log("Horas Extras " + horasExtras);
-      console.log("Horas trabajadas " + horasTrabajadas);
-      if (!horasTrabajadas.localeCompare("00:00")) {
-        return "-" + moment.utc(horasExtras * 1000 * 60).format("HH:mm");
-      } else {
-        result =
-          moment.duration(horasTrabajadas, "HH:mm").asMinutes() - horasExtras;
-        return this.handleNegative(result);
-      }
-    },
-    obtenerDatos() {
-      if (this.nombreBusqueda === null) {
-        var page = JSON.parse(localStorage.getItem("page") || null);
-        if (page !== null) {
-          this.pageOne.totalItems = page.totalItems;
-          this.pageOneChanged(page.currentPage);
-          localStorage.removeItem("page");
-        } else {
-          axios
-            .get(url + "/marcaciones?_expand=empleado")
-            .then(response => {
-              console.log(response.data.length);
-              this.marcaciones = response.data.slice(
-                0,
-                this.pageOne.itemsPerPage - 1
-              );
-              this.pageOne.totalItems = response.data.length;
-            })
-            .catch(e => {
-              console.log(e);
-            });
-        }
-      } else {
-        var nombre = new RegExp(this.nombreBusqueda, "g");
-        var encontrados = [];
-        var datosInforme = [];
-        this.funcionarios.filter(element => {
-          console.log(element.id, element.nombre);
-          if (element.nombre.match(nombre)) {
-            encontrados.push(element.id);
-          }
-        });
-        console.log(JSON.stringify(encontrados));
-        var query = url + "/marcaciones?";
-        var flag = true;
-        for (let value of encontrados) {
-          if (flag) {
-            query = query + "empleadoId=" + value;
-            flag = false;
-          } else {
-            query = query + "&empleadoId=" + value;
-          }
-        }
-        console.log(query);
-        this.totalBancoHora = 0;
-        this.totalRetraso = 0;
-        this.totalHoraExtra = 0;
-        axios
-          .get(query + "&_expand=empleado")
-          .then(response => {
-            this.marcaciones = response.data;
-            Array.from(this.marcaciones).forEach(item => {
-              console.log("Horas Negativas", JSON.stringify(item.horasExtras));
-              if (moment.duration(item.horasExtras) < 0) {
-                this.totalRetraso =
-                  this.totalRetraso +
-                  moment.duration(item.horasExtras, "HH:mm").asMinutes();
-              } else {
-                this.totalBancoHora =
-                  this.totalBancoHora +
-                  moment.duration(item.horasExtras, "HH:mm").asMinutes();
-              }
-
-              // this.totalRetraso =
-              //   this.totalRetraso +
-              //   moment.duration(item.retraso, "HH:mm").asMinutes();
-              // this.totalHoraExtra =
-              //   this.totalHoraExtra +
-              //   moment.duration(item.horasExtras, "HH:mm").asMinutes();
-              var informe = {
-                funcionario: null,
-                fecha: null,
-                entrada: null,
-                salida: null,
-                horasTrabajadas: null,
-                bancoHora: null,
-                retraso: null
-              };
-
-              var listado = {};
-              listado.fecha = item.fecha;
-              listado.empleadoId = item.empleadoId;
-              listado.salida = item.salida;
-              listado.horasTrabajadas = item.horasTrabajadas;
-              listado.horasExtras = item.horasExtras;
-              listado.retraso = item.retraso;
-              listado.bancoHora = item.bancoHora;
-              listado.isConfirmed = item.isConfirmed;
-              listado.estilo = item.estilo;
-              listado.empleadoNombre = item.empleadoNombre;
-
-              if (item.horasExtras > 0) {
-                listado.bancoHoras = item.horasExtras;
-                this.totalBancoHora =
-                  this.totalBancoHora +
-                  moment.duration(item.horasExtras, "HH:mm").asMinutes();
-              } else {
-                if (item.horasExtras < 0) {
-                  listado.descuentos = item.horasExtras;
-                  this.totalRetraso =
-                    this.totalRetraso +
-                    moment.duration(item.horasExtras, "HH:mm").asMinutes();
-                }
-              }
-              this.listado.push(listado);
-
-              console.log("item array" + JSON.stringify(item));
-              informe.funcionario = item.empleado.nombre;
-              informe.fecha = item.fecha;
-              informe.entrada = item.entrada;
-              informe.salida = item.salida;
-              informe.horasTrabajadas = item.horasTrabajadas;
-              informe.bancoHora = item.bancoHora || "";
-
-              informe.retraso = item.retraso || "";
-              console.log("Banco Hora ", item.bancoHora);
-              this.json_data.push(informe);
-              console.log(
-                JSON.stringify("JSON DATA" + JSON.stringify(this.json_data))
-              );
-            });
-            console.log(response);
-          })
-          .catch(e => console.log(e));
-        console.log(JSON.stringify("Marcaciones pos get" + this.marcaciones));
-      }
-    },
-    pageOneChanged(pageNum) {
-      this.pageOne.currentPage = pageNum;
-      this.$bindAsArray(
-        "marcaciones",
-        asistenciasRef
-          .orderByKey()
-          .limitToFirst(this.pageOne.itemsPerPage)
-          .startAt(this.keyPagination[pageNum - 1])
-      );
-    },
-    calcularBancoHora() {
-      var bancoHoraNuevo = [];
-      var marcaciones = [];
-      var bancoHora = [];
-      var modelo = {
-        empleadoId: null,
-        mes: null,
-        ano: null,
-        horasCumplidas: null,
-        horasCumplir: null
-      };
-      axios
-        .get(url + "/marcaciones")
-        .then(response => {
-          marcaciones = response.data;
-          console.log("####Variable Marcaciones####" + marcaciones);
-          axios
-            .get(url + "/bancoHora")
-            .then(response => {
-              bancoHora = response.data;
-              console.log("###Variable banco hora####" + bancoHora);
-              console.log("###Variable banco hora tam####" + bancoHora.length);
-              if (bancoHora.length > 0) {
-                console.log("Paso if length");
-                Array.from(marcaciones).map(marcacion => {
-                  Array.from(bancoHora).map(banco => {
-                    if (
-                      marcaciones.empleadoId === banco.empleadoId &&
-                      banco.mes ===
-                        moment(marcaciones.fecha, "DD/MM/YYYY").month() &&
-                      banco.ano ===
-                        moment(marcaciones.fecha, "DD/MM/YYYY").year()
-                    ) {
-                      bancoHora.horasCumplidas =
-                        moment.duration(marcacion.salida, "HH:mm").asMinutes() -
-                        moment.duration(marcacion.entrada, "HH:mm").asMinutes();
-                      console.log("paso if largo " + bancoHora.horasCumplidas);
-                    } else {
-                      modelo.empleadoId = marcacion.empleadoId;
-                      modelo.mes = moment(
-                        marcacion.fecha,
-                        "DD/MM/YYYY"
-                      ).month();
-                      modelo.ano = moment(marcacion.fecha, "DD/MM/YYYY").year();
-                      modelo.horasCumplidas =
-                        moment.duration(marcacion.salida, "HH:mm").asMinutes() -
-                        moment.duration(marcacion.entrada, "HH:mm").asMinutes();
-                      modelo.horasCumplir = null;
-                      bancoHoraNuevo.push(modelo);
-                      console.log("entro en el primer else");
-                    }
-                  });
-                });
-              } else {
-                Array.from(marcaciones).map(marcacion => {
-                  modelo.empleadoId = marcacion.empleadoId;
-                  modelo.mes = moment(marcacion.fecha, "DD/MM/YYYY").month();
-                  modelo.ano = moment(marcacion.fecha, "DD/MM/YYYY").year();
-                  modelo.horasCumplidas =
-                    moment.duration(marcacion.salida, "HH:mm").asMinutes() -
-                    moment.duration(marcacion.entrada, "HH:mm").asMinutes();
-                  modelo.horasCumplir = null;
-                  bancoHoraNuevo.push(modelo);
-                });
-              }
-            })
-            .then(response => {
+            //Verifica si el funcionario esta de vacaciones
+            if (funcionario.vacaciones !== "false") {
+              console.log("Esta de vacaciones");
+              var fecha, fechaInicio, fechaFin, isFechaVacaciones;
               axios
-                .post(url + "/bancoHora", {
-                  resultado: bancoHoraNuevo
-                })
-                .then(response => console.log(response))
-                .catch(e => console.log(e));
-            });
-        })
-        .catch(e => conosle.log(e));
-    },
-    obtenerAsistencias() {
-      axios
-        .get(
-          `${url}/asistencias?page=${this.pageOne.currentPage}&limit=${
-            this.pageOne.itemsPerPage
-          }`
-        )
-        .then(response => {
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = response.data.total;
+                .get(`${url}/eventos/edit/${funcionario.vacaciones}`)
+                .then(response => {
+                  fechaInicio = response.data.fechaInicio;
+                  console.log(
+                    "Fecha Incio Vacaciones",
+                    fechaInicio,
+                    typeof fechaInicio
+                  );
+                  fechaFin = response.data.fechaFin;
+                  console.log(
+                    "Fecha Fin Vacaciones",
+                    fechaFin,
+                    typeof fechaFin
+                  );
+                  fecha = moment(this.datosMarcaciones[0].fecha).format();
+                  console.log("Fecha a comparar", fecha, typeof fecha);
+                  isFechaVacaciones = moment(fecha).isBetween(
+                    fechaInicio,
+                    fechaFin,
+                    null,
+                    "[]"
+                  );
+                  console.log(
+                    "Resultado de evaluacion fecha vacaciones",
+                    isFechaVacaciones
+                  );
+                  if (
+                    moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]")
+                  ) {
+                    marcacion.fecha = this.datosMarcaciones[0].fecha;
+                    marcacion.funcionario = funcionario._id;
+                    marcacion.entrada = null;
+                    marcacion.salida = null;
+                    marcacion.horasTrabajadas = null;
+                    marcacion.horasExtras = null;
+                    marcacion.horasFaltantes = null;
+                    marcacion.observacion = "Vacaciones";
+                    marcacion.estilo.ausente = false;
+                    marcacion.estilo.incompleto = false;
+                    marcacion.estilo.vacaciones = true;
+                    this.ausencias.push(marcacion);
+                  }
+                });
+            } else {
+              console.log("Entro en el Else");
+              //si no cumplio condiciones anteriores, es una ausencia.
+              marcacion.fecha = this.datosMarcaciones[0].fecha;
+              marcacion.funcionario = funcionario._id;
+              marcacion.entrada = null;
+              marcacion.salida = null;
+              marcacion.horasTrabajadas = null;
+              marcacion.horasExtras = null;
+              marcacion.horasFaltantes = null;
+              marcacion.observacion = "Ausencia";
+              marcacion.estilo.ausente = true;
+              marcacion.estilo.incompleto = false;
+              marcacion.estilo.vacaciones = false;
+
+              this.ausencias.push(marcacion);
+            }
+          }
         });
-    }
+      }
+
+      if(this.ausencias.length > 0){
+        this.marcaciones = this.marcaciones.concat(this.ausencias);
+      }
+
+      axios.post(`${url}/asistencias/test-data`, this.marcaciones).then(response => console.log(response));
+    },
+
+
+
+
+    //###############Comentar desde ACA #####
+    // confirmarArchivo() {
+    //   this.funcionarios.forEach(value => {
+    //     console.log("EMPLEADO " + value.nombre + value[".key"]);
+
+    //     var ausencia = this.datosMarcaciones.findIndex(item => {
+    //       return item.empleadoId === value.id;
+    //     });
+
+    //     if (ausencia === -1) {
+    //       var funcionarioAusente = {};
+    //       funcionarioAusente.fecha = this.datosMarcaciones[0].fecha;
+    //       funcionarioAusente.empleadoId = value.id;
+    //       funcionarioAusente.nombre = value.nombre;
+    //       funcionarioAusente.horasExtras = moment
+    //         .duration(value.cargaLaboral, "HH:mm")
+    //         .asMinutes();
+    //       funcionarioAusente.entrada = null;
+    //       funcionarioAusente.salida = null;
+    //       funcionarioAusente.isConfirmed = false;
+    //       console.log("AUSENTES " + value.nombre);
+    //       this.ausencias.push(funcionarioAusente);
+    //     }
+    //   });
+
+    //   this.marcaciones = this.datosMarcaciones.concat(this.ausencias);
+
+    //   console.log(
+    //     "Contenido de Array Marcaciones" + JSON.stringify(this.marcaciones)
+    //   );
+    //   this.confirmData();
+    //   this.datosMarcaciones.length = 0;
+    // },
+    // async postFirebase() {
+     
+    //   //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
+    //   this.funcionarios.forEach(funcionario => {
+    //     var ausencia = this.datosMarcaciones.findIndex(item => {
+    //       console.log("comparacion", item.empleadoId, funcionario._id);
+    //       return funcionario._id === item.empleadoId;
+    //     });
+    //     console.log("Ausente:", ausencia);
+    //     if (ausencia === -1) {
+    //       console.log(
+    //         "Funcionario Ausente, verificar si esta de vacaciones",
+    //         funcionario._id
+    //       );
+    //       var marcacion = {};
+    //       marcacion.estilo = {};
+
+    //       //Verifica si el funcionario esta de vacaciones
+    //       if (funcionario.vacaciones !== "false") {
+    //         console.log("Esta de vacaciones");
+    //         var fecha, fechaInicio, fechaFin, isFechaVacaciones;
+    //         axios
+    //           .get(`${url}/eventos/edit/${funcionario.vacaciones}`)
+    //           .then(response => {
+    //             fechaInicio = response.data.fechaInicio;
+    //             console.log(
+    //               "Fecha Incio Vacaciones",
+    //               fechaInicio,
+    //               typeof fechaInicio
+    //             );
+    //             fechaFin = response.data.fechaFin;
+    //             console.log("Fecha Fin Vacaciones", fechaFin, typeof fechaFin);
+    //             fecha = moment(this.datosMarcaciones[0].fecha).format();
+    //             console.log("Fecha a comparar", fecha, typeof fecha);
+    //             isFechaVacaciones = moment(fecha).isBetween(
+    //               fechaInicio,
+    //               fechaFin,
+    //               null,
+    //               "[]"
+    //             );
+    //             console.log(
+    //               "Resultado de evaluacion fecha vacaciones",
+    //               isFechaVacaciones
+    //             );
+    //             if (
+    //               moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]")
+    //             ) {
+    //               marcacion.fecha = this.datosMarcaciones[0].fecha;
+    //               marcacion.funcionario = funcionario._id;
+    //               marcacion.entrada = null;
+    //               marcacion.salida = null;
+    //               marcacion.horasTrabajadas = null;
+    //               marcacion.horasExtras = null;
+    //               marcacion.horasFaltantes = null;
+    //               marcacion.observacion = "Vacaciones";
+    //               marcacion.estilo.ausente = false;
+    //               marcacion.estilo.incompleto = false;
+    //               marcacion.estilo.vacaciones = true;
+    //               this.ausencias.push(marcacion);
+
+    //               axios
+    //                 .post(url + "/asistencias/add", marcacion)
+    //                 .then(response => {
+    //                   console.log(response);
+    //                 });
+    //             }
+    //           });
+    //       } else {
+    //         console.log("Entro en el Else");
+    //         //si no cumplio condiciones anteriores, es una ausencia.
+    //         marcacion.fecha = this.datosMarcaciones[0].fecha;
+    //         marcacion.funcionario = funcionario._id;
+    //         marcacion.entrada = null;
+    //         marcacion.salida = null;
+    //         marcacion.horasTrabajadas = null;
+    //         marcacion.horasExtras = null;
+    //         marcacion.horasFaltantes = null;
+    //         marcacion.observacion = "Ausencia";
+    //         marcacion.estilo.ausente = true;
+    //         marcacion.estilo.incompleto = false;
+    //         marcacion.estilo.vacaciones = false;
+
+    //         this.ausencias.push(marcacion);
+
+    //         axios.post(`${url}/asistencias/add`, marcacion).then(response => {
+    //           console.log(response);
+    //         });
+    //       }
+    //     }
+    //   });
+
+    //   // axios
+    //   //   .post(`${url}/asistencias/test-data`, this.ausencias)
+    //   //   .then(response => {
+    //   //     console.log(response);
+    //   //   });
+
+    //   await Promise.all(
+    //     this.datosMarcaciones.map(async marcacion => {
+    //       try {
+    //         let response = await axios
+    //           .post(`${url}/asistencias/add`, {
+    //             fecha: marcacion.fecha,
+    //             funcionario: marcacion.empleadoId,
+    //             entrada: marcacion.entrada,
+    //             salida: marcacion.salida,
+    //             //calculo de Horas trabajadas
+    //             horasTrabajadas: this.handleHorasTrabajadas(
+    //               marcacion.entrada,
+    //               marcacion.salida
+    //             ),
+
+    //             horasExtras: this.calculoBancoH(
+    //               marcacion.entrada,
+    //               marcacion.salida,
+    //               marcacion.empleadoId
+    //             ),
+
+    //             horasFaltantes: this.calculoHorasFaltantes(
+    //               marcacion.entrada,
+    //               marcacion.salida,
+    //               marcacion.empleadoId
+    //             ),
+
+    //             observacion: "",
+
+    //             estilo: this.aplicarEstiloMarcacion(
+    //               marcacion.entrada,
+    //               marcacion.salida
+    //             )
+    //           })
+    //           .then(function(response) {
+    //             console.log("from async" + response);
+    //           })
+    //           .catch(function(error) {
+    //             console.log(error);
+    //           });
+    //       } catch (error) {
+    //         console.log(error);
+    //       }
+    //     })
+    //   );
+    // },
+    // nombreFuncionario(empleadoId) {
+    //   var nombre;
+    //   funcionariosRef.child(empleadoId).once("value", snap => {
+    //     nombre = snap.val().nombre;
+    //     console.log("Usuario retornado de firebase", snap.val().nombre);
+    //   });
+    //   return nombre;
+    // },
+
+    // //Hace post al array marcaciones y luego llama la lista, por eso es asincronico
+    // async confirmData() {
+    //   await Promise.all(
+    //     this.marcaciones.map(async marcacion => {
+    //       try {
+    //         let response = await axios
+    //           .post(url + "/marcaciones", {
+    //             fecha: marcacion.fecha,
+    //             empleadoId: marcacion.empleadoId,
+    //             entrada: marcacion.entrada,
+    //             salida: marcacion.salida,
+    //             //calculo de Horas trabajadas
+    //             horasTrabajadas: this.handleHorasTrabajadas(
+    //               marcacion.entrada,
+    //               marcacion.salida
+    //             ),
+
+    //             //calculo de horas Extras
+    //             horasExtras: this.handleHorasExtras(
+    //               marcacion.entrada,
+    //               marcacion.salida,
+    //               marcacion.horasExtras
+    //             ),
+    //             //calculo de retraso
+    //             retraso: this.calcularRetraso(
+    //               marcacion.entrada,
+    //               marcacion.horaEntrada,
+    //               marcacion.salida,
+    //               marcacion.horaSalida
+    //             ),
+    //             //calculo de Banco de Hora
+    //             bancoHora: this.calculoBancoHora(
+    //               marcacion.entrada,
+    //               marcacion.horaEntrada,
+    //               marcacion.salida,
+    //               marcacion.horaSalida
+    //             ),
+    //             isConfirmed: true,
+    //             estilo: this.aplicarEstilo(marcacion.entrada, marcacion.salida)
+    //           })
+    //           .then(function(response) {
+    //             console.log("from async" + response);
+    //           })
+    //           .catch(function(error) {
+    //             console.log(error);
+    //           });
+    //       } catch (error) {
+    //         console.log(error);
+    //       }
+    //     })
+    //   );
+
+    //   // this.obtenerDatos();
+    //   //cambia de color en la lista
+    //   this.applyCss = true;
+    //   console.log("after async");
+    // },
+    // calculoBancoHora(entrada, horaEntrada, salida, horaSalida) {
+    //   var entradaBH = moment.duration(entrada, "HH:mm").asMinutes();
+    //   var horaEntradaBH = moment.duration(horaEntrada, "HH:mm").asMinutes();
+    //   var salidaBH = moment.duration(salida, "HH:mm").asMinutes();
+    //   var horaSalida = moment.duration(horaSalida, "HH:mm").asMinutes();
+
+    //   var calculoEntrada = horaEntradaBH - entradaBH;
+    //   var calculoSalida = salidaBH - horaSalida;
+
+    //   var total = 0;
+
+    //   if (calculoEntrada > 0) {
+    //     total = total + calculoEntrada;
+    //   }
+
+    //   if (calculoSalida > 0) {
+    //     total = total + calculoSalida;
+    //   }
+
+    //   if (total === 0) {
+    //     return null;
+    //   } else {
+    //     return this.handleNegative(total);
+    //   }
+    // },
+    // calcularRetraso(entrada, horaEntrada, salida, horaSalida) {
+    //   var entradaBH = moment.duration(entrada, "HH:mm").asMinutes();
+    //   var horaEntradaBH = moment.duration(horaEntrada, "HH:mm").asMinutes();
+    //   var salidaBH = moment.duration(salida, "HH:mm").asMinutes();
+    //   var horaSalida = moment.duration(horaSalida, "HH:mm").asMinutes();
+
+    //   var calculoEntrada = horaEntradaBH - entradaBH;
+    //   var calculoSalida = salidaBH - horaSalida;
+
+    //   var total = 0;
+
+    //   if (calculoEntrada < 0) {
+    //     total = total + calculoEntrada;
+    //   }
+
+    //   if (calculoSalida < 0) {
+    //     total = total + calculoSalida;
+    //   }
+
+    //   if (total === 0) {
+    //     return null;
+    //   } else {
+    //     return this.handleNegative(total);
+    //   }
+    // },
+    // aplicarEstilo(entrada, salida) {
+    //   var estilo = {};
+    //   estilo.ausente = false;
+    //   estilo.incompleto = false;
+    //   if (entrada == null && salida == null) {
+    //     console.log("DESDE ESTILO " + entrada, salida);
+    //     estilo.ausente = true;
+    //     estilo.incompleto = false;
+    //     return estilo;
+    //   } else {
+    //     if (entrada == null || salida == null) {
+    //       console.log("DESDE ESTILO " + entrada, salida);
+    //       estilo.ausente = false;
+    //       estilo.incompleto = true;
+    //       return estilo;
+    //     }
+    //   }
+    //   return estilo;
+    // },
+   
+    // handleHorasExtras(entrada, salida, horasExtras) {
+    //   var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
+    //     result;
+    //   console.log("Horas Extras " + horasExtras);
+    //   console.log("Horas trabajadas " + horasTrabajadas);
+    //   if (!horasTrabajadas.localeCompare("00:00")) {
+    //     return "-" + moment.utc(horasExtras * 1000 * 60).format("HH:mm");
+    //   } else {
+    //     result =
+    //       moment.duration(horasTrabajadas, "HH:mm").asMinutes() - horasExtras;
+    //     return this.handleNegative(result);
+    //   }
+    // },
+    // obtenerDatos() {
+    //   if (this.nombreBusqueda === null) {
+    //     var page = JSON.parse(localStorage.getItem("page") || null);
+    //     if (page !== null) {
+    //       this.pageOne.totalItems = page.totalItems;
+    //       this.pageOneChanged(page.currentPage);
+    //       localStorage.removeItem("page");
+    //     } else {
+    //       axios
+    //         .get(url + "/marcaciones?_expand=empleado")
+    //         .then(response => {
+    //           console.log(response.data.length);
+    //           this.marcaciones = response.data.slice(
+    //             0,
+    //             this.pageOne.itemsPerPage - 1
+    //           );
+    //           this.pageOne.totalItems = response.data.length;
+    //         })
+    //         .catch(e => {
+    //           console.log(e);
+    //         });
+    //     }
+    //   } else {
+    //     var nombre = new RegExp(this.nombreBusqueda, "g");
+    //     var encontrados = [];
+    //     var datosInforme = [];
+    //     this.funcionarios.filter(element => {
+    //       console.log(element.id, element.nombre);
+    //       if (element.nombre.match(nombre)) {
+    //         encontrados.push(element.id);
+    //       }
+    //     });
+    //     console.log(JSON.stringify(encontrados));
+    //     var query = url + "/marcaciones?";
+    //     var flag = true;
+    //     for (let value of encontrados) {
+    //       if (flag) {
+    //         query = query + "empleadoId=" + value;
+    //         flag = false;
+    //       } else {
+    //         query = query + "&empleadoId=" + value;
+    //       }
+    //     }
+    //     console.log(query);
+    //     this.totalBancoHora = 0;
+    //     this.totalRetraso = 0;
+    //     this.totalHoraExtra = 0;
+    //     axios
+    //       .get(query + "&_expand=empleado")
+    //       .then(response => {
+    //         this.marcaciones = response.data;
+    //         Array.from(this.marcaciones).forEach(item => {
+    //           console.log("Horas Negativas", JSON.stringify(item.horasExtras));
+    //           if (moment.duration(item.horasExtras) < 0) {
+    //             this.totalRetraso =
+    //               this.totalRetraso +
+    //               moment.duration(item.horasExtras, "HH:mm").asMinutes();
+    //           } else {
+    //             this.totalBancoHora =
+    //               this.totalBancoHora +
+    //               moment.duration(item.horasExtras, "HH:mm").asMinutes();
+    //           }
+
+    //           // this.totalRetraso =
+    //           //   this.totalRetraso +
+    //           //   moment.duration(item.retraso, "HH:mm").asMinutes();
+    //           // this.totalHoraExtra =
+    //           //   this.totalHoraExtra +
+    //           //   moment.duration(item.horasExtras, "HH:mm").asMinutes();
+    //           var informe = {
+    //             funcionario: null,
+    //             fecha: null,
+    //             entrada: null,
+    //             salida: null,
+    //             horasTrabajadas: null,
+    //             bancoHora: null,
+    //             retraso: null
+    //           };
+
+    //           var listado = {};
+    //           listado.fecha = item.fecha;
+    //           listado.empleadoId = item.empleadoId;
+    //           listado.salida = item.salida;
+    //           listado.horasTrabajadas = item.horasTrabajadas;
+    //           listado.horasExtras = item.horasExtras;
+    //           listado.retraso = item.retraso;
+    //           listado.bancoHora = item.bancoHora;
+    //           listado.isConfirmed = item.isConfirmed;
+    //           listado.estilo = item.estilo;
+    //           listado.empleadoNombre = item.empleadoNombre;
+
+    //           if (item.horasExtras > 0) {
+    //             listado.bancoHoras = item.horasExtras;
+    //             this.totalBancoHora =
+    //               this.totalBancoHora +
+    //               moment.duration(item.horasExtras, "HH:mm").asMinutes();
+    //           } else {
+    //             if (item.horasExtras < 0) {
+    //               listado.descuentos = item.horasExtras;
+    //               this.totalRetraso =
+    //                 this.totalRetraso +
+    //                 moment.duration(item.horasExtras, "HH:mm").asMinutes();
+    //             }
+    //           }
+    //           this.listado.push(listado);
+
+    //           console.log("item array" + JSON.stringify(item));
+    //           informe.funcionario = item.empleado.nombre;
+    //           informe.fecha = item.fecha;
+    //           informe.entrada = item.entrada;
+    //           informe.salida = item.salida;
+    //           informe.horasTrabajadas = item.horasTrabajadas;
+    //           informe.bancoHora = item.bancoHora || "";
+
+    //           informe.retraso = item.retraso || "";
+    //           console.log("Banco Hora ", item.bancoHora);
+    //           this.json_data.push(informe);
+    //           console.log(
+    //             JSON.stringify("JSON DATA" + JSON.stringify(this.json_data))
+    //           );
+    //         });
+    //         console.log(response);
+    //       })
+    //       .catch(e => console.log(e));
+    //     console.log(JSON.stringify("Marcaciones pos get" + this.marcaciones));
+    //   }
+    // },
+  
+    // calcularBancoHora() {
+    //   var bancoHoraNuevo = [];
+    //   var marcaciones = [];
+    //   var bancoHora = [];
+    //   var modelo = {
+    //     empleadoId: null,
+    //     mes: null,
+    //     ano: null,
+    //     horasCumplidas: null,
+    //     horasCumplir: null
+    //   };
+    //   axios
+    //     .get(url + "/marcaciones")
+    //     .then(response => {
+    //       marcaciones = response.data;
+    //       console.log("####Variable Marcaciones####" + marcaciones);
+    //       axios
+    //         .get(url + "/bancoHora")
+    //         .then(response => {
+    //           bancoHora = response.data;
+    //           console.log("###Variable banco hora####" + bancoHora);
+    //           console.log("###Variable banco hora tam####" + bancoHora.length);
+    //           if (bancoHora.length > 0) {
+    //             console.log("Paso if length");
+    //             Array.from(marcaciones).map(marcacion => {
+    //               Array.from(bancoHora).map(banco => {
+    //                 if (
+    //                   marcaciones.empleadoId === banco.empleadoId &&
+    //                   banco.mes ===
+    //                     moment(marcaciones.fecha, "DD/MM/YYYY").month() &&
+    //                   banco.ano ===
+    //                     moment(marcaciones.fecha, "DD/MM/YYYY").year()
+    //                 ) {
+    //                   bancoHora.horasCumplidas =
+    //                     moment.duration(marcacion.salida, "HH:mm").asMinutes() -
+    //                     moment.duration(marcacion.entrada, "HH:mm").asMinutes();
+    //                   console.log("paso if largo " + bancoHora.horasCumplidas);
+    //                 } else {
+    //                   modelo.empleadoId = marcacion.empleadoId;
+    //                   modelo.mes = moment(
+    //                     marcacion.fecha,
+    //                     "DD/MM/YYYY"
+    //                   ).month();
+    //                   modelo.ano = moment(marcacion.fecha, "DD/MM/YYYY").year();
+    //                   modelo.horasCumplidas =
+    //                     moment.duration(marcacion.salida, "HH:mm").asMinutes() -
+    //                     moment.duration(marcacion.entrada, "HH:mm").asMinutes();
+    //                   modelo.horasCumplir = null;
+    //                   bancoHoraNuevo.push(modelo);
+    //                   console.log("entro en el primer else");
+    //                 }
+    //               });
+    //             });
+    //           } else {
+    //             Array.from(marcaciones).map(marcacion => {
+    //               modelo.empleadoId = marcacion.empleadoId;
+    //               modelo.mes = moment(marcacion.fecha, "DD/MM/YYYY").month();
+    //               modelo.ano = moment(marcacion.fecha, "DD/MM/YYYY").year();
+    //               modelo.horasCumplidas =
+    //                 moment.duration(marcacion.salida, "HH:mm").asMinutes() -
+    //                 moment.duration(marcacion.entrada, "HH:mm").asMinutes();
+    //               modelo.horasCumplir = null;
+    //               bancoHoraNuevo.push(modelo);
+    //             });
+    //           }
+    //         })
+    //         .then(response => {
+    //           axios
+    //             .post(url + "/bancoHora", {
+    //               resultado: bancoHoraNuevo
+    //             })
+    //             .then(response => console.log(response))
+    //             .catch(e => console.log(e));
+    //         });
+    //     })
+    //     .catch(e => conosle.log(e));
+    // }
+   
   },
   created() {
     this.obtenerAsistencias();
