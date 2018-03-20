@@ -1,197 +1,173 @@
 <template>
-    <div class="ui twelve wide column">
+  <div class="ui twelve wide column">
 
-       <div class="ui longer modal">
-                            <div class="header"> Archivo Seleccionado </div>
-                            <div class="scrolling content">
-                              <table class="ui celled  padded table">
-                                <thead>
-                                  <tr>
-                                    <th>Funcionario</th>
-                                    <th>Fecha</th>
-                                    <th>Marcacion Entrada</th>
-                                    <th>Marcacion Salida</th>
-                                  </tr>
-                                  
-                                </thead>
-                                <tbody>
-                                  <tr v-for="dato in datosMarcaciones" :key="dato.id" >
-                                    <td>{{dato.nombre}}</td>
-                                    <td>{{moment(dato.fecha).format("L")}}</td>
-                                    <td>{{(dato.entrada || "--") + " hs"}}</td>
-                                    <td>{{(dato.salida || "--") + " hs"}}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-      
-                            </div>
-    <div class="actions">
-      
-      <button class="ui positive teal button" @click="postFirebase">Aceptar</button>
-      <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
+    <div class="ui longer modal">
+      <div class="header"> Archivo Seleccionado </div>
+      <div class="scrolling content">
+        <table class="ui celled  padded table">
+          <thead>
+            <tr>
+              <th>Funcionario</th>
+              <th>Fecha</th>
+              <th>Marcacion Entrada</th>
+              <th>Marcacion Salida</th>
+            </tr>
+
+          </thead>
+          <tbody>
+            <tr v-for="dato in datosMarcaciones" :key="dato.id">
+              <td>{{dato.nombre}}</td>
+              <td>{{moment(dato.fecha).format("L")}}</td>
+              <td>{{(dato.entrada || "--") + " hs"}}</td>
+              <td>{{(dato.salida || "--") + " hs"}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div class="actions">
+
+        <button class="ui positive teal button" @click="postFirebase">Aceptar</button>
+        <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
+      </div>
     </div>
-  </div>
 
-        <div class="ui form">
-            <h4 class="ui dividing header">Listado de Asistencia</h4>
+    <div class="ui form">
+      <h4 class="ui dividing header">Listado de Asistencia</h4>
 
-            <div class="two fields">
+      <div class="two fields">
 
-                <div class="fifteen wide field">
-                    <label for="salaryQuery">Consultar por:</label>
+        <div class="fifteen wide field">
+          <label for="salaryQuery">Consultar por:</label>
 
-                    <div class="inline fields">
-                        
-                        <div class="ten wide field">
+          <div class="inline fields">
 
-                            <div class="ui icon input">
-                                <input type="text" placeholder="Buscar por nombre" v-model="nombreBusqueda">
-                                <i class="search icon"></i>
-                            </div>
+            <div class="ten wide field">
 
-                        </div>
+              <div class="ui icon input">
+                <input type="text" placeholder="Buscar por nombre" v-model="nombreBusqueda">
+                <i class="search icon"></i>
+              </div>
 
-                        <!-- <div class="field">
+            </div>
+
+            <!-- <div class="field">
                             <el-date-picker v-model="searchDateStart" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
                             </el-date-picker>
                         </div> -->
 
-                        <!-- <div class="field">
+            <!-- <div class="field">
                             <el-date-picker v-model="searchDateEnd" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy" >
                             </el-date-picker>
                         </div> -->
 
-                        <div class="field" @click="obtenerDatos">
-                            <button class="ui teal button">Listar</button>
-                        </div>
-                        <div class="field" @click="limpiarDatos">
-                          <button class="ui button">Limpiar</button>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="field">
-
-                    <div class="ui right floated main menu">
-
-                        <a class="icon item">
-                            <vue-xlsx-table @on-select-file="handleSelectedFile">
-
-                                <span data-tooltip="Subir archivo de asistencia">
-                                    <i class="upload icon"></i>
-                                </span>
-
-                            </vue-xlsx-table>
-                        </a>
-                      
-                        <a class="icon item" @click="nuevaAsistencia">
-                            <span data-tooltip="Crear Asistencia Manualmente">
-                                <i class="plus icon"></i>
-                            </span>
-                        </a>
-
-                        <a class="icon item">
-                            <download-excel
-	                            :data   = "json_data"
-	                            :fields = "json_fields"
-	                            :meta   = "json_meta"
-	                            name    = "asistencia.xls">
-
-                            <i class="print icon"></i>
-
-
-                            </download-excel>
-
-                        </a>
-
-                    </div>
-
-                </div>
-
+            <div class="field" @click="obtenerDatos">
+              <button class="ui teal button">Listar</button>
             </div>
-
-            <div class="field">
-
-                <table class="ui teal celled table">
-                    <thead>
-                        <tr>
-                            <th>Funcionario</th>
-                            <th>Fecha</th>
-                            <th>M. Entrada</th>
-                            <th>M. Salida</th>
-                            <th>Horas Trabajadas</th>
-                            <th>Horas Faltantes</th>
-                            <th>Banco de Horas</th>
-                            <th>Observacion</th>
-                            <th>Opciones</th>
-                        </tr>
-                    </thead>
-                     <tbody>
-                        <tr v-for="marcacion in marcaciones" :key="marcacion._id" >
-                            <!-- <td>{{marcacion.nombreFuncionario}}</td> -->
-                            <td>{{moment(marcacion.fecha).format("L")}}</td>
-                            <td>{{(marcacion.entrada || "--") + " hs"}}</td>
-                            <td>{{(marcacion.salida || "--") + " hs"}}</td>
-                            <td>{{marcacion.funcionario}}</td>
-                             <!-- <td>{{(marcacion.horasTrabajadas || "--") + " hs"}}</td>
-                             <td>{{(marcacion.horasFaltantes || "--") + " hs"}}</td>
-                             <td>{{(marcacion.horasExtras || "--") + " hs"}}</td>
-                             <td>{{marcacion.observacion || "--"}}</td> -->
-                     
-                            <td>
-                                <i @click="guardarPaginacion(marcacion._id)" class="edit row icon"></i>
-                                <i @click="confirm(marcacion['.key'])" class="trash icon"></i>
-                                
-                            </td>
-                        </tr>
-
-                    </tbody>
-                    <!-- <tbody>
-                        <tr v-for="marcacion in marcaciones" :key="marcacion['.key']" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}" >
-                            <td>{{marcacion.nombreFuncionario}}</td>
-                            <td>{{marcacion.fecha}}</td>
-                            <td>{{(marcacion.entrada || "--") + " hs"}}</td>
-                            <td>{{(marcacion.salida || "--") + " hs"}}</td>
-                             <td>{{(marcacion.horasTrabajadas || "--") + " hs"}}</td>
-                             <td>{{(marcacion.horasFaltantes || "--") + " hs"}}</td>
-                             <td>{{(marcacion.horasExtras || "--") + " hs"}}</td>
-                             <td>{{marcacion.observacion || "--"}}</td>
-                     
-                            <td>
-                                <i @click="guardarPaginacion(marcacion['.key'])" class="edit row icon"></i>
-                                <i @click="confirm(marcacion['.key'])" class="trash icon"></i>
-                                
-                            </td>
-                        </tr>
-
-                    </tbody> -->
-
-                    <tfoot v-if="pageOne.totalItems > 0">
-                        <tr v-show="totalRetraso">
-                          <th></th>
-                          <th></th>
-                          <th></th>
-                          <th></th>
-                          <th></th>
-                          <th>Banco de Horas: {{totalBancoHora}} Minutos Descuentos: {{totalRetraso}} </th>
-                          <th></th>
-                           
-                        </tr>
-                        <tr>
-                           <th colspan="9">
-                                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
-                                </app-pagination>
-                            </th>
-                        </tr>
-                    </tfoot>
-                </table>
-
+            <div class="field" @click="limpiarDatos">
+              <button class="ui button">Limpiar</button>
             </div>
+          </div>
 
         </div>
 
+        <div class="field">
+
+          <div class="ui right floated main menu">
+
+            <a class="icon item">
+              <vue-xlsx-table @on-select-file="handleSelectedFile">
+
+                <span data-tooltip="Subir archivo de asistencia">
+                  <i class="upload icon"></i>
+                </span>
+
+              </vue-xlsx-table>
+            </a>
+
+            <a class="icon item" @click="nuevaAsistencia">
+              <span data-tooltip="Crear Asistencia Manualmente">
+                <i class="plus icon"></i>
+              </span>
+            </a>
+
+            <a class="icon item">
+              <download-excel :data="json_data" :fields="json_fields" :meta="json_meta" name="asistencia.xls">
+
+                <i class="print icon"></i>
+
+              </download-excel>
+
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <table class="ui teal celled table">
+          <thead>
+            <tr>
+              <th>Funcionario</th>
+              <th>Fecha</th>
+              <th>M. Entrada</th>
+              <th>M. Salida</th>
+              <th>Horas Trabajadas</th>
+              <th>Horas Faltantes</th>
+              <th>Banco de Horas</th>
+              <th>Observacion</th>
+              <th>Opciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr v-for="marcacion in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
+              <td>{{marcacion.funcionario.nombre}}</td>
+              <td>{{moment(marcacion.fecha).format("L")}}</td>
+              <td>{{(marcacion.entrada || "--") + " hs"}}</td>
+              <td>{{(marcacion.salida || "--") + " hs"}}</td>
+              <td>{{(marcacion.horasTrabajadas || "--") + " hs"}}</td>
+              <td>{{(marcacion.horasFaltantes || "--") + " hs"}}</td>
+              <td>{{(marcacion.horasExtras || "--") + " hs"}}</td>
+              <td>{{marcacion.observacion || "--"}}</td>
+
+              <td>
+                <i @click="guardarPaginacion(marcacion._id)" class="edit row icon"></i>
+                <i @click="confirm(marcacion._id)" class="trash icon"></i>
+
+              </td>
+            </tr>
+
+          </tbody>
+
+          <tfoot v-if="pageOne.totalItems > 0">
+            <tr v-show="totalRetraso">
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Banco de Horas: {{totalBancoHora}} Minutos Descuentos: {{totalRetraso}} </th>
+              <th></th>
+
+            </tr>
+            <tr>
+              <th colspan="9">
+                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+                </app-pagination>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+
+      </div>
+
     </div>
+
+  </div>
 </template>
 
 <script>
@@ -221,7 +197,6 @@ export default {
       isSabado: null,
       marcacion: {
         fecha: null,
-        funcionarioId: null,
         entrada: null,
         salida: null,
         horasTrabajadas: null,
@@ -281,10 +256,10 @@ export default {
         params: { id: marcacionId }
       });
     },
-    obtenerFuncionarios(){
+    obtenerFuncionarios() {
       axios.get(`${url}/funcionarios/full-list`).then(response => {
         this.funcionarios = response.data;
-      })
+      });
     },
     limpiarDatos() {
       this.json_data.length = 0;
@@ -391,7 +366,7 @@ export default {
         );
       });
       this.abrirModal();
-      console.log("Fecha Planilla", this.datosMarcaciones[0].fecha)
+      console.log("Fecha Planilla", this.datosMarcaciones[0].fecha);
       this.getSabados(this.datosMarcaciones[0].fecha);
       this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
     },
@@ -436,7 +411,8 @@ export default {
           console.log("CARGA LABORAL" + cargaLaboral);
           console.log("Horario sin formato " + item.Horario);
           console.log(
-            "Horario: " + moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
+            "Horario: " +
+              moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
           );
         }
       }
@@ -513,100 +489,149 @@ export default {
       }
     },
     async postFirebase() {
+      var marcacion = {};
+      marcacion.fecha = null;
+      marcacion.funcionario = null;
+      marcacion.entrada = null;
+      marcacion.salida = null;
+      marcacion.horasTrabajadas = null;
+      marcacion.horasExtras = null;
+      marcacion.horasFaltantes = null;
+      marcacion.observacion = null;
+      marcacion.estilo = {};
+      marcacion.estilo.ausente = null;
+      marcacion.estilo.incompleto = null;
+      marcacion.estilo.vacaciones = null;
       //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
       this.funcionarios.forEach(funcionario => {
         var ausencia = this.datosMarcaciones.findIndex(item => {
           console.log("comparacion", item.empleadoId, funcionario._id);
           return funcionario._id === item.empleadoId;
         });
-        console.log(ausencia);
+        console.log("Ausente:", ausencia);
         if (ausencia === -1) {
+          console.log(
+            "Funcionario Ausente, verificar si esta de vacaciones",
+            funcionario._id
+          );
           //Verifica si el funcionario esta de vacaciones
-          if(funcionario.vacaciones !== "false"){
+          if (funcionario.vacaciones !== "false") {
+            console.log("Esta de vacaciones");
             var fecha, fechaInicio, fechaFin, isFechaVacaciones;
-            axios.get(`${url}/eventos/edit/${funcionario.vacaciones}`).then(response => {
-                fechaInicio = moment(response.data.fechaInicio).format;
-                fechaFin = moment(response.data.fechaFin).format;
+            axios
+              .get(`${url}/eventos/edit/${funcionario.vacaciones}`)
+              .then(response => {
+                fechaInicio = response.data.fechaInicio;
+                console.log(
+                  "Fecha Incio Vacaciones",
+                  fechaInicio,
+                  typeof fechaInicio
+                );
+                fechaFin = response.data.fechaFin;
+                console.log("Fecha Fin Vacaciones", fechaFin, typeof fechaFin);
                 fecha = moment(this.datosMarcaciones[0].fecha).format();
-                isFechaVacaciones = moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]");
+                console.log("Fecha a comparar", fecha, typeof fecha);
+                isFechaVacaciones = moment(fecha).isBetween(
+                  fechaInicio,
+                  fechaFin,
+                  null,
+                  "[]"
+                );
+                console.log(
+                  "Resultado de evaluacion fecha vacaciones",
+                  isFechaVacaciones
+                );
+                if (
+                  moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]")
+                ) {
+                  marcacion.fecha = this.datosMarcaciones[0].fecha;
+                  marcacion.funcionario = funcionario._id;
+                  marcacion.entrada = null;
+                  marcacion.salida = null;
+                  marcacion.horasTrabajadas = null;
+                  marcacion.horasExtras = null;
+                  marcacion.horasFaltantes = null;
+                  marcacion.observacion = "Vacaciones";
+                  marcacion.estilo.ausente = false;
+                  marcacion.estilo.incompleto = false;
+                  marcacion.estilo.vacaciones = true;
+                  this.ausencias.push(marcacion);
+
+                  axios
+                    .post(url + "/asistencias/add", marcacion)
+                    .then(response => {
+                      console.log(response);
+                    });
+                }
+              });
+          } else {
+            console.log("Entro en el Else");
+            //si no cumplio condiciones anteriores, es una ausencia.
+            marcacion.fecha = this.datosMarcaciones[0].fecha;
+            marcacion.funcionario = funcionario._id;
+            marcacion.entrada = false;
+            marcacion.salida = false;
+            marcacion.horasTrabajadas = false;
+            marcacion.horasExtras = false;
+            marcacion.horasFaltantes = false;
+            marcacion.observacion = "Ausencia";
+            marcacion.estilo.ausente = true;
+            marcacion.estilo.incompleto = false;
+            marcacion.estilo.vacaciones = false;
+
+            this.ausencias.push(marcacion);
+
+            axios.post(`${url}/asistencias/add`, marcacion).then(response => {
+              console.log(response);
             });
-            //si la fecha de la planilla se encuentra entre el rango de vacaciones, hace post vacaciones.
-            if (isFechaVacaciones) {
-              this.marcacion.fecha = this.datosMarcaciones[0].fecha;
-              this.marcacion.funcionario = funcionario._id;
-             // this.marcacion.nombreFuncionario = funcionario.nombre;
-              this.marcacion.entrada = null;
-              this.marcacion.salida = null;
-              this.marcacion.horasTrabajadas = null;
-              this.marcacion.horasExtras = null;
-              this.marcacion.horasFaltantes = null;
-              this.marcacion.observacion = "Vacaciones";
-              this.marcacion.estilo.ausente = false;
-              this.marcacion.estilo.incompleto = false;
-              this.marcacion.estilo.vacaciones = true;
-
-              axios.post(url + "/asistencias/add", this.marcacion).then(response => {
-                console.log(response);
-              })
-            }
-            
           }
-
-          //si no cumplio condiciones anteriores, es una ausencia.
-            this.marcacion.fecha = this.datosMarcaciones[0].fecha;
-            this.marcacion.funcionario = funcionario._id;
-            //this.marcacion.nombreFuncionario = funcionario.nombre;
-            this.marcacion.entrada = false;
-            this.marcacion.salida = false;
-            this.marcacion.horasTrabajadas = false;
-            this.marcacion.horasExtras = false;
-            this.marcacion.horasFaltantes = false;
-            this.marcacion.observacion = "Ausencia";
-            this.marcacion.estilo.ausente = true;
-            this.marcacion.estilo.incompleto = false;
-            this.marcacion.estilo.vacaciones = false;
-
-            axios.post(`${url}/asistencias/add`, this.marcacion).then(response => {
-                console.log(response);
-              })
         }
       });
+
+      axios
+        .post(`${url}/asistencias/test-data`, this.ausencias)
+        .then(response => {
+          console.log(response);
+        });
 
       await Promise.all(
         this.datosMarcaciones.map(async marcacion => {
           try {
-            let response = await axios.post(`${url/asistencias/add}`, {
-              fecha : marcacion.fecha,
-              funcionario : marcacion.empleadoId,
-          /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
+            let response = await axios
+              .post(`${url}/asistencias/add`, {
+                fecha: marcacion.fecha,
+                funcionario: marcacion.empleadoId,
+                /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
             marcacion.empleadoId
           );*/
-              entrada : marcacion.entrada,
-              salida : marcacion.salida,
-          //calculo de Horas trabajadas
-              horasTrabajadas : this.handleHorasTrabajadas(
-            marcacion.entrada,
-            marcacion.salida
-          ),
+                entrada: marcacion.entrada,
+                salida: marcacion.salida,
+                //calculo de Horas trabajadas
+                horasTrabajadas: this.handleHorasTrabajadas(
+                  marcacion.entrada,
+                  marcacion.salida
+                ),
 
-          horasExtras : this.calculoBancoH(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          ),
+                horasExtras: this.calculoBancoH(
+                  marcacion.entrada,
+                  marcacion.salida,
+                  marcacion.empleadoId
+                ),
 
-          horasFaltantes : this.calculoHorasFaltantes(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          ),
+                horasFaltantes: this.calculoHorasFaltantes(
+                  marcacion.entrada,
+                  marcacion.salida,
+                  marcacion.empleadoId
+                ),
 
-          observacion : "",
+                observacion: "",
 
-          estilo: this.aplicarEstiloMarcacion(marcacion.entrada, marcacion.salida)
-
-         
-            }).then(function(response) {
+                estilo: this.aplicarEstiloMarcacion(
+                  marcacion.entrada,
+                  marcacion.salida
+                )
+              })
+              .then(function(response) {
                 console.log("from async" + response);
               })
               .catch(function(error) {
@@ -616,7 +641,7 @@ export default {
             console.log(error);
           }
         })
-      )
+      );
 
       //this.insertarMarcaciones();
 
@@ -661,8 +686,6 @@ export default {
 
       //     axios.post(`${url}/asistencias/add`, this.marcaciones).then(response => console.log(response))
       // })
-
-
     },
     nombreFuncionario(empleadoId) {
       var nombre;
@@ -699,13 +722,13 @@ export default {
       var cargaLaboral;
 
       var funcionario = this.funcionarios.find(funcionario => {
-        if(funcionario._id === funcionarioId){
-          return funcionario
+        if (funcionario._id === funcionarioId) {
+          return funcionario;
         }
-        return null
+        return null;
       });
 
-      if(funcionario){
+      if (funcionario) {
         sabadoMedioTiempo = funcionario.medioTiempo;
         cargaLaboral = funcionario.cargaLaboral;
       }
@@ -788,13 +811,13 @@ export default {
       var cargaLaboral;
 
       var funcionario = this.funcionarios.find(funcionario => {
-        if(funcionario._id === funcionarioId){
-          return funcionario
+        if (funcionario._id === funcionarioId) {
+          return funcionario;
         }
-        return null
+        return null;
       });
 
-      if(funcionario){
+      if (funcionario) {
         sabadoMedioTiempo = funcionario.medioTiempo;
         cargaLaboral = funcionario.cargaLaboral;
       }
@@ -863,53 +886,60 @@ export default {
       console.log("INDICE SABADO", fechaSabado);
       return fechaSabado;
     },
-    aplicarEstiloMarcacion(entrada, salida){
-       if (entrada == null || salida == null) {
-            return {ausente : false,
-            incompleto : true,
-            vacaciones : false}
-          } else {
-            return {ausente : false,
-            incompleto : false,
-            vacaciones : false}
-          }
+    aplicarEstiloMarcacion(entrada, salida) {
+      if (entrada == null || salida == null) {
+        return {
+          ausente: false,
+          incompleto: true,
+          vacaciones: false
+        };
+      } else {
+        return {
+          ausente: false,
+          incompleto: false,
+          vacaciones: false
+        };
+      }
     },
-    async insertarMarcaciones(){
+    async insertarMarcaciones() {
       await Promise.all(
         this.marcaciones.map(async marcacion => {
           try {
-            let response = await axios.post(`${url/asistencias/add}`, {
-              fecha : marcacion.fecha,
-              funcionario : marcacion.empleadoId,
-          /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
+            let response = await axios
+              .post(`${url / asistencias / add}`, {
+                fecha: marcacion.fecha,
+                funcionario: marcacion.empleadoId,
+                /*this.marcacion.nombreFuncionario = this.nombreFuncionario(
             marcacion.empleadoId
           );*/
-              entrada : marcacion.entrada,
-              salida : marcacion.salida,
-          //calculo de Horas trabajadas
-              horasTrabajadas : this.handleHorasTrabajadas(
-            marcacion.entrada,
-            marcacion.salida
-          ),
+                entrada: marcacion.entrada,
+                salida: marcacion.salida,
+                //calculo de Horas trabajadas
+                horasTrabajadas: this.handleHorasTrabajadas(
+                  marcacion.entrada,
+                  marcacion.salida
+                ),
 
-          horasExtras : this.calculoBancoH(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          ),
+                horasExtras: this.calculoBancoH(
+                  marcacion.entrada,
+                  marcacion.salida,
+                  marcacion.empleadoId
+                ),
 
-          horasFaltantes : this.calculoHorasFaltantes(
-            marcacion.entrada,
-            marcacion.salida,
-            marcacion.empleadoId
-          ),
+                horasFaltantes: this.calculoHorasFaltantes(
+                  marcacion.entrada,
+                  marcacion.salida,
+                  marcacion.empleadoId
+                ),
 
-          observacion : "",
+                observacion: "",
 
-          estilo: this.aplicarEstiloMarcacion(marcacion.entrada, marcacion.salida)
-
-         
-            }).then(function(response) {
+                estilo: this.aplicarEstiloMarcacion(
+                  marcacion.entrada,
+                  marcacion.salida
+                )
+              })
+              .then(function(response) {
                 console.log("from async" + response);
               })
               .catch(function(error) {
@@ -919,7 +949,7 @@ export default {
             console.log(error);
           }
         })
-      )
+      );
     },
     //Hace post al array marcaciones y luego llama la lista, por eso es asincronico
     async confirmData() {
@@ -1287,11 +1317,17 @@ export default {
         })
         .catch(e => conosle.log(e));
     },
-    obtenerAsistencias(){
-      axios.get(`${url}/asistencias?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}`).then(response => {
-        this.marcaciones = response.data.docs;
-        this.pageOne.totalItems = response.data.total;
-      })
+    obtenerAsistencias() {
+      axios
+        .get(
+          `${url}/asistencias?page=${this.pageOne.currentPage}&limit=${
+            this.pageOne.itemsPerPage
+          }`
+        )
+        .then(response => {
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = response.data.total;
+        });
     }
   },
   created() {
@@ -1300,7 +1336,7 @@ export default {
     //this.llamarFuncionarios();
     //this.obtenerDatos();
 
-   /* this.$bindAsArray("funcionarios", funcionariosRef);
+    /* this.$bindAsArray("funcionarios", funcionariosRef);
     this.$bindAsArray("eventos", calendarioRef);
     this.$bindAsArray("marcaciones", asistenciasRef.limitToLast(51));
 
