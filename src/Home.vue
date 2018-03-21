@@ -228,3 +228,10 @@ export default {
   }
 };
 </script>
+
+<style>
+.el-input--prefix .el-input__inner {
+  padding-left: 30px !important;
+}
+</style>
+

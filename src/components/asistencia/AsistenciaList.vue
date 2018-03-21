@@ -16,7 +16,7 @@
           </thead>
           <tbody>
             <tr v-for="dato in datosMarcaciones" :key="dato.id">
-              <td>{{dato.nombre}}</td>
+              <td>{{dato.nombreFuncionario}}</td>
               <td>{{moment(dato.fecha).format("L")}}</td>
               <td>{{(dato.entrada || "--") + " hs"}}</td>
               <td>{{(dato.salida || "--") + " hs"}}</td>
@@ -51,22 +51,6 @@
 
             </div>
 
-            <!-- <div class="field">
-                            <el-date-picker v-model="searchDateStart" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-                            </el-date-picker>
-                        </div> -->
-
-            <!-- <div class="field">
-                            <el-date-picker v-model="searchDateEnd" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy" >
-                            </el-date-picker>
-                        </div> -->
-
-            <div class="field" @click="obtenerDatos">
-              <button class="ui teal button">Listar</button>
-            </div>
-            <div class="field" @click="limpiarDatos">
-              <button class="ui button">Limpiar</button>
-            </div>
           </div>
 
         </div>
@@ -91,12 +75,9 @@
               </span>
             </a>
 
-            <a class="icon item">
-              <download-excel :data="json_data" :fields="json_fields" :meta="json_meta" name="asistencia.xls">
+            <a class="icon item" @click="busquedaAvanzada = !busquedaAvanzada">
 
-                <i class="print icon"></i>
-
-              </download-excel>
+              <i class="find icon"></i>
 
             </a>
 
@@ -104,6 +85,94 @@
 
         </div>
 
+      </div>
+
+      <div class="fields" v-show="busquedaAvanzada">
+        <div class="field">
+          <label for="">Rango de Fechas:</label>
+          <div class="inline fields">
+            <div class="field">
+              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+              </el-date-picker>
+            </div>
+
+            <div class="field">
+              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+              </el-date-picker>
+            </div>
+
+            <div class="field" style="margin-left: 10px">
+              <label for="">Estado:</label>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="todos">
+                <label>Todos</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="especificado">
+                <label>Ausentes</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="especificado">
+                <label>Incompletos</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="especificado">
+                <label>Vacaciones</label>
+              </div>
+            </div>
+
+            
+
+          </div>
+
+        </div>
+
+        <div class="field">
+          <!-- <label for="">Estado:</label>
+          <div class="inline fields">
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="todos">
+                <label>Todos</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="especificado">
+                <label>Ausentes</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="especificado">
+                <label>Incompletos</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" value="especificado">
+                <label>Vacaciones</label>
+              </div>
+            </div>
+
+          </div> -->
+
+        </div>
       </div>
 
       <div class="field">
@@ -125,7 +194,7 @@
 
           <tbody>
             <tr v-for="marcacion in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
-              <td>{{marcacion.funcionario.nombre}}</td>
+              <td>{{marcacion.nombreFuncionario}}</td>
               <td>{{moment(marcacion.fecha).format("L")}}</td>
               <td>{{(marcacion.entrada || "--") + " hs"}}</td>
               <td>{{(marcacion.salida || "--") + " hs"}}</td>
@@ -184,6 +253,7 @@ let asistenciasRef = db.ref("/asistencias");
 export default {
   data() {
     return {
+      busquedaAvanzada: false,
       datosMarcaciones: [],
       keyPagination: [],
       listado: [],
@@ -292,7 +362,7 @@ export default {
         .modal("show")
         .modal("refresh");
     },
-     //retorna las horas que trabajo en el dia horaSalida - horaEntrada
+    //retorna las horas que trabajo en el dia horaSalida - horaEntrada
     handleHorasTrabajadas(entrada, salida) {
       var result = moment("00:00", "hh:mm").format("00:00");
       if (entrada !== null && salida !== null) {
@@ -332,7 +402,7 @@ export default {
 
           if (!horasTrabajadas.localeCompare("00:00")) {
             console.log("ENTRO al COMPARE");
-            return false;
+            return null;
           }
           var horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
@@ -340,7 +410,7 @@ export default {
           if (horasExtras > 0) {
             return this.handleNegative(horasExtras);
           }
-          return false;
+          return null;
 
           //else del no tiene sabado habilitado
         } else {
@@ -349,7 +419,7 @@ export default {
           console.log("Resultado Horas Trabajadas", horasTrabajadas);
 
           if (!horasTrabajadas.localeCompare("00:00")) {
-            return false;
+            return null;
           }
 
           console.log("Carga Laboral", cargaLaboral);
@@ -364,7 +434,7 @@ export default {
             return this.handleNegative(horasExtras);
           }
 
-          return false;
+          return null;
         }
         //else del verificar si es dia sabado
       } else {
@@ -373,7 +443,7 @@ export default {
         console.log("Resultado Horas Trabajadas", horasTrabajadas);
 
         if (!horasTrabajadas.localeCompare("00:00")) {
-          return false;
+          return null;
         }
         var horasExtras =
           moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
@@ -385,7 +455,7 @@ export default {
           return this.handleNegative(horasExtras);
         }
 
-        return false;
+        return null;
       }
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
@@ -404,7 +474,7 @@ export default {
         sabadoMedioTiempo = funcionario.medioTiempo;
         cargaLaboral = funcionario.cargaLaboral;
       }
-     
+
       if (this.isSabado !== -1) {
         if (sabadoMedioTiempo) {
           var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
@@ -418,7 +488,7 @@ export default {
           if (result < 0) {
             return this.handleNegative(result);
           }
-          return false;
+          return null;
         } else {
           var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
@@ -433,7 +503,7 @@ export default {
             return this.handleNegative(horasExtras);
           }
 
-          return false;
+          return null;
         }
       } else {
         var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
@@ -449,19 +519,19 @@ export default {
           return this.handleNegative(horasExtras);
         }
 
-        return false;
+        return null;
       }
     },
     //verifica si es domingo o no para insertar texto en observacion
-    handleObservacion(fecha){
-      var domingo= new Date(fecha);
-      if(domingo.getDay() === 0){
-        return "Hora Extra Domingo"
+    handleObservacion(fecha) {
+      var domingo = new Date(fecha);
+      if (domingo.getDay() === 0) {
+        return "Hora Extra Domingo";
       }
 
       return "";
     },
-    
+
     nuevaAsistencia() {
       this.$router.push({ name: "incluirAsistencia" });
     },
@@ -526,21 +596,20 @@ export default {
     //recibe datos de funcionarios desde el foreach de funcionarios
     orderData(
       acnro,
-      empleadoId,
-      nombre,
+      funcionarioId,
+      nombreFuncionario,
       cargaLaboral,
       medioTiempo,
       vacaciones
     ) {
       var modelo = {
         fecha: "",
-        empleadoId: null,
-        nombre: "",
+        funcionarioId: null,
+        nombreFuncionario: "",
         horasExtras: "",
         entrada: null,
         salida: null,
         horarios: [],
-        isConfirmed: false
       };
 
       console.log("Predatos", JSON.stringify(this.preDatos));
@@ -551,8 +620,8 @@ export default {
           console.log(
             "acnro variable: " + acnro + "|" + "ACNRO array: " + item["AC-No."]
           );
-          modelo.empleadoId = empleadoId;
-          modelo.nombre = nombre;
+          modelo.funcionarioId = funcionarioId;
+          modelo.nombreFuncionario = nombreFuncionario;
           modelo.fecha = moment(item.Horario, "DD/MM/YYYY").format();
           modelo.horasExtras = moment
             .duration(cargaLaboral, "HH:mm")
@@ -570,7 +639,7 @@ export default {
         }
       }
       //despues de recorrer todos los datos de la planilla, se verifica modelo, se tiene que validar los horarios
-      if (modelo.empleadoId !== null) {
+      if (modelo.funcionarioId !== null) {
         console.log("####Marcaciones####" + modelo.horarios);
         //si tiene solo una marcacion
         if (modelo.horarios.length == 1) {
@@ -677,7 +746,7 @@ export default {
       console.log("INDICE SABADO", fechaSabado);
       return fechaSabado;
     },
-     aplicarEstiloMarcacion(entrada, salida) {
+    aplicarEstiloMarcacion(entrada, salida) {
       if (entrada == null || salida == null) {
         return {
           ausente: false,
@@ -694,47 +763,48 @@ export default {
     },
     guardarMarcaciones() {
       this.datosMarcaciones.forEach(dato => {
-        var marcacion = {}
+        var marcacion = {};
 
         marcacion.fecha = dato.fecha;
-        marcacion.funcionario = dato.empleadoId;
+        marcacion.funcionario = dato.funcionarioId;
+        marcacion.nombreFuncionario = dato.nombreFuncionario;
         marcacion.entrada = dato.entrada;
         marcacion.salida = dato.salida;
         //calculo de Horas trabajadas
         marcacion.horasTrabajadas = this.handleHorasTrabajadas(
-                  dato.entrada,
-                  dato.salida
-                );
+          dato.entrada,
+          dato.salida
+        );
 
         marcacion.horasExtras = this.calculoBancoH(
-                  dato.entrada,
-                  dato.salida,
-                  dato.empleadoId
-                );
+          dato.entrada,
+          dato.salida,
+          dato.funcionarioId
+        );
 
         marcacion.horasFaltantes = this.calculoHorasFaltantes(
-                  dato.entrada,
-                  dato.salida,
-                  dato.empleadoId
-                );
+          dato.entrada,
+          dato.salida,
+          dato.funcionarioId
+        );
 
         marcacion.observacion = this.handleObservacion(dato.fecha);
         marcacion.estilo = this.aplicarEstiloMarcacion(
-                  dato.entrada,
-                  dato.salida
-                )
+          dato.entrada,
+          dato.salida
+        );
 
         this.marcaciones.push(marcacion);
       });
       console.log(this.datosMarcaciones[0].fecha);
-      var fecha = new Date(this.datosMarcaciones[0].fecha)
+      var fecha = new Date(this.datosMarcaciones[0].fecha);
       //si no es domingo verificar si esta de vacaciones o ausente
-      if ( fecha.getDay() !== 0) {
+      if (fecha.getDay() !== 0) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
         this.funcionarios.forEach(funcionario => {
           var ausencia = this.datosMarcaciones.findIndex(item => {
-            console.log("comparacion", item.empleadoId, funcionario._id);
-            return funcionario._id === item.empleadoId;
+            console.log("comparacion", item.funcionarioId, funcionario._id);
+            return funcionario._id === item.funcionarioId;
           });
           console.log("Ausente:", ausencia);
           if (ausencia === -1) {
@@ -781,6 +851,7 @@ export default {
                   ) {
                     marcacion.fecha = this.datosMarcaciones[0].fecha;
                     marcacion.funcionario = funcionario._id;
+                    marcacion.nombreFuncionario = funcionario.nombre;
                     marcacion.entrada = null;
                     marcacion.salida = null;
                     marcacion.horasTrabajadas = null;
@@ -798,6 +869,7 @@ export default {
               //si no cumplio condiciones anteriores, es una ausencia.
               marcacion.fecha = this.datosMarcaciones[0].fecha;
               marcacion.funcionario = funcionario._id;
+              marcacion.nombreFuncionario = funcionario.nombre;
               marcacion.entrada = null;
               marcacion.salida = null;
               marcacion.horasTrabajadas = null;
@@ -814,15 +886,14 @@ export default {
         });
       }
 
-      if(this.ausencias.length > 0){
+      if (this.ausencias.length > 0) {
         this.marcaciones = this.marcaciones.concat(this.ausencias);
       }
 
-      axios.post(`${url}/asistencias/test-data`, this.marcaciones).then(response => console.log(response));
-    },
-
-
-
+      axios
+        .post(`${url}/asistencias/test-data`, this.marcaciones)
+        .then(response => console.log(response));
+    }
 
     //###############Comentar desde ACA #####
     // confirmarArchivo() {
@@ -830,13 +901,13 @@ export default {
     //     console.log("EMPLEADO " + value.nombre + value[".key"]);
 
     //     var ausencia = this.datosMarcaciones.findIndex(item => {
-    //       return item.empleadoId === value.id;
+    //       return item.funcionarioId === value.id;
     //     });
 
     //     if (ausencia === -1) {
     //       var funcionarioAusente = {};
     //       funcionarioAusente.fecha = this.datosMarcaciones[0].fecha;
-    //       funcionarioAusente.empleadoId = value.id;
+    //       funcionarioAusente.funcionarioId = value.id;
     //       funcionarioAusente.nombre = value.nombre;
     //       funcionarioAusente.horasExtras = moment
     //         .duration(value.cargaLaboral, "HH:mm")
@@ -858,12 +929,12 @@ export default {
     //   this.datosMarcaciones.length = 0;
     // },
     // async postFirebase() {
-     
+
     //   //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
     //   this.funcionarios.forEach(funcionario => {
     //     var ausencia = this.datosMarcaciones.findIndex(item => {
-    //       console.log("comparacion", item.empleadoId, funcionario._id);
-    //       return funcionario._id === item.empleadoId;
+    //       console.log("comparacion", item.funcionarioId, funcionario._id);
+    //       return funcionario._id === item.funcionarioId;
     //     });
     //     console.log("Ausente:", ausencia);
     //     if (ausencia === -1) {
@@ -960,7 +1031,7 @@ export default {
     //         let response = await axios
     //           .post(`${url}/asistencias/add`, {
     //             fecha: marcacion.fecha,
-    //             funcionario: marcacion.empleadoId,
+    //             funcionario: marcacion.funcionarioId,
     //             entrada: marcacion.entrada,
     //             salida: marcacion.salida,
     //             //calculo de Horas trabajadas
@@ -972,13 +1043,13 @@ export default {
     //             horasExtras: this.calculoBancoH(
     //               marcacion.entrada,
     //               marcacion.salida,
-    //               marcacion.empleadoId
+    //               marcacion.funcionarioId
     //             ),
 
     //             horasFaltantes: this.calculoHorasFaltantes(
     //               marcacion.entrada,
     //               marcacion.salida,
-    //               marcacion.empleadoId
+    //               marcacion.funcionarioId
     //             ),
 
     //             observacion: "",
@@ -1000,9 +1071,9 @@ export default {
     //     })
     //   );
     // },
-    // nombreFuncionario(empleadoId) {
+    // nombreFuncionario(funcionarioId) {
     //   var nombre;
-    //   funcionariosRef.child(empleadoId).once("value", snap => {
+    //   funcionariosRef.child(funcionarioId).once("value", snap => {
     //     nombre = snap.val().nombre;
     //     console.log("Usuario retornado de firebase", snap.val().nombre);
     //   });
@@ -1017,7 +1088,7 @@ export default {
     //         let response = await axios
     //           .post(url + "/marcaciones", {
     //             fecha: marcacion.fecha,
-    //             empleadoId: marcacion.empleadoId,
+    //             funcionarioId: marcacion.funcionarioId,
     //             entrada: marcacion.entrada,
     //             salida: marcacion.salida,
     //             //calculo de Horas trabajadas
@@ -1135,7 +1206,7 @@ export default {
     //   }
     //   return estilo;
     // },
-   
+
     // handleHorasExtras(entrada, salida, horasExtras) {
     //   var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
     //     result;
@@ -1186,10 +1257,10 @@ export default {
     //     var flag = true;
     //     for (let value of encontrados) {
     //       if (flag) {
-    //         query = query + "empleadoId=" + value;
+    //         query = query + "funcionarioId=" + value;
     //         flag = false;
     //       } else {
-    //         query = query + "&empleadoId=" + value;
+    //         query = query + "&funcionarioId=" + value;
     //       }
     //     }
     //     console.log(query);
@@ -1230,7 +1301,7 @@ export default {
 
     //           var listado = {};
     //           listado.fecha = item.fecha;
-    //           listado.empleadoId = item.empleadoId;
+    //           listado.funcionarioId = item.funcionarioId;
     //           listado.salida = item.salida;
     //           listado.horasTrabajadas = item.horasTrabajadas;
     //           listado.horasExtras = item.horasExtras;
@@ -1276,13 +1347,13 @@ export default {
     //     console.log(JSON.stringify("Marcaciones pos get" + this.marcaciones));
     //   }
     // },
-  
+
     // calcularBancoHora() {
     //   var bancoHoraNuevo = [];
     //   var marcaciones = [];
     //   var bancoHora = [];
     //   var modelo = {
-    //     empleadoId: null,
+    //     funcionarioId: null,
     //     mes: null,
     //     ano: null,
     //     horasCumplidas: null,
@@ -1304,7 +1375,7 @@ export default {
     //             Array.from(marcaciones).map(marcacion => {
     //               Array.from(bancoHora).map(banco => {
     //                 if (
-    //                   marcaciones.empleadoId === banco.empleadoId &&
+    //                   marcaciones.funcionarioId === banco.funcionarioId &&
     //                   banco.mes ===
     //                     moment(marcaciones.fecha, "DD/MM/YYYY").month() &&
     //                   banco.ano ===
@@ -1315,7 +1386,7 @@ export default {
     //                     moment.duration(marcacion.entrada, "HH:mm").asMinutes();
     //                   console.log("paso if largo " + bancoHora.horasCumplidas);
     //                 } else {
-    //                   modelo.empleadoId = marcacion.empleadoId;
+    //                   modelo.funcionarioId = marcacion.funcionarioId;
     //                   modelo.mes = moment(
     //                     marcacion.fecha,
     //                     "DD/MM/YYYY"
@@ -1332,7 +1403,7 @@ export default {
     //             });
     //           } else {
     //             Array.from(marcaciones).map(marcacion => {
-    //               modelo.empleadoId = marcacion.empleadoId;
+    //               modelo.funcionarioId = marcacion.funcionarioId;
     //               modelo.mes = moment(marcacion.fecha, "DD/MM/YYYY").month();
     //               modelo.ano = moment(marcacion.fecha, "DD/MM/YYYY").year();
     //               modelo.horasCumplidas =
@@ -1354,7 +1425,6 @@ export default {
     //     })
     //     .catch(e => conosle.log(e));
     // }
-   
   },
   created() {
     this.obtenerAsistencias();
@@ -1443,7 +1513,7 @@ export default {
   pointer-events: none;
   cursor: default;
 }
-.el-date-table td.current:not(.disabled),
+/* .el-date-table td.current:not(.disabled),
 .el-date-table td.end-date,
 .el-date-table td.start-date {
   background-color: #00b5ad !important;
@@ -1463,8 +1533,10 @@ export default {
 }
 .el-date-editor.el-input {
   width: 160px;
+} */
+.el-input--prefix .el-input__inner {
+  padding-left: 30px !important;
 }
-
 .ui.longer.modal {
   height: 700px;
 }
