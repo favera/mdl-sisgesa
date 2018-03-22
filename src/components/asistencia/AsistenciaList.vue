@@ -45,8 +45,10 @@
             <div class="ten wide field">
 
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre" v-model="nombreBusqueda">
-                <i class="search icon"></i>
+                <input type="text" placeholder="Buscar por nombre" v-model="query.busqueda">
+                <i class="search icon" v-if="busquedaAvanzada"></i>
+                <i @click="queryData" class="inverted teal circular search link icon" v-else></i>
+
               </div>
 
             </div>
@@ -92,87 +94,58 @@
           <label for="">Rango de Fechas:</label>
           <div class="inline fields">
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" v-model="query.rangoFecha.inicio">
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy" v-model="query.rangoFecha.fin">
               </el-date-picker>
             </div>
 
-            <div class="field" style="margin-left: 10px">
+            <div class="field" style="margin-left: 30px">
               <label for="">Estado:</label>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="todos">
+                <input type="radio" value="todos" v-model="query.estado">
                 <label>Todos</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="especificado">
+                <input type="radio" value="ausentes" v-model="query.estado">
                 <label>Ausentes</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="especificado">
+                <input type="radio" value="incompletos" v-model="query.estado">
                 <label>Incompletos</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="especificado">
+                <input type="radio" value="vacaciones" v-model="query.estado">
                 <label>Vacaciones</label>
               </div>
             </div>
 
-            
+            <div class="field" style="margin-left: 20px">
+              <button class="ui circular teal icon button">
+                <i class="search icon"></i>
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
-        <div class="field">
-          <!-- <label for="">Estado:</label>
-          <div class="inline fields">
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" value="todos">
-                <label>Todos</label>
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" value="especificado">
-                <label>Ausentes</label>
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" value="especificado">
-                <label>Incompletos</label>
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" value="especificado">
-                <label>Vacaciones</label>
-              </div>
-            </div>
-
-          </div> -->
-
-        </div>
       </div>
 
       <div class="field">
@@ -254,6 +227,14 @@ export default {
   data() {
     return {
       busquedaAvanzada: false,
+      query: {
+        estado: "todos",
+        rangoFecha: {
+          inicio: null,
+          fin: null
+        },
+        busqueda: null
+      },
       datosMarcaciones: [],
       keyPagination: [],
       listado: [],
@@ -329,6 +310,21 @@ export default {
         name: "editarAsistencia",
         params: { id: marcacionId }
       });
+    },
+    queryData(){
+      var inicio, fin;
+      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin){
+        console.log("ENtro")
+        inicio = "2018-02-01T03:00:00.000Z";
+        fin = "2018-02-05T03:00:00.000Z";
+
+        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${inicio}&fin=${fin}&busqueda=${this.query.busqueda}`).then(response => {
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
+        })
+        
+      }
+      //axios.get
     },
     obtenerFuncionarios() {
       axios.get(`${url}/funcionarios/full-list`).then(response => {
@@ -609,7 +605,7 @@ export default {
         horasExtras: "",
         entrada: null,
         salida: null,
-        horarios: [],
+        horarios: []
       };
 
       console.log("Predatos", JSON.stringify(this.preDatos));
@@ -762,6 +758,7 @@ export default {
       }
     },
     guardarMarcaciones() {
+      this.ausencias.length = 0;
       this.datosMarcaciones.forEach(dato => {
         var marcacion = {};
 
@@ -887,7 +884,7 @@ export default {
       }
 
       if (this.ausencias.length > 0) {
-        this.marcaciones = this.marcaciones.concat(this.ausencias);
+        this.marcaciones = this.ausencias.concat(this.marcaciones);
       }
 
       axios
