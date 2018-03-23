@@ -185,19 +185,22 @@
 
           </tbody>
 
-          <tfoot v-if="pageOne.totalItems > 0">
-            <tr v-show="totalRetraso">
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th>Banco de Horas: {{totalBancoHora}} Minutos Descuentos: {{totalRetraso}} </th>
-              <th></th>
-
-            </tr>
-            <tr>
+          <tfoot >
+            <tr v-show="showMessage">
               <th colspan="9">
+                <div class="ui icon info message">
+                  <i class="close icon"></i>
+                  <i class="frown outline icon"></i>
+                  <div class="header">
+                    No hay registros con el resultado que buscabas
+                  </div>
+ 
+                </div>
+              </th>
+            </tr>
+
+            <tr v-if="pageOne.totalItems > 0">
+              <th colspan="9" >
                 <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
                 </app-pagination>
               </th>
@@ -227,6 +230,7 @@ export default {
   data() {
     return {
       busquedaAvanzada: false,
+      showMessage: false,
       call: null,
       query: {
         estado: "todos",
@@ -295,11 +299,46 @@ export default {
   components: {
     appPagination: Pagination
   },
+  computed:{
+    urlQuery(){
+      var inicio, fin;
+      inicio = "2017-11-01T03:00:00.000Z";
+      fin = "2017-11-01T03:00:00.000Z";
+
+      axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}`).then(response => {
+          console.log(response.data.docs);
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = response.data.total;
+        })
+      
+      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.estado === "ausentes"){
+        console.log("Ausentes");
+        inicio = "2018-02-01T03:00:00.000Z";
+        fin = "2018-02-05T03:00:00.000Z";
+
+        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&estado=ausentes`).then(response => {
+          console.log(response.data.docs);
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
+        })
+      }
+      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.busqueda){
+        console.log("ENtro")
+        inicio = "2018-02-01T03:00:00.000Z";
+        fin = "2018-02-05T03:00:00.000Z";
+
+        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&busqueda=${this.query.busqueda}`).then(response => {
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
+        })
+        
+      }
+  }
+  },
   methods: {
     pageOneChanged(pageNum, llamada) {
       this.pageOne.currentPage = pageNum;
-      this.call()
-      //this.obtenerAsistencias();
+      this.queryData();
     },
     guardarPaginacion(marcacionId) {
       var page = {};
@@ -314,30 +353,47 @@ export default {
       });
     },
     queryData(){
-      var inicio, fin;
-      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.estado === "ausentes"){
-        console.log("Ausentes");
-        inicio = "2018-02-01T03:00:00.000Z";
-        fin = "2018-02-05T03:00:00.000Z";
+      //this.pageOne.currentPage = 1;
 
-        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${inicio}&fin=${fin}&estado=ausentes`).then(response => {
-          console.log(response.data.docs);
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
-        })
+      if(!this.query.rangoFecha.inicio && !this.query.rangoFecha.fin){
+        this.query.rangoFecha.inicio = moment().startOf("month").format();
+        this.query.rangoFecha.fin = moment().endOf("month").format();
       }
-      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.busqueda){
-        console.log("ENtro")
-        inicio = "2018-02-01T03:00:00.000Z";
-        fin = "2018-02-05T03:00:00.000Z";
 
-        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${inicio}&fin=${fin}&busqueda=${this.query.busqueda}`).then(response => {
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
-        })
-        
+      if(!this.query.rangoFecha.inicio && this.query.rangoFecha.fin){
+        this.query.rangoFecha.inicio = moment().startOf("month").format();
       }
-      //axios.get
+
+      if(this.query.rangoFecha.inicio && !this.query.rangoFecha.fin){
+        this.query.rangoFecha.fin = moment().endOf("month").format()
+      }
+      
+
+      if(this.query.estado === "todos"){
+         axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&busqueda=${this.query.busqueda}`).then(response => {
+           if(response.data.docs.length === 0){
+              this.marcaciones.length = 0;
+              this.showMessage = true;
+           }else{
+              this.showMessage = false;
+              this.marcaciones = response.data.docs;
+              this.pageOne.totalItems = response.data.total;
+           }
+          
+        });
+      }else{
+         axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&estado=${this.query.estado}&busqueda=${this.query.busqueda}`).then(response => {
+           if(response.data.docs.length === 0){
+             this.marcaciones.length = 0;
+              this.showMessage = true;
+           }else{
+              this.showMessage = false;
+              this.marcaciones = response.data.docs;
+              this.pageOne.totalItems = response.data.total;
+           }
+        });
+      }
+     
     },
     obtenerFuncionarios() {
       axios.get(`${url}/funcionarios/full-list`).then(response => {
@@ -1438,7 +1494,8 @@ export default {
     // }
   },
   created() {
-    this.obtenerAsistencias();
+    //this.obtenerAsistencias();
+    this.queryData();
     this.obtenerFuncionarios();
     //this.llamarFuncionarios();
     //this.obtenerDatos();

@@ -87,6 +87,22 @@ export default {
     };
   },
   methods: {
+    obtenerMarcaciones(){
+      var inicio, fin;
+      inicio = moment().startOf("month").format();
+      fin = moment().endOf("month").format();
+      axios.get(`${url}/asistencias/full-data?inicio=${incio}&fin=${fin}`).then(response => {
+        this.marcaciones = response.data;
+      });
+    },
+    obtenerFuncionarios(){
+      axios.get(`${url}/funcionarios/full-list`).then(response => {
+        this.funcionarios = response.data;
+      });
+    },
+    obtenerCalendario(){
+      axios.get(`${url}/eventos/`)
+    },
     generarResumen() {
       this.informe.length = 0;
       var fecha = moment("05/11/2017", "DD/MM/YYYY").format("L");
@@ -221,10 +237,13 @@ export default {
     }
   },
   created() {
-    this.$bindAsArray("marcaciones", asistenciasRef);
-    this.$bindAsArray("funcionarios", funcionariosRef);
-    this.$bindAsArray("calendario", calendarioRef);
-    this.generarResumen();
+    this.obtenerMarcaciones();
+    this.obtenerFuncionarios();
+    this.obtenerEventos();
+    // this.$bindAsArray("marcaciones", asistenciasRef);
+    // this.$bindAsArray("funcionarios", funcionariosRef);
+    // this.$bindAsArray("calendario", calendarioRef);
+    // this.generarResumen();
   }
 };
 </script>
