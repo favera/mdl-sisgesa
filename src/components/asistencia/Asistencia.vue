@@ -22,14 +22,14 @@
       <div class="fields">
         <div class="field">
           <label for="">Marcacion Entrada:</label>
-          <el-time-picker v-model="marcacion.entrada" format="HH:mm" :picker-options="{
+          <el-time-picker v-model="marcacion.entrada" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
-                    }" placeholder="Seleccionar hora" value-format="HH:mm">
+                    }" placeholder="Seleccionar hora">
           </el-time-picker>
         </div>
         <div class="field">
           <label for="">Marcacion Salida</label>
-          <el-time-picker v-model="marcacion.salida" format="HH:mm" value-format="HH:mm" :picker-options="{
+          <el-time-picker v-model="marcacion.salida" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Seleccionar hora">
           </el-time-picker>
@@ -87,23 +87,23 @@ export default {
           this.marcacion.salida
         );
         this.marcacion.horasFaltantes = this.getHorasFaltantes(
-          this.marcacion.funcionarioId,
+          this.marcacion.funcionario,
           this.marcacion.entrada,
           this.marcacion.salida
         );
         this.marcacion.horasExtras = this.getHorasExtras(
-          this.marcacion.funcionarioId,
+          this.marcacion.funcionario,
           this.marcacion.entrada,
           this.marcacion.salida
         );
-        this.marcacion.entrada = moment
-          .utc(this.marcacion.entrada)
-          .local()
-          .format("HH:mm");
-        this.marcacion.salida = moment
-          .utc(this.marcacion.salida)
-          .local()
-          .format("HH:mm");
+        // this.marcacion.entrada = moment
+        //   .utc(this.marcacion.entrada)
+        //   .local()
+        //   .format("HH:mm");
+        // this.marcacion.salida = moment
+        //   .utc(this.marcacion.salida)
+        //   .local()
+        //   .format("HH:mm");
         this.marcacion.estilo.ausente = false;
         this.marcacion.estilo.vacaciones = false;
         this.marcacion.estilo.incompleto = false;
@@ -132,23 +132,23 @@ export default {
           this.marcacion.salida
         );
         this.marcacion.horasFaltantes = this.getHorasFaltantes(
-          this.marcacion.funcionarioId,
+          this.marcacion.funcionario,
           this.marcacion.entrada,
           this.marcacion.salida
         );
         this.marcacion.horasExtras = this.getHorasExtras(
-          this.marcacion.funcionarioId,
+          this.marcacion.funcionario,
           this.marcacion.entrada,
           this.marcacion.salida
         );
-        this.marcacion.entrada = moment
-          .utc(this.marcacion.entrada)
-          .local()
-          .format("HH:mm");
-        this.marcacion.salida = moment
-          .utc(this.marcacion.salida)
-          .local()
-          .format("HH:mm");
+        // this.marcacion.entrada = moment
+        //   .utc(this.marcacion.entrada)
+        //   .local()
+        //   .format("HH:mm");
+        // this.marcacion.salida = moment
+        //   .utc(this.marcacion.salida)
+        //   .local()
+        //   .format("HH:mm");
         this.marcacion.estilo.ausente = false;
         this.marcacion.estilo.vacaciones = false;
         this.marcacion.estilo.incompleto = false;
@@ -170,11 +170,13 @@ export default {
       }
     },
     getNombreFuncionario(id) {
-      var nombre = this.funcionarios.find(funcionario => {
+      var nombre;
+      this.funcionarios.find(funcionario => {
         if (funcionario._id === id) {
-          return funcionario.nombre;
+          nombre = funcionario.nombre;
         }
       });
+      console.log("Nombre", nombre);
       return nombre;
     },
     obtenerSabados() {
@@ -293,33 +295,57 @@ export default {
       return estilo;
     },
     getHorasFaltantes(funcionarioId, entrada, salida) {
-      var cargaLaboral, horasTrabajadas, resultado;
+      var cargaLaboral, horasTrabajadas, resultado, horaEntrada, horaSalida;
       console.log("Horas Faltantes Entrada", entrada);
       console.log("Horas Faltantes Salida", salida);
-      funcionariosRef.child(funcionarioId).once("value", snap => {
-        cargaLaboral = snap.val().cargaLaboral;
+
+      horaEntrada = moment(entrada, "HH:mm").format();
+      horaSalida = moment(salida, "HH:mm").format();
+
+      this.funcionarios.filter(funcionario => {
+        if (funcionario._id === funcionarioId) {
+          return (cargaLaboral = funcionario.cargaLaboral)
+        }
       });
-      horasTrabajadas = moment(salida).diff(entrada, "minutes");
+
+      horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
       resultado =
         horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
       if (resultado < 0) {
         return this.convertToHours(resultado);
       } else {
-        return false;
+        return null;
       }
     },
     getHorasTrabajadas(entrada, salida) {
-      var horasTrabajadas = moment(salida).diff(entrada, "minutes");
+      var horaEntrada, horaSalida;
+      horaEntrada = moment(entrada, "HH:mm").format();
+      horaSalida = moment(salida, "HH:mm").format();
+
+      var horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
       console.log("Horas Trabajadas", horasTrabajadas);
       console.log(this.convertToHours(horasTrabajadas));
       return this.convertToHours(horasTrabajadas);
     },
     getHorasExtras(funcionarioId, entrada, salida) {
-      var cargaLaboral, horasTrabajadas, resultado;
-      funcionariosRef.child(funcionarioId).once("value", snap => {
-        cargaLaboral = snap.val().cargaLaboral;
+      var cargaLaboral,
+        horasTrabajadas,
+        resultado,
+        horaEntrada,
+        horaSalida,
+        test;
+
+      this.funcionarios.find(funcionario => {
+        console.log("before if test", funcionario._id, funcionarioId);
+        if (funcionario._id === funcionarioId) {
+          return (cargaLaboral = funcionario.cargaLaboral);
+        }
       });
-      horasTrabajadas = moment(salida).diff(entrada, "minutes");
+
+      horaEntrada = moment(entrada, "HH:mm").format();
+      horaSalida = moment(salida, "HH:mm").format();
+
+      horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
       console.log("Horas Trabajadas", horasTrabajadas);
       resultado =
         horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
@@ -328,7 +354,7 @@ export default {
         console.log(this.convertToHours(resultado));
         return this.convertToHours(resultado);
       } else {
-        return false;
+        return null;
       }
     },
     convertToHours(mins) {

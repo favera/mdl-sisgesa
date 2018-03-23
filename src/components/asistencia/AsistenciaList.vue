@@ -136,7 +136,7 @@
             </div>
 
             <div class="field" style="margin-left: 20px">
-              <button class="ui circular teal icon button">
+              <button @click="queryData" class="ui circular teal icon button">
                 <i class="search icon"></i>
               </button>
 
@@ -227,6 +227,7 @@ export default {
   data() {
     return {
       busquedaAvanzada: false,
+      call: null,
       query: {
         estado: "todos",
         rangoFecha: {
@@ -295,9 +296,10 @@ export default {
     appPagination: Pagination
   },
   methods: {
-    pageOneChanged(pageNum) {
+    pageOneChanged(pageNum, llamada) {
       this.pageOne.currentPage = pageNum;
-      this.obtenerAsistencias();
+      this.call()
+      //this.obtenerAsistencias();
     },
     guardarPaginacion(marcacionId) {
       var page = {};
@@ -313,7 +315,18 @@ export default {
     },
     queryData(){
       var inicio, fin;
-      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin){
+      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.estado === "ausentes"){
+        console.log("Ausentes");
+        inicio = "2018-02-01T03:00:00.000Z";
+        fin = "2018-02-05T03:00:00.000Z";
+
+        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${inicio}&fin=${fin}&estado=ausentes`).then(response => {
+          console.log(response.data.docs);
+          this.marcaciones = response.data.docs;
+          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
+        })
+      }
+      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.busqueda){
         console.log("ENtro")
         inicio = "2018-02-01T03:00:00.000Z";
         fin = "2018-02-05T03:00:00.000Z";
@@ -342,6 +355,7 @@ export default {
           this.marcaciones = response.data.docs;
           this.pageOne.totalItems = response.data.total;
         });
+       
     },
     limpiarDatos() {
       this.json_data.length = 0;
@@ -562,12 +576,12 @@ export default {
         });
     },
     eliminarAsistencia(id) {
-      asistenciasRef.child(id).remove();
 
-      /*var index = this.marcaciones.findIndex(i => i.id === id);
+      var index = this.marcaciones.findIndex(i => i.id === id);
+      this.marcaciones.splice(index, 1)
       axios
-        .delete(url + "/marcaciones/" + id)
-        .then(console.log(this.marcaciones.splice(index, 1)));*/
+        .delete(`${url}/asistencias/delete/${id}`)
+        .then(response => console.log(response));
     },
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
