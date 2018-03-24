@@ -621,13 +621,13 @@ export default {
           this.eliminarAsistencia(id);
           this.$message({
             type: "success",
-            message: "Delete completed"
+            message: "Registro Eliminado exitosamente"
           });
         })
         .catch(() => {
           this.$message({
             type: "info",
-            message: "Delete canceled"
+            message: "Proceso cancelado"
           });
         });
     },
@@ -959,7 +959,10 @@ export default {
 
       axios
         .post(`${url}/asistencias/test-data`, this.marcaciones)
-        .then(response => console.log(response));
+        .then(response => { this.$message({
+            type: "success",
+            message: "Registro insertado exitosamente"
+          }); console.log(response)});
     }
 
     //###############Comentar desde ACA #####

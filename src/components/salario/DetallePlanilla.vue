@@ -149,7 +149,7 @@ export default {
       empleados: [],
       diasTrabajados: null,
       marcacionesEmpleado: [],
-      loading: false,
+      loading: true,
       sucursales: [],
       feriadoSucursal: [],
       json_fields: {
