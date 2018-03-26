@@ -9,7 +9,7 @@
 
           <div class="field">
             <div class="ui blue inverted right floated main compact menu">
-              <a class="item" @click="generarResumen">
+              <a class="item" @click="generateResume">
                 <i class="file text outline icon"> </i> Generar Resumen
               </a>
 
@@ -27,6 +27,7 @@
                 <th>Funcionario</th>
                 <th>Dias del Mes</th>
                 <th>Dias Trabajados</th>
+                <th>Dias Incompletos</th>
                 <th>Total Horas Faltantes</th>
                 <th>Total Horas Extras</th>
                 <th>Ausencias</th>
@@ -38,6 +39,7 @@
                 <td>{{item.nombre}}</td>
                 <td class="center aligned">{{item.totalMes}} dias</td>
                 <td class="center aligned">{{item.totalDiasTrabajados || 0}} dias </td>
+                <td class="center aligned">{{item.totalIncompleto || 0}} dias</td>
                 <td class="center aligned">{{item.totalFaltante}}</td>
                 <td class="center aligned">{{item.totalExtras}}</td>
                 <td class="center aligned">{{item.totalAusencias}}</td>
@@ -82,7 +84,8 @@ export default {
         totalFaltante: null,
         totalExtras: null,
         totalAusencias: null,
-        totalVacaciones: null
+        totalVacaciones: null,
+        totalIncompleto: null
       }
     };
   },
@@ -119,6 +122,94 @@ export default {
         .then(response => {
           this.eventos = response.data;
         });
+    },
+    generateResume(){
+      //this.informe.length = 0;
+      //this.item.totalMes = this.getDiasMes() - this.getFeriados();
+
+      for (const funcionario of this.funcionarios) {
+
+        var datosMes = this.marcaciones.filter(marcacion => {
+          return marcacion.funcionario === funcionario._id
+        });
+
+        console.log(JSON.stringify(datosMes))
+
+       
+
+        var totalMes = datosMes.reduce((item, marcacion)=> {
+          
+          if (marcacion.estilo.ausente) {
+              item.totalAusencias += 1;
+              console.log("Entro Ausente", item.totalAusencias)
+            }
+
+             if (marcacion.estilo.incompleto) {
+              item.totalIncompleto += 1;
+              console.log("Entro Ausente", item.totalIncompleto)
+            }
+
+
+            if (marcacion.estilo.vacaciones) {
+              item.totalVacaciones += 1;
+              console.log("Entro vacaciones", item.totalVacaciones)
+            }
+
+            if (marcacion.horasExtras) {
+              console.log("HORA EXTRA", marcacion.horasExtras);
+              item.totalExtras += moment
+                .duration(marcacion.horasExtras, "HH:mm")
+                .asMinutes();
+                console.log("Entro horas Extras", item.totalExtras)
+            }
+            console.log("Horas Faltantes", marcacion.horasFaltantes);
+            if (marcacion.horasFaltantes) {
+              item.totalFaltante += moment
+                .duration(marcacion.horasFaltantes, "HH:mm")
+                .asMinutes();
+                console.log("Entro horas Faltantes", item.totalFaltante)
+            }
+            console.log("Horas Trabajadas", marcacion.horasTrabajadas);
+            if (
+              marcacion.horasTrabajadas &&
+              marcacion.horasTrabajadas.localeCompare("00:00")
+            ) {
+              item.totalTrabajado += moment
+                .duration(marcacion.horasTrabajadas, "HH:mm")
+                .asMinutes();
+              item.totalDiasTrabajados += 1;
+              console.log("Dias Trabajados",  item.totalDiasTrabajados )
+            }
+
+            item.nombre = funcionario.nombre;
+            item.totalMes = this.getDiasMes() - this.getFeriados() - item.totalVacaciones;
+
+            return item;
+          
+        }, {
+          nombre : null,
+          totalMes : null,
+          totalTrabajado : null,
+          totalDiasTrabajados : null,
+          totalFaltante : null,
+          totalExtras : null,
+          totalAusencias : null,
+          totalVacaciones : null,
+          totalIncompleto: null
+        });
+        console.log("Total Mes", JSON.stringify(totalMes));
+        if(totalMes.totalFaltante)
+        totalMes.totalFaltante = totalMes.totalFaltante + " Minutos";
+        if( totalMes.totalExtras)
+        totalMes.totalExtras = totalMes.totalExtras + " Minutos";
+        if(totalMes.totalAusencias)
+        totalMes.totalAusencias = totalMes.totalAusencias + " Dias";
+        if(totalMes.totalVacaciones)
+        totalMes.totalVacaciones = totalMes.totalVacaciones + " Dias";
+        this.informe.push(totalMes);
+        
+      }
+
     },
     generarResumen() {
       //this.loading = true;

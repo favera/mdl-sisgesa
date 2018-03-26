@@ -962,7 +962,7 @@ export default {
         .then(response => { this.$message({
             type: "success",
             message: "Registro insertado exitosamente"
-          }); console.log(response)});
+          }); this.obtenerAsistencias(); console.log(response)});
     }
 
     //###############Comentar desde ACA #####
