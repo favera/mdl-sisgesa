@@ -129,6 +129,40 @@
 
     </div>
 
+     <div class="ui padded segments">
+    <div class="ui horizontal segments">
+    <div class="ui segment">
+      <img src="http://mdl.com.py/template/images/logomarca.png" width="60px"></img>
+      <h3>Recibo de Adelanto de Salario</h3>
+    </div>
+    <div class="ui r aligned segment">
+      <p>Fecha: 15/03/2018</p>
+    </div>
+      
+      
+   
+  </div>
+    <div class="ui segment">
+      <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>
+      <div class="ui basic segment">
+        <div class="ui list">
+          <div class="item">Apples</div>
+          <div class="item">Pears</div>
+          <div class="item">Oranges</div>
+        </div>
+      </div>
+
+      <div class="ui basic center aligned segment">
+        <div class="ui three column grid">
+          <div class="column">test</div>
+          <div class="column">test</div>
+          <div class="column">test</div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
   </div>
 </template>
 
