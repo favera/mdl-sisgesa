@@ -14,7 +14,6 @@
               </div>
             </div>
 
-
           </div>
         </div>
 
@@ -26,7 +25,7 @@
             <a class="icon item">
               <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
             </a>
-            <a class="icon item">
+            <a class="icon item" @click="exportRecibo">
               <i class="print icon"></i>
             </a>
           </div>
@@ -98,7 +97,7 @@
           <tr v-for="adelanto in adelantos" :key="adelanto._id">
             <td class="collapsing">
               <div class="ui fitted checkbox">
-                <input type="checkbox" :value="adelanto._id" v-model="seleccionados" >
+                <input type="checkbox" :value="adelanto._id" v-model="seleccionados">
                 <label></label>
               </div>
             </td>
@@ -112,65 +111,119 @@
               </router-link>
 
               <i class="trash icon" @click="confirm(adelanto._id)"></i>
-              <i class="print icon"></i>
+              <i class="print icon" @click="exportRecibo(adelanto._id)"></i>
             </td>
+              <div class="print">
+                <div :id="'recibo'+ adelanto._id" class="ui padded segments">
+                  <div class="ui horizontal segments">
+                    <div class="ui segment">
+                      <img src="http://mdl.com.py/template/images/logomarca.png" width="60px">
+                      <h4 class="ui header">Recibo de Adelanto de Salario</h4>
+                    </div>
+                    <div class="ui r aligned segment">
+                      <p>Fecha: {{moment().format("L")}}</p>
+                      <h4 class="ui header">{{adelanto.monto}} {{adelanto.moneda}}</h4>
+                    </div>
+
+                  </div>
+                  <div class="ui segment">
+                    <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
+                    <span class="ui sub header">CI: 4.5263.621</span>
+
+                    <div class="ui basic segment">
+                      <p>Recibi la suma de {{adelanto.monto}} {{adelanto.moneda}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
+                    </div>
+
+                    <br>
+
+                    <div class="ui basic center aligned segment">
+                      <div class="ui three column grid">
+                        <div class="column">
+                          <div class="ui divider"></div>
+                          <p>Aprobado por</p>
+                        </div>
+                        <div class="column">
+                          <div class="ui divider"></div>
+                          <p>Firma del Empleado</p>
+                        </div>
+                        <div class="column">
+                          <div class="ui divider"></div>
+                          <p>Pago por</p>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+           
           </tr>
+         
 
         </tbody>
         <tfoot v-show="pageOne.totalItems > 10">
-           <tr>
-                <th colspan="5">
-                    <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
-                    </app-pagination>
-                </th>
-            </tr>
+          <tr>
+            <th colspan="5">
+              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              </app-pagination>
+            </th>
+          </tr>
         </tfoot>
       </table>
 
     </div>
+    <!-- <div class="print" v-for="adelanto in adelantos" :key="adelanto._id">
+      <div class="ui padded segments">
+        <div class="ui horizontal segments">
+          <div class="ui segment">
+            <img src="http://mdl.com.py/template/images/logomarca.png" width="60px">
+            <h4 class="ui header">Recibo de Adelanto de Salario</h4>
+          </div>
+          <div class="ui r aligned segment">
+            <p>Fecha: {{moment().format("L")}}</p>
+            <h4 class="ui header">Monto: {{adelanto.monto}} {{adelanto.moneda}}</h4>
+          </div>
 
-     <div class="ui padded segments">
-    <div class="ui horizontal segments">
-    <div class="ui segment">
-      <img src="http://mdl.com.py/template/images/logomarca.png" width="60px"></img>
-      <h3>Recibo de Adelanto de Salario</h3>
-    </div>
-    <div class="ui r aligned segment">
-      <p>Fecha: 15/03/2018</p>
-    </div>
-      
-      
-   
-  </div>
-    <div class="ui segment">
-      <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>
-      <div class="ui basic segment">
-        <div class="ui list">
-          <div class="item">Apples</div>
-          <div class="item">Pears</div>
-          <div class="item">Oranges</div>
+        </div>
+        <div class="ui segment">
+          <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
+          <span class="ui sub header">CI: 4.5263.621</span>
+
+          <div class="ui basic segment">
+            <p>Recibi la suma de 540.000 Gs, referente al adelanto de salario por los servicios prestados a la empresa</p>
+          </div>
+
+          <br>
+
+          <div class="ui basic center aligned segment">
+            <div class="ui three column grid">
+              <div class="column">
+                <div class="ui divider"></div>
+                <p>Aprobado por</p>
+              </div>
+              <div class="column">
+                <div class="ui divider"></div>
+                <p>Firma del Empleado</p>
+              </div>
+              <div class="column">
+                <div class="ui divider"></div>
+                <p>Pago por</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      <div class="ui basic center aligned segment">
-        <div class="ui three column grid">
-          <div class="column">test</div>
-          <div class="column">test</div>
-          <div class="column">test</div>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-
+    </div> -->
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import jsPDF from "jspdf";
 import { db } from "./../.././config/firebase";
-import {url} from "./../.././config/backend";
-import Pagination from ".././shared/Pagination.vue"
+import { url } from "./../.././config/backend";
+import Pagination from ".././shared/Pagination.vue";
 
 let adelantosRef = db.ref("/adelantos");
 
@@ -179,6 +232,7 @@ export default {
     return {
       adelantos: [],
       busquedaAvanzada: false,
+      print: false,
       tipoAdelanto: "quincena",
       fechaInicio: "",
       fechaFin: "",
@@ -203,18 +257,51 @@ export default {
     //   if(!checkedAll){
     //     $(this.$el).find('.ui.checkbox').checkbox('uncheck');
     //   }
-      
+
     // },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.obtenerListadoAdelanto();
-     
     },
-    obtenerListadoAdelanto(){
-      axios.get(`${url}/adelantos/?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}`).then(response=> {
-        this.adelantos = response.data.docs;
-        this.pageOne.totalItems= response.data.total;
-      })
+    showPrint() {
+      this.print = !this.print;
+    },
+    exportRecibo(id) {
+      printJS({
+        printable: "recibo"+id,
+        type: "html",
+        targetStyles: ["*"]
+      });
+      // var doc = new jsPDF();
+      // var elementHandler = {
+      //   "#ignorePDF": function(element, renderer) {
+      //     return true;
+      //   }
+      // };
+
+      // var source = $(this.$el).find("#recibo");
+      //  doc.addHTML(source, function() {
+      //   doc.save("teste.pdf");
+      // });
+      // console.log(source);
+      // doc.addHTML(source, 15, 15, {
+      //   width: 180,
+      //   //elementHandlers: elementHandler
+      // });
+
+      // doc.output("dataurlnewwindow");
+    },
+    obtenerListadoAdelanto() {
+      axios
+        .get(
+          `${url}/adelantos/?page=${this.pageOne.currentPage}&limit=${
+            this.pageOne.itemsPerPage
+          }`
+        )
+        .then(response => {
+          this.adelantos = response.data.docs;
+          this.pageOne.totalItems = response.data.total;
+        });
     },
     listar() {
       /*Array.from(this.feriados).forEach(item => {
@@ -262,7 +349,7 @@ export default {
       var index = this.adelantos.findIndex(i => i.id === id);
       this.adelantos.splice(index, 1);
 
-      axios.delete(`${url}/adelantos/delete/${id}`)
+      axios.delete(`${url}/adelantos/delete/${id}`);
       // db.ref("/adelantos/" + id).remove();
     }
   },
@@ -271,26 +358,27 @@ export default {
   },
   computed: {
     selectall: {
-            get: function () {
-                return this.adelantos ? this.seleccionados.length == this.adelantos.length : false;
-            },
-            set: function (value) {
-                var seleccionados = [];
+      get: function() {
+        return this.adelantos
+          ? this.seleccionados.length == this.adelantos.length
+          : false;
+      },
+      set: function(value) {
+        var seleccionados = [];
 
-                if (value) {
-                    this.adelantos.forEach(function (adelanto) {
-                        seleccionados.push(adelanto._id);
-                    });
-                }
-
-                this.seleccionados = seleccionados;
-            }
+        if (value) {
+          this.adelantos.forEach(function(adelanto) {
+            seleccionados.push(adelanto._id);
+          });
         }
+
+        this.seleccionados = seleccionados;
+      }
+    }
   },
   created() {
     // this.$bindAsArray("adelantos", adelantosRef);
     this.obtenerListadoAdelanto();
-   
   }
 };
 </script>
@@ -298,5 +386,17 @@ export default {
 <style>
 .ui.form .field > label {
   margin: 0em 0em 1em;
+}
+.print {
+  display: none;
+}
+
+@media print {
+  body :not(.both) {
+    display: none;
+  }
+  .print {
+    display: block !important;
+  }
 }
 </style>
