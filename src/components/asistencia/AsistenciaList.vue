@@ -241,6 +241,7 @@ export default {
         busqueda: null
       },
       datosMarcaciones: [],
+      postMarcaciones: [],
       keyPagination: [],
       listado: [],
       marcaciones: [],
@@ -861,7 +862,7 @@ export default {
           dato.salida
         );
 
-        this.marcaciones.push(marcacion);
+        this.postMarcaciones.push(marcacion);
       });
       console.log(this.datosMarcaciones[0].fecha);
       var fecha = new Date(this.datosMarcaciones[0].fecha);
@@ -954,15 +955,15 @@ export default {
       }
 
       if (this.ausencias.length > 0) {
-        this.marcaciones = this.ausencias.concat(this.marcaciones);
+        this.postMarcaciones = this.ausencias.concat(this.postMarcaciones);
       }
 
       axios
-        .post(`${url}/asistencias/test-data`, this.marcaciones)
+        .post(`${url}/asistencias/test-data`, this.postMarcaciones)
         .then(response => { this.$message({
             type: "success",
             message: "Registro insertado exitosamente"
-          }); this.obtenerAsistencias(); console.log(response)});
+          }); this.postMarcaciones.length=0; this.obtenerAsistencias(); console.log(response)});
     }
 
     //###############Comentar desde ACA #####
