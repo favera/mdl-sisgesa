@@ -220,7 +220,6 @@
 
 <script>
 import axios from "axios";
-import jsPDF from "jspdf";
 import { db } from "./../.././config/firebase";
 import { url } from "./../.././config/backend";
 import Pagination from ".././shared/Pagination.vue";

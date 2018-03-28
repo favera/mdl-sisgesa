@@ -319,6 +319,7 @@ export default {
     this.obtenerFuncionarios();
     this.obtenerEventos();
   }
+  
 };
 </script>
 

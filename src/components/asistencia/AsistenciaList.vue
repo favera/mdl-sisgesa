@@ -136,7 +136,7 @@
             </div>
 
             <div class="field" style="margin-left: 20px">
-              <button @click="queryData" class="ui circular teal icon button">
+              <button @click="queryData(true)" class="ui circular teal icon button">
                 <i class="search icon"></i>
               </button>
 
@@ -353,8 +353,11 @@ export default {
         params: { id: marcacionId }
       });
     },
-    queryData(){
-      //this.pageOne.currentPage = 1;
+    queryData(pageReset){
+      if(pageReset){
+        this.pageOne.currentPage = 1;
+      }
+      
 
       if(!this.query.rangoFecha.inicio && !this.query.rangoFecha.fin){
         this.query.rangoFecha.inicio = moment().startOf("month").format();
