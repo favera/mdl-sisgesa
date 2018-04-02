@@ -10,7 +10,7 @@
             <div class="ten wide field">
               <div class="ui icon input">
                 <input type="text" placeholder="Buscar por nombre del funcionario...">
-                <i class="inverted teal circular search link icon" @click="listar"></i>
+                <i class="inverted teal circular search link icon" ></i>
               </div>
             </div>
 
@@ -96,15 +96,29 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="prestamo in prestamos" :key="prestamo['.key']">
+          <template v-for="prestamo in prestamos" >
+            <tr >
 
             <td>{{moment(prestamo.fecha).format("L")}}</td>
             <td>{{prestamo.nombreFuncionario}}</td>
             <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
-
             <td>
-              <i class="browser icon"></i>
-              <div class="'showCuotas'+ prestamo._id">
+              <i class="browser icon" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
+            </td>
+            <td>
+              <router-link :to="{name: 'editarPrestamo', params: { id: prestamo._id}}">
+                <i class="edit row icon"></i>
+              </router-link>
+
+              <i class="trash icon" @click="confirm(prestamo._id)"></i>
+            </td>
+           
+          
+            
+          </tr>
+          <tr v-show="prestamo.showCuotas" >
+            <td colspan="5">
+             <div class="ui padded segments">
                 <div class="ui segment">
 
                   <div class="content">
@@ -141,15 +155,15 @@
 
               </div>
             </td>
-            <td>
-              <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
-                <i class="edit row icon"></i>
-              </router-link>
-
-              <i class="trash icon" @click="confirm(prestamo['.key'])"></i>
-            </td>
           </tr>
+          </template>
+         
 
+
+           
+         
+
+           
         </tbody>
         <tfoot>
           <!-- <tr v-show="showMessage">
@@ -166,7 +180,7 @@
           </tr> -->
 
           <tr v-if="pageOne.totalItems > 0">
-            <th colspan="9">
+            <th colspan="5">
               <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
               </app-pagination>
             </th>
@@ -175,6 +189,8 @@
       </table>
 
     </div>
+
+    
 
   </div>
 </template>
@@ -219,29 +235,15 @@ export default {
           }`
         )
         .then(response => {
-          this.prestamos = response.data.docs;
+          this.prestamos = response.data.docs.map((item)=> {
+            item.showCuotas = false;
+            return item;
+          });
           this.pageOne.totalItems = response.data.total;
         });
     },
-    listar() {
-      /*Array.from(this.feriados).forEach(item => {
-        console.log(JSON.stringify(item[".key"]));
-        var test = feriadoRef.child(item[".key"]).child("sucursalesAfectadas");
-        console.log("Variable Test", test);
-        var sucursalesNombre = [];
-        test.on("child_added", snap => {
-          sucursalRef.child(snap.key).once("value", sucursal => {
-            console.log("Test" + JSON.stringify(sucursal.val()));
-
-            sucursalesNombre.push(sucursal.val().nombre);
-          });
-          console.log("Feriadosooo", JSON.stringify(this.sucursalesNombre));
-        });
-        console.log("item a guardar", JSON.stringify(item));
-        this.feriados.sucursalesNombre = sucursalesNombre;
-      });*/
-    },
     confirm(id) {
+      console.log(id);
       this.$confirm(
         "El registro sera eliminado permanentemente. Desea Continuar?",
         "Atencion!",
@@ -266,9 +268,12 @@ export default {
         });
     },
     eliminarPrestamo(id) {
-      //var index = this.sucursales.findIndex(i => i.id === id);
-      prestamosRef.child(id).remove();
-      //db.ref("/adelantos/" + id).remove();
+      console.log("Id recibido", id)
+      var index = this.sucursales.findIndex(i => i.id === id);
+      axios.delete(`${url}/prestamos/delete/${id}`).then(response => {
+        console.log(response);
+        this.sucursales.splice(index, 1);
+      })
     },
     abrirModal() {
       this.modal.modal("show");
@@ -288,4 +293,6 @@ export default {
 .ui.form .field > label {
   margin: 0em 0em 1em;
 }
+
+
 </style>

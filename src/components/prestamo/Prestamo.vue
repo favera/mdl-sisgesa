@@ -10,7 +10,7 @@
 
       <div class="six wide field">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector">
+        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown">
           <option disabled value="">Seleccionar Funcionario..</option>
           <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
         </select>
@@ -221,22 +221,39 @@ export default {
       return funcionario.nombre;
     },
     obtenerPrestamo() {
-      console.log(this.$route.params.id);
+      //console.log(this.$route.params.id);
 
-      if (typeof this.$route.params.id !== "undefined") {
-        console.log(prestamosRef.child(this.$route.params.id));
-        prestamosRef.child(this.$route.params.id).once("value", snapshot => {
-          console.log(snapshot.val());
-          this.prestamo.fechaUtc = snapshot.val().fechaUtc;
-          this.prestamo.monto = snapshot.val().monto;
-          this.prestamo.moneda = snapshot.val().moneda;
-          this.prestamo.inicioPago = snapshot.val().incioPago;
-          this.prestamo.nroCuotas = snapshot.val().nroCuotas;
-          $(this.$el)
+      if (this.$route.params.id) {
+        axios.get(`${url}/prestamos/edit/${this.$route.params.id}`).then(response => {
+          this.prestamo.fecha = response.data.fecha;
+          this.prestamo.monto = response.data.monto;
+          this.prestamo.moneda = response.data.moneda;
+          this.prestamo.nroCuotas = response.data.nroCuotas;
+          this.prestamo.inicioPago = response.data.inicioPago;
+          this.prestamo.cuotas = response.data.cuotas;
+           $(this.$el)
             .find(".ui.dropdown")
             .dropdown("refresh")
-            .dropdown("set selected", snapshot.val().funcionarioId);
-        });
+            .dropdown("set selected", response.data.funcionario);
+
+            $(this.$el)
+              .find("#monedaSelector")
+              .dropdown("refresh")
+              .dropdown("set selected", response.data.moneda);
+        })
+        // console.log(prestamosRef.child(this.$route.params.id));
+        // prestamosRef.child(this.$route.params.id).once("value", snapshot => {
+        //   console.log(snapshot.val());
+        //   this.prestamo.fechaUtc = snapshot.val().fechaUtc;
+        //   this.prestamo.monto = snapshot.val().monto;
+        //   this.prestamo.moneda = snapshot.val().moneda;
+        //   this.prestamo.inicioPago = snapshot.val().incioPago;
+        //   this.prestamo.nroCuotas = snapshot.val().nroCuotas;
+        //   $(this.$el)
+        //     .find(".ui.dropdown")
+        //     .dropdown("refresh")
+        //     .dropdown("set selected", snapshot.val().funcionarioId);
+        // });
       }
     },
     guardarPrestamo() {
@@ -321,38 +338,21 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
+     
   },
   updated() {
     // this.obtenerAdelanto();
+   
   },
   created() {
     //this.$bindAsArray("funcionarios", funcionariosRef);
     this.obtenerFuncionarios();
+    this.obtenerPrestamo();
+
   },
   watch: {
     $route: "obtenerPrestamo"
-    // funcionarioSeleccionado: function() {
-    //   if (this.adelanto.tipoAdelanto === "quincena") {
-    //     funcionariosRef
-    //       .child(this.funcionarioSeleccionado)
-    //       .once("value", snap => {
-    //         console.log(snap.val().salario);
-    //         var quincena =
-    //           snap
-    //             .val()
-    //             .salario.split(".")
-    //             .join("") / 2;
-    //         this.adelanto.monto = quincena.toLocaleString();
-    //         this.adelanto.moneda = snap.val().moneda;
-    //         this.adelanto.nombreFuncionario = snap.val().nombre;
-    //       });
-    //   }
-
-    //   $(this.$el)
-    //     .find("#monedaSelector")
-    //     .dropdown("refresh")
-    //     .dropdown("set selected", this.adelanto.moneda);
-    // }
+   
   },
   directives: { money: VMoney }
 };
