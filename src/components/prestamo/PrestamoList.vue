@@ -98,9 +98,13 @@
         <tbody>
           <tr v-for="prestamo in prestamos" :key="prestamo['.key']">
 
-            <div class="ui longer modal">
-              <div class="header"> Cuotas generadas del Prestamo </div>
-              <div class="scrolling content">
+            <td>{{moment(prestamo.fecha).format("L")}}</td>
+            <td>{{prestamo.nombreFuncionario}}</td>
+            <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
+
+            <td>
+              <i class="browser icon"></i>
+              <div>
                 <div class="ui segment">
 
                   <div class="content">
@@ -119,7 +123,7 @@
 
                       <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
                         <div class="middle aligned content">
-                          <p>{{cuota.vencimiento}}</p>
+                          <p>{{moment(cuota.vencimiento).format("L")}}</p>
                         </div>
                         <div class="middle aligned content">
                           <p>{{cuota.monto}}-{{cuota.moneda}}</p>
@@ -136,15 +140,6 @@
                 </div>
 
               </div>
-
-            </div>
-
-            <td>{{prestamo.fecha}}</td>
-            <td>{{prestamo.nombreFuncionario}}</td>
-            <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
-
-            <td>
-              <i class="browser icon" @click="abrirModal()"></i>
             </td>
             <td>
               <router-link :to="{name: 'editarPrestamo', params: { id: prestamo['.key']}}">
@@ -156,6 +151,27 @@
           </tr>
 
         </tbody>
+        <tfoot>
+          <!-- <tr v-show="showMessage">
+            <th colspan="9">
+              <div class="ui icon info message">
+                <i class="close icon"></i>
+                <i class="frown outline icon"></i>
+                <div class="header">
+                  No hay registros con el resultado que buscabas
+                </div>
+
+              </div>
+            </th>
+          </tr> -->
+
+          <tr v-if="pageOne.totalItems > 0">
+            <th colspan="9">
+              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              </app-pagination>
+            </th>
+          </tr>
+        </tfoot>
       </table>
 
     </div>
@@ -165,8 +181,10 @@
 
 <script>
 import axios from "axios";
+import moment from "moment";
 import { db } from "./../.././config/firebase";
-
+import { url } from "./../.././config/backend";
+import Pagination from ".././shared/Pagination.vue";
 let prestamosRef = db.ref("/prestamos");
 
 export default {
@@ -174,12 +192,36 @@ export default {
     return {
       prestamos: [],
       modal: null,
-      busquedaAvanzada: false
+      busquedaAvanzada: false,
+      pageOne: {
+        currentPage: 1,
+        totalItems: 0,
+        itemsPerPage: 10
+      }
     };
   },
+  components: {
+    appPagination: Pagination
+  },
   methods: {
+    pageOneChanged(pageNum) {
+      this.pageOne.currentPage = pageNum;
+      this.obtenerPrestamos();
+    },
     incluirPrestamo() {
       this.$router.push({ name: "incluirPrestamo" });
+    },
+    obtenerPrestamos() {
+      axios
+        .get(
+          `${url}/prestamos?page=${this.pageOne.currentPage}&limit=${
+            this.pageOne.itemsPerPage
+          }`
+        )
+        .then(response => {
+          this.prestamos = response.data.docs;
+          this.pageOne.totalItems = response.data.total;
+        });
     },
     listar() {
       /*Array.from(this.feriados).forEach(item => {
@@ -229,14 +271,12 @@ export default {
       //db.ref("/adelantos/" + id).remove();
     },
     abrirModal() {
-      this.modal
-        .modal("setting", { observeChanges: true })
-        .modal("show")
-        .modal("refresh");
+      this.modal.modal("show");
     }
   },
   created() {
-    this.$bindAsArray("prestamos", prestamosRef);
+    this.obtenerPrestamos();
+    // this.$bindAsArray("prestamos", prestamosRef);
   },
   mounted() {
     this.modal = $(this.$el).find(".ui.longer.modal");

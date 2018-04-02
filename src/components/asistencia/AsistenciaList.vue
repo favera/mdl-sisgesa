@@ -185,7 +185,7 @@
 
           </tbody>
 
-          <tfoot >
+          <tfoot>
             <tr v-show="showMessage">
               <th colspan="9">
                 <div class="ui icon info message">
@@ -194,13 +194,13 @@
                   <div class="header">
                     No hay registros con el resultado que buscabas
                   </div>
- 
+
                 </div>
               </th>
             </tr>
 
             <tr v-if="pageOne.totalItems > 0">
-              <th colspan="9" >
+              <th colspan="9">
                 <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
                 </app-pagination>
               </th>
@@ -300,44 +300,9 @@ export default {
   components: {
     appPagination: Pagination
   },
-  computed:{
-    urlQuery(){
-      var inicio, fin;
-      inicio = "2017-11-01T03:00:00.000Z";
-      fin = "2017-11-01T03:00:00.000Z";
-
-      axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}`).then(response => {
-          console.log(response.data.docs);
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = response.data.total;
-        })
-      
-      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.estado === "ausentes"){
-        console.log("Ausentes");
-        inicio = "2018-02-01T03:00:00.000Z";
-        fin = "2018-02-05T03:00:00.000Z";
-
-        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&estado=ausentes`).then(response => {
-          console.log(response.data.docs);
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
-        })
-      }
-      if(!this.query.rangoFecha.incio && !this.query.rangoFecha.fin && this.query.busqueda){
-        console.log("ENtro")
-        inicio = "2018-02-01T03:00:00.000Z";
-        fin = "2018-02-05T03:00:00.000Z";
-
-        axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&busqueda=${this.query.busqueda}`).then(response => {
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = parseInt(response.data.pages) * 10;
-        })
-        
-      }
-  }
-  },
+  computed: {},
   methods: {
-    pageOneChanged(pageNum, llamada) {
+    pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.queryData();
     },
@@ -353,51 +318,75 @@ export default {
         params: { id: marcacionId }
       });
     },
-    queryData(pageReset){
-      if(pageReset){
+    queryData(pageReset) {
+      if (pageReset) {
         this.pageOne.currentPage = 1;
       }
-      
 
-      if(!this.query.rangoFecha.inicio && !this.query.rangoFecha.fin){
-        this.query.rangoFecha.inicio = moment().startOf("month").format();
-        this.query.rangoFecha.fin = moment().endOf("month").format();
+      if (!this.query.rangoFecha.inicio && !this.query.rangoFecha.fin) {
+        this.query.rangoFecha.inicio = moment()
+          .startOf("month")
+          .format();
+        this.query.rangoFecha.fin = moment()
+          .endOf("month")
+          .format();
       }
 
-      if(!this.query.rangoFecha.inicio && this.query.rangoFecha.fin){
-        this.query.rangoFecha.inicio = moment().startOf("month").format();
+      if (!this.query.rangoFecha.inicio && this.query.rangoFecha.fin) {
+        this.query.rangoFecha.inicio = moment()
+          .startOf("month")
+          .format();
       }
 
-      if(this.query.rangoFecha.inicio && !this.query.rangoFecha.fin){
-        this.query.rangoFecha.fin = moment().endOf("month").format()
+      if (this.query.rangoFecha.inicio && !this.query.rangoFecha.fin) {
+        this.query.rangoFecha.fin = moment()
+          .endOf("month")
+          .format();
       }
-      
 
-      if(this.query.estado === "todos"){
-         axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&busqueda=${this.query.busqueda}`).then(response => {
-           if(response.data.docs.length === 0){
+      if (this.query.estado === "todos") {
+        axios
+          .get(
+            `${url}/asistencias/query-data?page=${
+              this.pageOne.currentPage
+            }&limit=${this.pageOne.itemsPerPage}&inicio=${
+              this.query.rangoFecha.inicio
+            }&fin=${this.query.rangoFecha.fin}&busqueda=${
+              this.query.busqueda
+            }&estado=${this.query.estado}`
+          )
+          .then(response => {
+            if (response.data.docs.length === 0) {
               this.marcaciones.length = 0;
               this.showMessage = true;
-           }else{
+            } else {
               this.showMessage = false;
               this.marcaciones = response.data.docs;
               this.pageOne.totalItems = response.data.total;
-           }
-          
-        });
-      }else{
-         axios.get(`${url}/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${this.pageOne.itemsPerPage}&inicio=${this.query.rangoFecha.inicio}&fin=${this.query.rangoFecha.fin}&estado=${this.query.estado}&busqueda=${this.query.busqueda}`).then(response => {
-           if(response.data.docs.length === 0){
-             this.marcaciones.length = 0;
+            }
+          });
+      } else {
+        axios
+          .get(
+            `${url}/asistencias/query-data?page=${
+              this.pageOne.currentPage
+            }&limit=${this.pageOne.itemsPerPage}&inicio=${
+              this.query.rangoFecha.inicio
+            }&fin=${this.query.rangoFecha.fin}&estado=${
+              this.query.estado
+            }&busqueda=${this.query.busqueda}`
+          )
+          .then(response => {
+            if (response.data.docs.length === 0) {
+              this.marcaciones.length = 0;
               this.showMessage = true;
-           }else{
+            } else {
               this.showMessage = false;
               this.marcaciones = response.data.docs;
               this.pageOne.totalItems = response.data.total;
-           }
-        });
+            }
+          });
       }
-     
     },
     obtenerFuncionarios() {
       axios.get(`${url}/funcionarios/full-list`).then(response => {
@@ -415,7 +404,6 @@ export default {
           this.marcaciones = response.data.docs;
           this.pageOne.totalItems = response.data.total;
         });
-       
     },
     limpiarDatos() {
       this.json_data.length = 0;
@@ -636,9 +624,8 @@ export default {
         });
     },
     eliminarAsistencia(id) {
-
       var index = this.marcaciones.findIndex(i => i.id === id);
-      this.marcaciones.splice(index, 1)
+      this.marcaciones.splice(index, 1);
       axios
         .delete(`${url}/asistencias/delete/${id}`)
         .then(response => console.log(response));
@@ -963,10 +950,15 @@ export default {
 
       axios
         .post(`${url}/asistencias/test-data`, this.postMarcaciones)
-        .then(response => { this.$message({
+        .then(response => {
+          this.$message({
             type: "success",
             message: "Registro insertado exitosamente"
-          }); this.postMarcaciones.length=0; this.obtenerAsistencias(); console.log(response)});
+          });
+          this.postMarcaciones.length = 0;
+          this.obtenerAsistencias();
+          console.log(response);
+        });
     }
 
     //###############Comentar desde ACA #####

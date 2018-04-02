@@ -26,16 +26,12 @@
       </div>
       <div class="ten wide field">
         <label for="">Sucursal:</label>
-        <select name="sucursales" v-model="empleado.sucursal">
+
+        <select name="funcionarios" v-model="sucursalSeleccionada" class="ui dropdown">
           <option disabled value="">Seleccionar Sucursal..</option>
           <option v-for="sucursal in sucursales" :key="sucursal._id" v-bind:value="sucursal._id">{{sucursal.nombre}}</option>
-
         </select>
-        <!-- <select name="sucursales" v-model="sucursalkey">
-          <option disabled value="">Seleccionar Sucursal..</option>
-          <option v-for="sucursal in sucursales" :key="sucursal['.key']" v-bind:value="sucursal['.key']" :selected="sucursal['.key'] === Object.keys(empleado.sucursalId)[0] ? true : false">{{sucursal.nombre}}</option>
-          <option value=""></option>
-        </select> -->
+
       </div>
 
       <div class="ten wide field">
@@ -98,7 +94,7 @@
         </div>
         <div class="five wide field">
           <label for="">Moneda</label>
-          <select v-model="empleado.moneda" class="ui fluid dropdown">
+          <select v-model="empleado.moneda" class="ui fluid dropdown monedaSelector">
             <option disbled value="">Seleccionar Moneda..</option>
             <option value="Gs">Guaranies - Gs.</option>
             <option value="Us">Dolares - Us.</option>
@@ -182,6 +178,7 @@ export default {
         precision: 0,
         masked: false /* doesn't work with directive */
       },
+      sucursalSeleccionada: null,
       sucursalkey: "",
       sucursales: []
     };
@@ -207,7 +204,7 @@ export default {
             salarioMinuto: this.calcularSalarioMinuto(this.empleado.salario),
             moneda: this.empleado.moneda,
             ips: this.empleado.ips,
-            sucursal: this.empleado.sucursal,
+            sucursal: this.sucursalSeleccionada,
             activo: true
           })
           .then(response => {
@@ -250,7 +247,7 @@ export default {
             salarioMinuto: this.calcularSalarioMinuto(this.empleado.salario),
             moneda: this.empleado.moneda,
             ips: this.empleado.ips,
-            sucursal: this.empleado.sucursal,
+            sucursal: this.sucursalSeleccionada,
             activo: true
           })
           .then(response => {
@@ -279,7 +276,7 @@ export default {
       }
     },
     obtenerEmpleado() {
-      if (typeof this.$route.params.id != "undefined") {
+      if (this.$route.params.id) {
         axios
           .get(`${url}/funcionarios/edit/${this.$route.params.id}`)
           .then(response => {
@@ -294,6 +291,15 @@ export default {
             this.empleado.moneda = response.data.moneda;
             this.empleado.ips = response.data.ips;
             this.empleado.sucursal = response.data.sucursal;
+            this.sucursalSeleccionada = response.data.sucursal;
+            // $(this.$el)
+            //   .find(".ui.dropdown")
+            //   .dropdown("refresh")
+            //   .dropdown("set selected", response.data.sucursal);
+            $(this.$el)
+              .find(".monedaSelector")
+              .dropdown("refresh")
+              .dropdown("set selected", response.data.moneda);
           });
         // console.log(funcionariosRef.child(this.$route.params.id));
         // funcionariosRef.child(this.$route.params.id).once("value", snapshot => {
@@ -347,16 +353,23 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.fluid.dropdown")
+      .find(".ui.dropdown")
       .dropdown();
   },
-  created() {
+  updated() {
     this.obtenerEmpleado();
+  },
+  created() {
     this.obtenerSucursales();
-    //this.$bindAsArray("sucursales", sucursalesRef);
   },
   watch: {
-    $route: "obtenerEmpleado"
+    $route: "obtenerEmpleado",
+    sucursalSeleccionada: function() {
+      $(this.$el)
+        .find(".ui.dropdown")
+        .dropdown("refresh")
+        .dropdown("set selected", this.sucursalSeleccionada);
+    }
   },
   directives: { money: VMoney }
 };

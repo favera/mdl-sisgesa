@@ -304,7 +304,7 @@ export default {
 
       this.funcionarios.filter(funcionario => {
         if (funcionario._id === funcionarioId) {
-          return (cargaLaboral = funcionario.cargaLaboral)
+          return (cargaLaboral = funcionario.cargaLaboral);
         }
       });
 
@@ -428,12 +428,21 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
-    this.obtenerMarcacion();
+    //this.obtenerMarcacion();
     this.obtenerFuncionarios();
+  },
+  updated() {
+    this.obtenerMarcacion();
   },
   created() {},
   watch: {
-    $route: "obtenerMarcacion"
+    $route: "obtenerMarcacion",
+    funcionarioSeleccionado: function() {
+      $(this.$el)
+        .find(".ui.dropdown")
+        .dropdown("refresh")
+        .dropdown("set selected", this.funcionarioSeleccionado);
+    }
   }
 };
 </script>

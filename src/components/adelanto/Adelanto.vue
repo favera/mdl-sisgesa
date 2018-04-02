@@ -231,10 +231,10 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
-    this.obtenerAdelanto();
+    //this.obtenerAdelanto();
   },
   updated() {
-    //this.obtenerAdelanto();
+    this.obtenerAdelanto();
   },
   created() {
     // this.obtenerAdelanto();
