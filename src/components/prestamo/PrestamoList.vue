@@ -104,7 +104,7 @@
 
             <td>
               <i class="browser icon"></i>
-              <div>
+              <div class="'showCuotas'+ prestamo._id">
                 <div class="ui segment">
 
                   <div class="content">
