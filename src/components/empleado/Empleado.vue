@@ -356,11 +356,9 @@ export default {
       .find(".ui.dropdown")
       .dropdown();
   },
-  updated() {
-    this.obtenerEmpleado();
-  },
   created() {
     this.obtenerSucursales();
+    this.obtenerEmpleado();
   },
   watch: {
     $route: "obtenerEmpleado",

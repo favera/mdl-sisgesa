@@ -231,15 +231,10 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
-    //this.obtenerAdelanto();
-  },
-  updated() {
-    this.obtenerAdelanto();
   },
   created() {
-    // this.obtenerAdelanto();
-    //this.$bindAsArray("funcionarios", funcionariosRef);
     this.obtenerFuncionarios();
+    this.obtenerAdelanto();
   },
   watch: {
     $route: "obtenerAdelanto",

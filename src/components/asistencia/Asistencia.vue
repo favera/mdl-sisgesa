@@ -431,10 +431,9 @@ export default {
     //this.obtenerMarcacion();
     this.obtenerFuncionarios();
   },
-  updated() {
+  created() {
     this.obtenerMarcacion();
   },
-  created() {},
   watch: {
     $route: "obtenerMarcacion",
     funcionarioSeleccionado: function() {
