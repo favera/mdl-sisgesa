@@ -21,14 +21,21 @@
               <td>{{(dato.entrada || "--") + " hs"}}</td>
               <td>{{(dato.salida || "--") + " hs"}}</td>
             </tr>
+            <tr v-show="warningMessage">
+              <td colspan="4">
+                <div class="ui yellow message"> <h4>Los datos de la planilla actualmente ya existen en el sistema. Por favor, verifique los datos</h4></div>
+              </td>
+              
+            </tr>
           </tbody>
         </table>
 
       </div>
       <div class="actions">
 
-        <button class="ui positive teal button" @click="guardarMarcaciones">Aceptar</button>
+        <button class="ui positive teal button" v-show="!warningMessage" @click="guardarMarcaciones">Aceptar</button>
         <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
+        
       </div>
     </div>
 
@@ -241,6 +248,7 @@ export default {
         busqueda: null
       },
       datosMarcaciones: [],
+      validarPlanilla: [],
       postMarcaciones: [],
       keyPagination: [],
       listado: [],
@@ -271,6 +279,7 @@ export default {
       totalBancoHora: 0,
       totalRetraso: 0,
       totalHoraExtra: 0,
+      warningMessage: false,
       pageOne: {
         currentPage: 1,
         totalItems: 0,
@@ -634,21 +643,53 @@ export default {
       this.datosMarcaciones.length = 0;
       //Pasamos los datos del archivo excel a preDatos
       this.preDatos = convertedData.body;
-      this.funcionarios.forEach(value => {
-        console.log("Funcionario", value.acnro);
-        this.orderData(
-          value.acnro,
-          value._id,
-          value.nombre,
-          value.cargaLaboral,
-          value.medioTiempo,
-          value.vacaciones
-        );
-      });
-      this.abrirModal();
-      console.log("Fecha Planilla", this.datosMarcaciones[0].fecha);
-      this.getSabados(this.datosMarcaciones[0].fecha);
-      this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
+      var fecha = moment(this.preDatos[0].Horario, "DD/MM/YYYY").format();
+      console.log("Fecha Format", fecha);
+
+      axios
+        .get(`${url}/asistencias/full-list?fechaPlanilla=${fecha}`)
+        .then(response => {
+          console.log("Response Length", response.data.length);
+          if (response.data.length > 0) {
+            var asistenciaRetorno = response.data;
+            console.log(JSON.stringify(asistenciaRetorno));
+
+            this.preDatos.forEach(asistenciaPlanilla => {
+              var noExiste = asistenciaRetorno.findIndex(asistenciaBackend => {
+                return (
+                  asistenciaBackend.funcionario.acnro ===
+                  asistenciaPlanilla["AC-No."]
+                );
+              });
+              console.log("Existe Funcionario", existe);
+              if (noExiste === -1) {
+                this.validarPlanilla.push(asistenciaPlanilla);
+              }
+            });
+            if(this.validarPlanilla.length){
+              this.warningMessage = true;
+            }
+          } else {
+            this.validarPlanilla = convertedData.body;
+            
+          }
+
+          this.funcionarios.forEach(value => {
+            console.log("Funcionario", value.acnro);
+            this.orderData(
+              value.acnro,
+              value._id,
+              value.nombre,
+              value.cargaLaboral,
+              value.medioTiempo,
+              value.vacaciones
+            );
+          });
+          this.abrirModal();
+          console.log("Fecha Planilla", this.datosMarcaciones[0].fecha);
+          this.getSabados(this.datosMarcaciones[0].fecha);
+          this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
+        });
     },
     //recibe datos de funcionarios desde el foreach de funcionarios
     orderData(
@@ -671,7 +712,7 @@ export default {
 
       console.log("Predatos", JSON.stringify(this.preDatos));
       //iteracion sobre el array de objetos de preDatos, preDatos contiene datos del archivo excel
-      for (let item of this.preDatos) {
+      for (let item of this.validarPlanilla) {
         //Compara si el acnro dado por el foreach de funcionario es igual al item del for de los datos del excel
         if (acnro === item["AC-No."]) {
           console.log(
@@ -733,9 +774,9 @@ export default {
           this.datosMarcaciones.push(modelo);
         }
       }
-      console.log(
-        JSON.stringify("RESULTADO " + JSON.stringify(this.datosMarcaciones))
-      );
+      // console.log(
+      //   JSON.stringify("RESULTADO " + JSON.stringify(this.datosMarcaciones))
+      // );
     },
     //maneja los valores negativos resultante de las horas extras
     handleNegative(mins) {
