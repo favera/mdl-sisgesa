@@ -141,7 +141,10 @@ export default {
         .then(response => {
           this.funcionarios = response.data;
         })
-        .catch(e => console.log(e));
+        .catch(e => {
+          console.log(e);
+          this.fail();
+        });
     },
     guardarAdelanto() {
       if (this.$route.params.id) {

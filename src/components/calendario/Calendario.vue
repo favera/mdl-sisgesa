@@ -331,9 +331,15 @@ export default {
       });
     },
     obtenerFuncionarios() {
-      axios.get(`${url}/funcionarios/full-list`).then(response => {
-        this.funcionarios = response.data;
-      });
+      axios
+        .get(`${url}/funcionarios/full-list`)
+        .then(response => {
+          this.funcionarios = response.data;
+        })
+        .catch(e => {
+          console.log(e);
+          this.fail();
+        });
     }
   },
   mounted() {

@@ -181,7 +181,10 @@ export default {
         .then(response => {
           this.funcionarios = response.data;
         })
-        .catch(e => console.log(e));
+        .catch(e => {
+          console.log(e);
+          this.fail();
+        });
     },
     handleChange(value) {
       this.generarCuotas(value);
@@ -224,23 +227,25 @@ export default {
       //console.log(this.$route.params.id);
 
       if (this.$route.params.id) {
-        axios.get(`${url}/prestamos/edit/${this.$route.params.id}`).then(response => {
-          this.prestamo.fecha = response.data.fecha;
-          this.prestamo.monto = response.data.monto;
-          this.prestamo.moneda = response.data.moneda;
-          this.prestamo.nroCuotas = response.data.nroCuotas;
-          this.prestamo.inicioPago = response.data.inicioPago;
-          this.prestamo.cuotas = response.data.cuotas;
-           $(this.$el)
-            .find(".ui.dropdown")
-            .dropdown("refresh")
-            .dropdown("set selected", response.data.funcionario);
+        axios
+          .get(`${url}/prestamos/edit/${this.$route.params.id}`)
+          .then(response => {
+            this.prestamo.fecha = response.data.fecha;
+            this.prestamo.monto = response.data.monto;
+            this.prestamo.moneda = response.data.moneda;
+            this.prestamo.nroCuotas = response.data.nroCuotas;
+            this.prestamo.inicioPago = response.data.inicioPago;
+            this.prestamo.cuotas = response.data.cuotas;
+            $(this.$el)
+              .find(".ui.dropdown")
+              .dropdown("refresh")
+              .dropdown("set selected", response.data.funcionario);
 
             $(this.$el)
               .find("#monedaSelector")
               .dropdown("refresh")
               .dropdown("set selected", response.data.moneda);
-        })
+          });
         // console.log(prestamosRef.child(this.$route.params.id));
         // prestamosRef.child(this.$route.params.id).once("value", snapshot => {
         //   console.log(snapshot.val());
@@ -338,21 +343,17 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
-     
   },
   updated() {
     // this.obtenerAdelanto();
-   
   },
   created() {
     //this.$bindAsArray("funcionarios", funcionariosRef);
     this.obtenerFuncionarios();
     this.obtenerPrestamo();
-
   },
   watch: {
     $route: "obtenerPrestamo"
-   
   },
   directives: { money: VMoney }
 };

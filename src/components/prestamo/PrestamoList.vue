@@ -97,7 +97,7 @@
         </thead>
         <tbody>
           <template v-for="prestamo in prestamos" >
-            <tr >
+            <tr>
 
             <td>{{moment(prestamo.fecha).format("L")}}</td>
             <td>{{prestamo.nombreFuncionario}}</td>

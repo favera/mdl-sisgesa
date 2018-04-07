@@ -200,7 +200,6 @@ export default {
   },
   created() {
     this.obtenerSucursal();
-    //console.log(sucursalRef.child(this.$route.params.id));
   },
   watch: {
     $route: "obtenerSucursal"

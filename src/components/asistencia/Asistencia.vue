@@ -402,9 +402,15 @@ export default {
     },
 
     obtenerFuncionarios() {
-      axios.get(`${url}/funcionarios/full-list/`).then(response => {
-        this.funcionarios = response.data;
-      });
+      axios
+        .get(`${url}/funcionarios/full-list/`)
+        .then(response => {
+          this.funcionarios = response.data;
+        })
+        .catch(e => {
+          console.log(e);
+          this.fail();
+        });
     },
     cancelar() {
       this.$router.push({ name: "listadoAsistencia" });
@@ -428,10 +434,9 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
-    //this.obtenerMarcacion();
-    this.obtenerFuncionarios();
   },
   created() {
+    this.obtenerFuncionarios();
     this.obtenerMarcacion();
   },
   watch: {

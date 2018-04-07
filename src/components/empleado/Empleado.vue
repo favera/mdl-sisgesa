@@ -320,9 +320,14 @@ export default {
       }
     },
     obtenerSucursales() {
-      axios.get(`${url}/sucursales/`).then(response => {
-        this.sucursales = response.data;
-      });
+      axios
+        .get(`${url}/sucursales/`)
+        .then(response => {
+          this.sucursales = response.data;
+        })
+        .catch(e => {
+          console.log(e);
+        });
     },
     returnList() {
       this.$router.push({ name: "listadoEmpleado" });
