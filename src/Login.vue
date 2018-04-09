@@ -1,10 +1,9 @@
 <template>
-    <div class="ui middle aligned center aligned grid">
-        <div class="ui five wide column">
+    <div class="ui middle aligned center aligned grid" id="login">
+        <div class="ui four wide column">
             <h2 class="ui teal image header">
-                <!-- <img src="assets/images/logo.png" class="image"> -->
                 <div class="content">
-                    Log-in to your account
+                    Inicie Sesion en su cuenta
                 </div>
             </h2>
             <form class="ui large form">
@@ -12,7 +11,7 @@
                     <div class="field">
                         <div class="ui left icon input">
                             <i class="user icon"></i>
-                            <input type="text" name="email" v-model="email" placeholder="E-mail address">
+                            <input type="text" name="email" v-model="email" placeholder="E-mail">
                         </div>
                     </div>
                     <div class="field">
@@ -21,7 +20,7 @@
                             <input type="password" name="password" v-model="password" placeholder="Password">
                         </div>
                     </div>
-                    <div class="ui fluid large teal submit button" @click="login">Login</div>
+                    <div class="ui fluid large teal submit button" @click="login">Iniciar Sesion</div>
                 </div>
 
                 <div class="ui error message"></div>
@@ -29,8 +28,7 @@
             </form>
 
             <div class="ui message">
-                New to us?
-                <a href="#">Sign Up</a>
+               Si olvido la contrasena pongase en contacto con el administrador
             </div>
         </div>
     </div>
@@ -56,6 +54,9 @@ export default {
 </script>
 
 <style>
+#login{
+    margin-top: 10%;
+}
 
 </style>
 

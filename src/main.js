@@ -29,7 +29,8 @@ locale.use(lang);
 import { routes } from "./routes";
 import vueXlsxTable from "vue-xlsx-table";
 import moment from "moment";
-import axios from "axios";
+import axios from "./config/vue-axios"
+//import axios from "axios";
 
 Vue.use(VueRouter);
 Vue.use(VueFire);
@@ -56,5 +57,6 @@ const router = new VueRouter({
 new Vue({
   el: "#app",
   router: router,
+  axios: axios,
   render: h => h(App)
 });
