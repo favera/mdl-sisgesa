@@ -43,7 +43,7 @@ import Home from "./Home.vue";
 export const routes = [
   // { path: "/", name: "Home", component: Home },
   { path: "/", name: "Login", component: Login },
-  {path: "/home", name: "Home", component: Home, children: [
+  {path: "/dashboard", name: "Home", component: Home, children: [
     {
       path: "/asistencias",
       component: AsistenciaList,
@@ -173,7 +173,7 @@ export const routes = [
       name: "resumenBancoHora"
     }
   ]},
-  {path: "/dashboard", name:"Dashboard", component: Dashboard },
+  // {path: "/dashboard", name:"Dashboard", component: Dashboard },
   // {
   //   path: "/asistencias",
   //   component: AsistenciaList,

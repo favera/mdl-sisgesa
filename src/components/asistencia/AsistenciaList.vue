@@ -354,9 +354,9 @@ export default {
       }
 
       if (this.query.estado === "todos") {
-        axios
+        this.$http
           .get(
-            `${url}/asistencias/query-data?page=${
+            `/asistencias/query-data?page=${
               this.pageOne.currentPage
             }&limit=${this.pageOne.itemsPerPage}&inicio=${
               this.query.rangoFecha.inicio
@@ -375,9 +375,9 @@ export default {
             }
           });
       } else {
-        axios
+        this.$http
           .get(
-            `${url}/asistencias/query-data?page=${
+            `/asistencias/query-data?page=${
               this.pageOne.currentPage
             }&limit=${this.pageOne.itemsPerPage}&inicio=${
               this.query.rangoFecha.inicio
@@ -398,16 +398,18 @@ export default {
       }
     },
     obtenerFuncionarios() {
-      axios.get(`${url}/funcionarios/full-list`).then(response => {
+      this.$http.get(`/funcionarios/full-list`).then(response => {
         this.funcionarios = response.data;
       });
     },
     obtenerAsistencias() {
-      axios
+      this.$http
         .get(
-          `${url}/asistencias?page=${this.pageOne.currentPage}&limit=${
+          `/asistencias?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }`
+          }`, {headers: {
+            'x-auth': localStorage.token
+          }}
         )
         .then(response => {
           this.marcaciones = response.data.docs;
@@ -603,7 +605,7 @@ export default {
       this.$router.push({ name: "incluirAsistencia" });
     },
     llamarFuncionarios() {
-      axios.get(url + "/empleados?_expand=sucursal").then(response => {
+      this.$http.get("/empleados?_expand=sucursal").then(response => {
         (this.funcionarios = response.data), console.log("entro en axios");
       });
     },
@@ -635,8 +637,8 @@ export default {
     eliminarAsistencia(id) {
       var index = this.marcaciones.findIndex(i => i.id === id);
       this.marcaciones.splice(index, 1);
-      axios
-        .delete(`${url}/asistencias/delete/${id}`)
+      this.$http
+        .delete(`/asistencias/delete/${id}`)
         .then(response => console.log(response));
     },
     handleSelectedFile(convertedData) {
@@ -646,8 +648,8 @@ export default {
       var fecha = moment(this.preDatos[0].Horario, "DD/MM/YYYY").format();
       console.log("Fecha Format", fecha);
 
-      axios
-        .get(`${url}/asistencias/full-list?fechaPlanilla=${fecha}`)
+      this.$http
+        .get(`/asistencias/full-list?fechaPlanilla=${fecha}`)
         .then(response => {
           console.log("Response Length", response.data.length);
           if (response.data.length > 0) {
@@ -918,8 +920,8 @@ export default {
             if (funcionario.vacaciones !== "false") {
               console.log("Esta de vacaciones");
               var fecha, fechaInicio, fechaFin, isFechaVacaciones;
-              axios
-                .get(`${url}/eventos/edit/${funcionario.vacaciones}`)
+              this.$http
+                .get(`/eventos/edit/${funcionario.vacaciones}`)
                 .then(response => {
                   fechaInicio = response.data.fechaInicio;
                   console.log(
@@ -989,8 +991,8 @@ export default {
         this.postMarcaciones = this.ausencias.concat(this.postMarcaciones);
       }
 
-      axios
-        .post(`${url}/asistencias/test-data`, this.postMarcaciones)
+      this.$http
+        .post(`/asistencias/test-data`, this.postMarcaciones)
         .then(response => {
           this.$message({
             type: "success",

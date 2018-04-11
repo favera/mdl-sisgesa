@@ -28,7 +28,7 @@
             </form>
 
             <div class="ui message">
-               Si olvido la contrasena pongase en contacto con el administrador
+                Si olvido la contrasena pongase en contacto con el administrador
             </div>
         </div>
     </div>
@@ -40,24 +40,48 @@ export default {
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
+      error: ""
     };
   },
   methods: {
     login() {
-      this.$router.push({ name: "Home" });
-      console.log(this.email);
-      console.log(this.password);
+      //   this.$router.push({ name: "Home" });
+      //   console.log(this.email);
+      //   console.log(this.password);
+      this.$http
+        .post("/users/login", { email: this.email, password: this.password })
+        .then(response => {
+            this.loginSuccessful(response)
+            
+        })
+        .catch(() => this.loginFailed());
+    },
+    loginSuccessful(req) {
+        console.log(req.headers['x-auth']);
+      if (!req.headers['x-auth']) {
+        this.loginFailed();
+        return;
+      }
+
+      localStorage.token = req.headers['x-auth'];
+      this.error = false;
+
+      this.$router.replace(this.$route.query.redirect || "/dashboard");
+    },
+
+    loginFailed() {
+      this.error = "Login failed!";
+      delete localStorage.token;
     }
   }
 };
 </script>
 
 <style>
-#login{
-    margin-top: 10%;
+#login {
+  margin-top: 10%;
 }
-
 </style>
 
 
