@@ -23,9 +23,11 @@
             </tr>
             <tr v-show="warningMessage">
               <td colspan="4">
-                <div class="ui yellow message"> <h4>Los datos de la planilla actualmente ya existen en el sistema. Por favor, verifique los datos</h4></div>
+                <div class="ui yellow message">
+                  <h4>Los datos de la planilla actualmente ya existen en el sistema. Por favor, verifique los datos</h4>
+                </div>
               </td>
-              
+
             </tr>
           </tbody>
         </table>
@@ -35,7 +37,7 @@
 
         <button class="ui positive teal button" v-show="!warningMessage" @click="guardarMarcaciones">Aceptar</button>
         <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
-        
+
       </div>
     </div>
 
@@ -226,9 +228,6 @@
 import moment from "moment";
 import Pagination from ".././shared/Pagination.vue";
 
-
-
-
 export default {
   data() {
     return {
@@ -352,13 +351,11 @@ export default {
       if (this.query.estado === "todos") {
         this.$http
           .get(
-            `/asistencias/query-data?page=${
-              this.pageOne.currentPage
-            }&limit=${this.pageOne.itemsPerPage}&inicio=${
-              this.query.rangoFecha.inicio
-            }&fin=${this.query.rangoFecha.fin}&busqueda=${
-              this.query.busqueda
-            }&estado=${this.query.estado}`
+            `/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${
+              this.pageOne.itemsPerPage
+            }&inicio=${this.query.rangoFecha.inicio}&fin=${
+              this.query.rangoFecha.fin
+            }&busqueda=${this.query.busqueda}&estado=${this.query.estado}`
           )
           .then(response => {
             if (response.data.docs.length === 0) {
@@ -373,13 +370,11 @@ export default {
       } else {
         this.$http
           .get(
-            `/asistencias/query-data?page=${
-              this.pageOne.currentPage
-            }&limit=${this.pageOne.itemsPerPage}&inicio=${
-              this.query.rangoFecha.inicio
-            }&fin=${this.query.rangoFecha.fin}&estado=${
-              this.query.estado
-            }&busqueda=${this.query.busqueda}`
+            `/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${
+              this.pageOne.itemsPerPage
+            }&inicio=${this.query.rangoFecha.inicio}&fin=${
+              this.query.rangoFecha.fin
+            }&estado=${this.query.estado}&busqueda=${this.query.busqueda}`
           )
           .then(response => {
             if (response.data.docs.length === 0) {
@@ -403,9 +398,12 @@ export default {
         .get(
           `/asistencias?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }`, {headers: {
-            'x-auth': localStorage.token
-          }}
+          }`,
+          {
+            headers: {
+              "x-auth": localStorage.token
+            }
+          }
         )
         .then(response => {
           this.marcaciones = response.data.docs;
@@ -441,11 +439,10 @@ export default {
       return result;
     },
     //retorna el valor en horas de horas extras para el banco de horas
-    calculoBancoH(entrada, salida, funcionarioId) {
-      var sabadoMedioTiempo;
-      var cargaLaboral;
-
-      var funcionario = this.funcionarios.find(funcionario => {
+    calculoBancoH(entrada, salida, funcionarioId, fecha) {
+      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, horasExtras, verFecha;
+      verFecha = new Date(fecha);
+      funcionario = this.funcionarios.find(funcionario => {
         if (funcionario._id === funcionarioId) {
           return funcionario;
         }
@@ -457,11 +454,13 @@ export default {
         cargaLaboral = funcionario.cargaLaboral;
       }
 
+      console.log(verFecha);
+
       //si isSabado es true, si el dia es sabado
       if (this.isSabado !== -1) {
         //si el funcionario tiene habilitado sabado medio tiempo
         if (sabadoMedioTiempo) {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
           console.log("Resultado Horas Trabajadas", horasTrabajadas);
 
@@ -469,7 +468,7 @@ export default {
             console.log("ENTRO al COMPARE");
             return null;
           }
-          var horasExtras =
+          horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
           console.log("Resultado Horas Extras", horasExtras);
           if (horasExtras > 0) {
@@ -479,7 +478,7 @@ export default {
 
           //else del no tiene sabado habilitado
         } else {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
           console.log("Resultado Horas Trabajadas", horasTrabajadas);
 
@@ -489,7 +488,7 @@ export default {
 
           console.log("Carga Laboral", cargaLaboral);
 
-          var horasExtras =
+         horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
             moment.duration(cargaLaboral, "HH:mm").asMinutes();
           console.log(moment.duration(cargaLaboral, "HH:mm").asMinutes());
@@ -503,32 +502,39 @@ export default {
         }
         //else del verificar si es dia sabado
       } else {
-        var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+        if (verFecha.getDay() === 0) {
+          horasExtras = this.handleHorasTrabajadas(entrada, salida);
+          console.log(horasExtras);
+          return horasExtras
+        } else {
+          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
-        console.log("Resultado Horas Trabajadas", horasTrabajadas);
+          console.log("Resultado Horas Trabajadas", horasTrabajadas);
 
-        if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!horasTrabajadas.localeCompare("00:00")) {
+            return null;
+          }
+          horasExtras =
+            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+            moment.duration(cargaLaboral, "HH:mm").asMinutes();
+
+          console.log("Resultado Horas Extras", horasExtras);
+
+          if (horasExtras > 0) {
+            return this.handleNegative(horasExtras);
+          }
+
           return null;
         }
-        var horasExtras =
-          moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-          moment.duration(cargaLaboral, "HH:mm").asMinutes();
-
-        console.log("Resultado Horas Extras", horasExtras);
-
-        if (horasExtras > 0) {
-          return this.handleNegative(horasExtras);
-        }
-
-        return null;
       }
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
-    calculoHorasFaltantes(entrada, salida, funcionarioId) {
-      var sabadoMedioTiempo;
-      var cargaLaboral;
+    calculoHorasFaltantes(entrada, salida, funcionarioId, fecha) {
+      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, result, horasExtras, verFecha;
 
-      var funcionario = this.funcionarios.find(funcionario => {
+      verFecha = new Date(fecha);
+
+      funcionario = this.funcionarios.find(funcionario => {
         if (funcionario._id === funcionarioId) {
           return funcionario;
         }
@@ -542,9 +548,9 @@ export default {
 
       if (this.isSabado !== -1) {
         if (sabadoMedioTiempo) {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
-            result;
+          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
           console.log("Horas trabajadas " + horasTrabajadas);
+
           if (!horasTrabajadas.localeCompare("00:00")) {
             return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
           }
@@ -555,12 +561,12 @@ export default {
           }
           return null;
         } else {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
           if (!horasTrabajadas.localeCompare("00:00")) {
             return "-" + cargaLaboral;
           }
-          var horasExtras =
+          horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
             moment.duration(cargaLaboral, "HH:mm").asMinutes();
 
@@ -571,7 +577,15 @@ export default {
           return null;
         }
       } else {
-        var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+
+        if(verFecha.getDay()=== 0){
+          horasExtras = "00:00"
+
+          return horasExtras;
+
+        }else{
+
+            var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
         if (!horasTrabajadas.localeCompare("00:00")) {
           return "-" + cargaLaboral;
@@ -585,6 +599,10 @@ export default {
         }
 
         return null;
+
+        }
+
+      
       }
     },
     //verifica si es domingo o no para insertar texto en observacion
@@ -664,12 +682,11 @@ export default {
                 this.validarPlanilla.push(asistenciaPlanilla);
               }
             });
-            if(this.validarPlanilla.length){
+            if (this.validarPlanilla.length) {
               this.warningMessage = true;
             }
           } else {
             this.validarPlanilla = convertedData.body;
-            
           }
 
           this.funcionarios.forEach(value => {
@@ -772,7 +789,6 @@ export default {
           this.datosMarcaciones.push(modelo);
         }
       }
-    
     },
     //maneja los valores negativos resultante de las horas extras
     handleNegative(mins) {
@@ -874,13 +890,15 @@ export default {
         marcacion.horasExtras = this.calculoBancoH(
           dato.entrada,
           dato.salida,
-          dato.funcionarioId
+          dato.funcionarioId,
+          dato.fecha
         );
 
         marcacion.horasFaltantes = this.calculoHorasFaltantes(
           dato.entrada,
           dato.salida,
-          dato.funcionarioId
+          dato.funcionarioId,
+          dato.fecha
         );
 
         marcacion.observacion = this.handleObservacion(dato.fecha);
@@ -997,8 +1015,6 @@ export default {
           console.log(response);
         });
     }
-
-    
   },
   created() {
     this.queryData();

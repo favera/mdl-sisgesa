@@ -84,12 +84,14 @@ export default {
         this.marcacion.horasFaltantes = this.getHorasFaltantes(
           this.marcacion.funcionario,
           this.marcacion.entrada,
-          this.marcacion.salida
+          this.marcacion.salida,
+          this.marcacion.fecha
         );
         this.marcacion.horasExtras = this.getHorasExtras(
           this.marcacion.funcionario,
           this.marcacion.entrada,
-          this.marcacion.salida
+          this.marcacion.salida,
+          this.marcacion.fecha
         );
         this.marcacion.estilo.ausente = false;
         this.marcacion.estilo.vacaciones = false;
@@ -98,10 +100,7 @@ export default {
         console.log(JSON.stringify(this.marcacion));
 
         this.$http
-          .put(
-            `/asistencias/update/${this.$route.params.id}`,
-            this.marcacion
-          )
+          .put(`/asistencias/update/${this.$route.params.id}`, this.marcacion)
           .then(response => {
             console.log(response);
             this.success();
@@ -121,14 +120,16 @@ export default {
         this.marcacion.horasFaltantes = this.getHorasFaltantes(
           this.marcacion.funcionario,
           this.marcacion.entrada,
-          this.marcacion.salida
+          this.marcacion.salida,
+          this.marcacion.fecha
         );
         this.marcacion.horasExtras = this.getHorasExtras(
           this.marcacion.funcionario,
           this.marcacion.entrada,
-          this.marcacion.salida
+          this.marcacion.salida,
+          this.marcacion.fecha
         );
-    
+
         this.marcacion.estilo.ausente = false;
         this.marcacion.estilo.vacaciones = false;
         this.marcacion.estilo.incompleto = false;
@@ -143,7 +144,6 @@ export default {
             this.cancelar();
           })
           .catch(e => console.log(e));
-
       }
     },
     getNombreFuncionario(id) {
@@ -271,8 +271,13 @@ export default {
       }
       return estilo;
     },
-    getHorasFaltantes(funcionarioId, entrada, salida) {
+    getHorasFaltantes(funcionarioId, entrada, salida, fecha) {
       var cargaLaboral, horasTrabajadas, resultado, horaEntrada, horaSalida;
+
+      if (typeof fecha === "string") {
+        fecha = new Date(fecha);
+      }
+
       console.log("Horas Faltantes Entrada", entrada);
       console.log("Horas Faltantes Salida", salida);
 
@@ -284,14 +289,20 @@ export default {
           return (cargaLaboral = funcionario.cargaLaboral);
         }
       });
-
-      horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
-      resultado =
-        horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
-      if (resultado < 0) {
-        return this.convertToHours(resultado);
+      console.log(fecha);
+      console.log("Verificando si es Domingo", fecha.getDay === 0);
+      if (fecha.getDay() === 0) {
+        resultado = "00:00";
+        return resultado;
       } else {
-        return null;
+        horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
+        resultado =
+          horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
+        if (resultado < 0) {
+          return this.convertToHours(resultado);
+        } else {
+          return null;
+        }
       }
     },
     getHorasTrabajadas(entrada, salida) {
@@ -304,16 +315,14 @@ export default {
       console.log(this.convertToHours(horasTrabajadas));
       return this.convertToHours(horasTrabajadas);
     },
-    getHorasExtras(funcionarioId, entrada, salida) {
-      var cargaLaboral,
-        horasTrabajadas,
-        resultado,
-        horaEntrada,
-        horaSalida,
-        test;
+    getHorasExtras(funcionarioId, entrada, salida, fecha) {
+      var cargaLaboral, horasTrabajadas, resultado, horaEntrada, horaSalida;
+
+      if (typeof fecha === "string") {
+        fecha = new Date(fecha);
+      }
 
       this.funcionarios.find(funcionario => {
-        console.log("before if test", funcionario._id, funcionarioId);
         if (funcionario._id === funcionarioId) {
           return (cargaLaboral = funcionario.cargaLaboral);
         }
@@ -321,17 +330,22 @@ export default {
 
       horaEntrada = moment(entrada, "HH:mm").format();
       horaSalida = moment(salida, "HH:mm").format();
-
-      horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
-      console.log("Horas Trabajadas", horasTrabajadas);
-      resultado =
-        horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
-      console.log("Resultado", resultado);
-      if (resultado > 0) {
-        console.log(this.convertToHours(resultado));
-        return this.convertToHours(resultado);
+      console.log("Verificando si es Domingo", fecha.getDay === 0);
+      if (fecha.getDay() === 0) {
+        horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
+        return this.convertToHours(horasTrabajadas);
       } else {
-        return null;
+        horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
+        console.log("Horas Trabajadas", horasTrabajadas);
+        resultado =
+          horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
+        console.log("Resultado", resultado);
+        if (resultado > 0) {
+          console.log(this.convertToHours(resultado));
+          return this.convertToHours(resultado);
+        } else {
+          return null;
+        }
       }
     },
     convertToHours(mins) {
@@ -371,6 +385,7 @@ export default {
           this.marcacion.entrada = response.data.entrada;
           this.marcacion.salida = response.data.salida;
           this.funcionarioSeleccionado = response.data.funcionario;
+          this.marcacion.observacion = response.data.observacion;
           $(this.$el)
             .find(".ui.dropdown")
             .dropdown("refresh")

@@ -104,21 +104,22 @@ export default {
     },
     consultarEmpleado(e) {
       if (e.keyCode === 13) {
-        this.$http
-          .get(
-            `/funcionarios?search=${this.search}&page=${
-              this.pageOne.currentPage
-            }&limit=${this.pageOne.itemsPerPage}&sort=${this.sortNameParam}`
-          )
-          .then(response => {
-            console.log("respnose mongo Computed", response);
+        this.obtenerListadoEmpleado(true);
+        // this.$http
+        //   .get(
+        //     `/funcionarios?page=${
+        //       this.pageOne.currentPage
+        //     }&limit=${this.pageOne.itemsPerPage}&search=${this.search}`
+        //   )
+        //   .then(response => {
+        //     console.log("response mongo", response);
 
-            this.pageOne.totalItems = response.data.total;
-            this.empleados = response.data.docs;
-          })
-          .catch(e => {
-            console.log(e);
-          });
+        //     this.pageOne.totalItems = response.data.total;
+        //     this.empleados = response.data.docs;
+        //   })
+        //   .catch(e => {
+        //     console.log(e);
+        //   });
         return;
       }
     },
@@ -163,12 +164,15 @@ export default {
 
       this.$http.put(`/funcionarios/deactivate/${id}`, { activo: false });
     },
-    obtenerListadoEmpleado() {
+    obtenerListadoEmpleado(pageReset) {
+      if (pageReset) {
+        this.pageOne.currentPage = 1;
+      }
       this.$http
         .get(
           `/funcionarios?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&sort=${this.sortNameParam}`
+          }&search=${this.search}`
         )
         .then(response => {
           console.log("respnose mongo", response);
