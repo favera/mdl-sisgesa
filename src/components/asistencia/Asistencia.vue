@@ -47,12 +47,7 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import moment from "moment";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let asistenciasRef = db.ref("/asistencias");
-let funcionariosRef = db.ref("/funcionarios");
 export default {
   data() {
     return {
@@ -96,23 +91,15 @@ export default {
           this.marcacion.entrada,
           this.marcacion.salida
         );
-        // this.marcacion.entrada = moment
-        //   .utc(this.marcacion.entrada)
-        //   .local()
-        //   .format("HH:mm");
-        // this.marcacion.salida = moment
-        //   .utc(this.marcacion.salida)
-        //   .local()
-        //   .format("HH:mm");
         this.marcacion.estilo.ausente = false;
         this.marcacion.estilo.vacaciones = false;
         this.marcacion.estilo.incompleto = false;
 
         console.log(JSON.stringify(this.marcacion));
 
-        axios
+        this.$http
           .put(
-            `${url}/asistencias/update/${this.$route.params.id}`,
+            `/asistencias/update/${this.$route.params.id}`,
             this.marcacion
           )
           .then(response => {
@@ -141,22 +128,15 @@ export default {
           this.marcacion.entrada,
           this.marcacion.salida
         );
-        // this.marcacion.entrada = moment
-        //   .utc(this.marcacion.entrada)
-        //   .local()
-        //   .format("HH:mm");
-        // this.marcacion.salida = moment
-        //   .utc(this.marcacion.salida)
-        //   .local()
-        //   .format("HH:mm");
+    
         this.marcacion.estilo.ausente = false;
         this.marcacion.estilo.vacaciones = false;
         this.marcacion.estilo.incompleto = false;
 
         console.log(JSON.stringify(this.marcacion));
 
-        axios
-          .post(`${url}/asistencias/add`, this.marcacion)
+        this.$http
+          .post(`/asistencias/add`, this.marcacion)
           .then(response => {
             console.log(response);
             this.success();
@@ -164,9 +144,6 @@ export default {
           })
           .catch(e => console.log(e));
 
-        // asistenciasRef.push(this.marcacion).then(res => {
-        //   this.success, this.cancelar(), console.log(res);
-        // });
       }
     },
     getNombreFuncionario(id) {
@@ -387,8 +364,8 @@ export default {
       }
     },
     obtenerMarcacion() {
-      axios
-        .get(`${url}/asistencias/edit/${this.$route.params.id}`)
+      this.$http
+        .get(`/asistencias/edit/${this.$route.params.id}`)
         .then(response => {
           this.marcacion.fecha = response.data.fecha;
           this.marcacion.entrada = response.data.entrada;
@@ -402,8 +379,8 @@ export default {
     },
 
     obtenerFuncionarios() {
-      axios
-        .get(`${url}/funcionarios/full-list/`)
+      this.$http
+        .get(`/funcionarios/full-list/`)
         .then(response => {
           this.funcionarios = response.data;
         })

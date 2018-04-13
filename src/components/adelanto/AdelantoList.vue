@@ -10,7 +10,7 @@
             <div class="ten wide field">
               <div class="ui icon input">
                 <input type="text" placeholder="Buscar por nombre del funcionario...">
-                <i class="inverted teal circular search link icon" @click="listar"></i>
+                <i class="inverted teal circular search link icon"></i>
               </div>
             </div>
 
@@ -81,14 +81,12 @@
           <tr>
             <th class="collapsing">
               <div class="ui fitted checkbox">
-                <!-- <input type="checkbox" :checked="checkedAll" @click="checkedAll=!checkedAll"> -->
                 <input type="checkbox" v-model="selectall">
                 <label></label>
               </div>
             </th>
             <th>Fecha</th>
             <th>Funcionario</th>
-            <!-- <th>Tipo de Adelanto</th> -->
             <th>Monto</th>
             <th>Opciones</th>
           </tr>
@@ -103,7 +101,6 @@
             </td>
             <td>{{moment(adelanto.fecha).format("L")}}</td>
             <td>{{adelanto.funcionario.nombre}}</td>
-            <!-- <td>{{adelanto.tipoAdelanto}}</td> -->
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
             <td>
               <router-link :to="{name: 'editarAdelanto', params: { id: adelanto._id}}">
@@ -113,52 +110,51 @@
               <i class="trash icon" @click="confirm(adelanto._id)"></i>
               <i class="print icon" @click="exportRecibo(adelanto._id)"></i>
             </td>
-              <div class="print">
-                <div :id="'recibo'+ adelanto._id" class="ui padded segments">
-                  <div class="ui horizontal segments">
-                    <div class="ui segment">
-                      <img src="http://mdl.com.py/template/images/logomarca.png" width="60px">
-                      <h4 class="ui header">Recibo de Adelanto de Salario</h4>
-                    </div>
-                    <div class="ui r aligned segment">
-                      <p>Fecha: {{moment().format("L")}}</p>
-                      <h4 class="ui header">{{adelanto.monto}} {{adelanto.moneda}}</h4>
-                    </div>
-
-                  </div>
+            <div class="print">
+              <div :id="'recibo'+ adelanto._id" class="ui padded segments">
+                <div class="ui horizontal segments">
                   <div class="ui segment">
-                    <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
-                    <span class="ui sub header">CI: 4.5263.621</span>
+                    <img src="http://mdl.com.py/template/images/logomarca.png" width="60px">
+                    <h4 class="ui header">Recibo de Adelanto de Salario</h4>
+                  </div>
+                  <div class="ui r aligned segment">
+                    <p>Fecha: {{moment().format("L")}}</p>
+                    <h4 class="ui header">{{adelanto.monto}} {{adelanto.moneda}}</h4>
+                  </div>
 
-                    <div class="ui basic segment">
-                      <p>Recibi la suma de {{adelanto.monto}} {{adelanto.moneda}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
-                    </div>
+                </div>
+                <div class="ui segment">
+                  <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
+                  <span class="ui sub header">CI: 4.5263.621</span>
 
-                    <br>
+                  <div class="ui basic segment">
+                    <p>Recibi la suma de {{adelanto.monto}} {{adelanto.moneda}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
+                  </div>
 
-                    <div class="ui basic center aligned segment">
-                      <div class="ui three column grid">
-                        <div class="column">
-                          <div class="ui divider"></div>
-                          <p>Aprobado por</p>
-                        </div>
-                        <div class="column">
-                          <div class="ui divider"></div>
-                          <p>Firma del Empleado</p>
-                        </div>
-                        <div class="column">
-                          <div class="ui divider"></div>
-                          <p>Pago por</p>
-                        </div>
+                  <br>
+
+                  <div class="ui basic center aligned segment">
+                    <div class="ui three column grid">
+                      <div class="column">
+                        <div class="ui divider"></div>
+                        <p>Aprobado por</p>
+                      </div>
+                      <div class="column">
+                        <div class="ui divider"></div>
+                        <p>Firma del Empleado</p>
+                      </div>
+                      <div class="column">
+                        <div class="ui divider"></div>
+                        <p>Pago por</p>
                       </div>
                     </div>
-
                   </div>
+
                 </div>
               </div>
-           
+            </div>
+
           </tr>
-         
 
         </tbody>
         <tfoot v-show="pageOne.totalItems > 10">
@@ -219,12 +215,7 @@
 </template>
 
 <script>
-import axios from "axios";
-import { db } from "./../.././config/firebase";
-import { url } from "./../.././config/backend";
 import Pagination from ".././shared/Pagination.vue";
-
-let adelantosRef = db.ref("/adelantos");
 
 export default {
   data() {
@@ -249,15 +240,6 @@ export default {
     incluirAdelanto() {
       this.$router.push({ name: "incluirAdelanto" });
     },
-    // selectall(checkedAll){
-    //   if(checkedAll){
-    //     $(this.$el).find('.ui.checkbox').checkbox('check');
-    //   }
-    //   if(!checkedAll){
-    //     $(this.$el).find('.ui.checkbox').checkbox('uncheck');
-    //   }
-
-    // },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.obtenerListadoAdelanto();
@@ -267,33 +249,15 @@ export default {
     },
     exportRecibo(id) {
       printJS({
-        printable: "recibo"+id,
+        printable: "recibo" + id,
         type: "html",
         targetStyles: ["*"]
       });
-      // var doc = new jsPDF();
-      // var elementHandler = {
-      //   "#ignorePDF": function(element, renderer) {
-      //     return true;
-      //   }
-      // };
-
-      // var source = $(this.$el).find("#recibo");
-      //  doc.addHTML(source, function() {
-      //   doc.save("teste.pdf");
-      // });
-      // console.log(source);
-      // doc.addHTML(source, 15, 15, {
-      //   width: 180,
-      //   //elementHandlers: elementHandler
-      // });
-
-      // doc.output("dataurlnewwindow");
     },
     obtenerListadoAdelanto() {
-      axios
+      this.$http
         .get(
-          `${url}/adelantos/?page=${this.pageOne.currentPage}&limit=${
+          `/adelantos/?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }`
         )
@@ -301,24 +265,6 @@ export default {
           this.adelantos = response.data.docs;
           this.pageOne.totalItems = response.data.total;
         });
-    },
-    listar() {
-      /*Array.from(this.feriados).forEach(item => {
-        console.log(JSON.stringify(item[".key"]));
-        var test = feriadoRef.child(item[".key"]).child("sucursalesAfectadas");
-        console.log("Variable Test", test);
-        var sucursalesNombre = [];
-        test.on("child_added", snap => {
-          sucursalRef.child(snap.key).once("value", sucursal => {
-            console.log("Test" + JSON.stringify(sucursal.val()));
-
-            sucursalesNombre.push(sucursal.val().nombre);
-          });
-          console.log("Feriadosooo", JSON.stringify(this.sucursalesNombre));
-        });
-        console.log("item a guardar", JSON.stringify(item));
-        this.feriados.sucursalesNombre = sucursalesNombre;
-      });*/
     },
     confirm(id) {
       this.$confirm(
@@ -348,8 +294,7 @@ export default {
       var index = this.adelantos.findIndex(i => i.id === id);
       this.adelantos.splice(index, 1);
 
-      axios.delete(`${url}/adelantos/delete/${id}`);
-      // db.ref("/adelantos/" + id).remove();
+      this.$http.delete(`/adelantos/delete/${id}`);
     }
   },
   components: {
@@ -376,7 +321,6 @@ export default {
     }
   },
   created() {
-    // this.$bindAsArray("adelantos", adelantosRef);
     this.obtenerListadoAdelanto();
   }
 };

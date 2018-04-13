@@ -1,67 +1,60 @@
 <template>
-<div class="ui twelve wide column">
+  <div class="ui twelve wide column">
     <div class="ui form">
-        <div class="ui dividing header">Incluir Feriado</div>
+      <div class="ui dividing header">Incluir Feriado</div>
 
-        <div class="ten wide field">
+      <div class="ten wide field">
         <label for="">Seleccionar Fecha del Feriado</label>
         <el-date-picker v-model="feriado.fechaUtc" format="dd/MM/yyyy" type="date" placeholder="Seleccionar fecha"></el-date-picker>
-    </div>
+      </div>
 
-    <div class="ten wide field">
+      <div class="ten wide field">
         <div class="field">
-            <label for="">Tipo de Feriado:</label>
+          <label for="">Tipo de Feriado:</label>
         </div>
 
         <div class="inline fields">
-            <div class="four wide field">
-                <div class="ui radio checkbox">
-                    <input type="radio" v-model="feriado.tipoFeriado" value="completo">
-                    <label>Completo</label>
-                </div>
+          <div class="four wide field">
+            <div class="ui radio checkbox">
+              <input type="radio" v-model="feriado.tipoFeriado" value="completo">
+              <label>Completo</label>
             </div>
+          </div>
 
-            <div class="four wide field">
-                <div class="ui radio checkbox">
-                    <input type="radio" v-model="feriado.tipoFeriado" value="parcial">
-                    <label>Parcial</label>
-                </div>
+          <div class="four wide field">
+            <div class="ui radio checkbox">
+              <input type="radio" v-model="feriado.tipoFeriado" value="parcial">
+              <label>Parcial</label>
             </div>
+          </div>
 
-            <div class="eight wide field" v-show="feriado.tipoFeriado ==='parcial'">
-               <el-time-picker  v-model="feriado.horasUtc" format="HH:mm"
-                    :picker-options="{
+          <div class="eight wide field" v-show="feriado.tipoFeriado ==='parcial'">
+            <el-time-picker v-model="feriado.horasUtc" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
-                    }"
-                    placeholder="Asignar Horas del feriado">
-                </el-time-picker>
-            </div>
+                    }" placeholder="Asignar Horas del feriado">
+            </el-time-picker>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="ten wide field">
+      <div class="ten wide field">
         <label for="">Seleccionar Sucursales afectadas</label>
-        <select name="sucursales" multiple="" class="ui fluid dropdown" v-model="feriado.sucursalesAfectadas" >
-            <option disabled value="">Seleccionar Sucursal..</option>
-            <option v-for="sucursal in sucursales" :key="sucursal['.key']" v-bind:value="sucursal.nombre">{{sucursal.nombre}}</option>
+        <select name="sucursales" multiple="" class="ui fluid dropdown" v-model="feriado.sucursalesAfectadas">
+          <option disabled value="">Seleccionar Sucursal..</option>
+          <option v-for="sucursal in sucursales" :key="sucursal['.key']" v-bind:value="sucursal.nombre">{{sucursal.nombre}}</option>
         </select>
+      </div>
+
+      <div class="ui teal button" @click="guardarFeriado()">Guardar</div>
+      <div class="ui button" @click="cancelar()">Cancelar</div>
     </div>
 
-    <div class="ui teal button" @click="guardarFeriado()">Guardar</div>
-    <div class="ui button" @click="cancelar()">Cancelar</div>
-</div>
-
-    
-</div>
+  </div>
 </template>
 
 <script>
 import moment from "moment";
-import axios from "axios";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let sucursalesRef = db.ref("/sucursales");
-let feriadoRef = db.ref("/feriados");
+
 export default {
   data() {
     return {
@@ -78,7 +71,7 @@ export default {
   },
   methods: {
     obtenerSucursales() {
-      // axios.get(url + "/sucursals").then(response => {
+      // this.$http.get(url + "/sucursals").then(response => {
       //   this.sucursales = response.data;
       //   console.log(this.sucursales);
       // });

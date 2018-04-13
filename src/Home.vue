@@ -4,7 +4,7 @@
     <div class="ui menu">
 
       <div class="right menu">
-        <a href="#" class="item">Login</a>
+        <a href="#" class="item" @click="logout()">Logout</a>
         <a href="#" class="item">Help</a>
       </div>
     </div>
@@ -40,6 +40,20 @@ export default {
   name: "app",
   data() {
     return {};
+  },
+  methods: {
+    logout() {
+      this.$http.delete("/users/token").then(response => {
+        console.log(response);
+        localStorage.removeItem("token");
+        this.$router.push({ name: "Login" });
+      });
+    },
+    updated() {
+      if (!localStorage.token && this.$route.path !== "/") {
+        this.$router.push("/?redirect=" + this.$route.path);
+      }
+    }
   },
   components: {}
 };

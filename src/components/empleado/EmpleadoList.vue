@@ -18,7 +18,7 @@
             <a class="icon item" @click="nuevoEmpleado">
               <i class="plus icon"></i>
             </a>
-            <a class="icon item" @click="insertarFirebase">
+            <a class="icon item">
               <i class="print icon"></i>
             </a>
           </div>
@@ -41,7 +41,6 @@
             <th>Sucursal</th>
             <th>Carga Laboral</th>
             <th>Salario Base</th>
-            <!-- <th>Sucursal</th> -->
             <th>Opciones</th>
           </tr>
         </thead>
@@ -51,7 +50,6 @@
             <td> {{empleado.sucursal.nombre}}</td>
             <td> {{empleado.cargaLaboral}}</td>
             <td> {{empleado.salario}}{{empleado.moneda}}</td>
-            <!-- <td> {{empleado.sucursal.nombre}}</td> -->
             <td>
               <span class="item" @click="guardarPaginacion(empleado._id)">
                 <i class="edit row icon"></i>
@@ -78,12 +76,7 @@
 </template>
 
 <script>
-import axios from "axios";
 import Pagination from ".././shared/Pagination.vue";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let funcionariosRef = db.ref("/funcionarios");
-
 export default {
   name: "empleadoList",
   props: ["page"],
@@ -95,7 +88,6 @@ export default {
       empleados: [],
       empleadosFirebase: [],
       keyPagination: [],
-      clave: "-L20uHGEH_6EDbTP1d1U",
       pageOne: {
         currentPage: 1,
         totalItems: 0,
@@ -107,36 +99,16 @@ export default {
     appPagination: Pagination
   },
   methods: {
-    insertarFirebase() {
-      Array.from(this.empleadosFirebase).forEach(element => {
-        funcionariosRef.push({
-          activo: true,
-          acnro: element.acnro,
-          cargaLaboral: element.cargaLaboral,
-          fechaIngreso: "04/01/2018",
-          ips: "salario",
-          medioTiempo: false,
-          moneda: element.moneda,
-          nombre: element.nombre,
-          nroCedula: "1",
-          salario: element.salario,
-          salarioMinuto: element.salarioMinuto,
-          sucursal: "",
-          tipoHoraExtra: "bancoHora"
-        });
-      });
-    },
     sortName() {
       this.sortNameParam = this.sortNameParam * -1;
     },
     consultarEmpleado(e) {
       if (e.keyCode === 13) {
-        axios
+        this.$http
           .get(
-            url +
-              `/funcionarios?search=${this.search}&page=${
-                this.pageOne.currentPage
-              }&limit=${this.pageOne.itemsPerPage}&sort=${this.sortNameParam}`
+            `/funcionarios?search=${this.search}&page=${
+              this.pageOne.currentPage
+            }&limit=${this.pageOne.itemsPerPage}&sort=${this.sortNameParam}`
           )
           .then(response => {
             console.log("respnose mongo Computed", response);
@@ -149,13 +121,6 @@ export default {
           });
         return;
       }
-
-      // funcionariosRef
-      //   .orderByChild("nombre")
-      //   .startAt(parametro)
-      //   .on("child_added", function(snapshot) {
-      //     console.log(snapshot.val());
-      //   });
     },
     guardarPaginacion(empleadoId) {
       console.log("IDDD", empleadoId);
@@ -196,26 +161,14 @@ export default {
       var index = this.empleados.findIndex(i => i.id === id);
       this.empleados.splice(index, 1);
 
-      axios.put(`${url}/funcionarios/deactivate/${id}`, { activo: false });
-      // db.ref("/funcionarios/" + id).remove();
+      this.$http.put(`/funcionarios/deactivate/${id}`, { activo: false });
     },
     obtenerListadoEmpleado() {
-      // var page = JSON.parse(localStorage.getItem("page") || null);
-      // console.log("Pagina" + page);
-
-      // if (page !== null) {
-      //   this.pageOne.currentPage = page.currentPage;
-      //   this.pageOne.itemsPerPage = page.itemsPerPage;
-      //   this.pageOne.totalItems = page.totalItems;
-
-      //   this.pageOneChanged(page.currentPage);
-      // } else {
-      axios
+      this.$http
         .get(
-          url +
-            `/funcionarios?page=${this.pageOne.currentPage}&limit=${
-              this.pageOne.itemsPerPage
-            }&sort=${this.sortNameParam}`
+          `/funcionarios?page=${this.pageOne.currentPage}&limit=${
+            this.pageOne.itemsPerPage
+          }&sort=${this.sortNameParam}`
         )
         .then(response => {
           console.log("respnose mongo", response);
@@ -228,52 +181,14 @@ export default {
         .catch(e => {
           console.log(e);
         });
-      // }
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.obtenerListadoEmpleado();
-      // this.$bindAsArray(
-      //   "empleados",
-      //   funcionariosRef
-      //     .orderByKey()
-      //     .limitToFirst(this.pageOne.itemsPerPage)
-      //     .startAt(this.keyPagination[pageNum - 1])
-      // );
     }
   },
   created() {
     this.obtenerListadoEmpleado();
-    /*axios.get(funcionariosRef + ".json?shallow=true").then(res => {
-      this.pageOne.totalItems = Object.keys(res.data).length;
-
-      var keys = Object.keys(res.data).sort(); // Notice the .sort()!
-      var pageLength = 10;
-      var pageCount = keys.length / pageLength;
-      var key;
-
-      for (var i = 0; i < pageCount; i++) {
-        key = keys[i * pageLength];
-        this.keyPagination.push(key);
-      }
-
-      var page = JSON.parse(localStorage.getItem("page") || null);
-      console.log("Pagina" + JSON.stringify(page));
-      if (page !== null) {
-        this.pageOne.currentPage = page.currentPage;
-        this.pageOneChanged(page.currentPage);
-      } else {
-        this.pageOneChanged(this.pageOne.currentPage);
-      }
-    });*/
-  },
-  updated() {
-    // var page = JSON.parse(localStorage.getItem("page") || null);
-    // console.log("Pagina" + JSON.stringify(page));
-    // if (page !== null) {
-    //   this.pageOne.currentPage = page.currentPage;
-    //   this.pageOneChanged(page.currentPage);
-    // }
   },
   computed: {
     filteredList() {

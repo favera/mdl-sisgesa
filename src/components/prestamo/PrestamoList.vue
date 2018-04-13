@@ -10,19 +10,13 @@
             <div class="ten wide field">
               <div class="ui icon input">
                 <input type="text" placeholder="Buscar por nombre del funcionario...">
-                <i class="inverted teal circular search link icon" ></i>
+                <i class="inverted teal circular search link icon"></i>
               </div>
             </div>
 
             <div class="field">
 
             </div>
-
-            <!-- <div class="field">
-                     <a @click="busquedaAvanzada=true">Busqueda Avanzada</a>
-                    
-                  </div>
-     -->
 
           </div>
         </div>
@@ -40,46 +34,6 @@
 
         </div>
       </div>
-      <!-- <h4 class="ui dividing header"></h4> -->
-      <!-- <div class="two fields" v-show="busquedaAvanzada">
-              <div class="field">
-                <label for="">Rango de Fechas:</label>
-                <div class="inline fields">
-                <div class="field">
-                            <el-date-picker v-model="fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
-                            </el-date-picker>
-                        </div>
-
-                        <div class="field">
-                            <el-date-picker v-model="fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy" >
-                            </el-date-picker>
-                        </div>
-            </div>
-                  
-              </div>
-
-              <div class="field">
-                <label for="">Tipo de Adelanto:</label>
-                <div class="inline fields">
-                   <div class="field">
-                  <div class="ui radio checkbox">
-                    <input type="radio" value="salario" >
-                    <label>Quincena</label>
-                  </div>
-                </div>
-
-                 <div class="field">
-                  <div class="ui radio checkbox">
-                    <input type="radio" value="salario" >
-                    <label>Monto Especificado</label>
-                  </div>
-                </div>
-
-            
-            </div>
-                  
-              </div>
-            </div> -->
 
     </div>
 
@@ -96,74 +50,66 @@
           </tr>
         </thead>
         <tbody>
-          <template v-for="prestamo in prestamos" >
-            <tr>
+          <template v-for="prestamo in prestamos">
+            <tr :key="prestamo._id">
 
-            <td>{{moment(prestamo.fecha).format("L")}}</td>
-            <td>{{prestamo.nombreFuncionario}}</td>
-            <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
-            <td>
-              <i class="browser icon" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
-            </td>
-            <td>
-              <router-link :to="{name: 'editarPrestamo', params: { id: prestamo._id}}">
-                <i class="edit row icon"></i>
-              </router-link>
+              <td>{{moment(prestamo.fecha).format("L")}}</td>
+              <td>{{prestamo.nombreFuncionario}}</td>
+              <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
+              <td>
+                <i class="browser icon" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
+              </td>
+              <td>
+                <router-link :to="{name: 'editarPrestamo', params: { id: prestamo._id}}">
+                  <i class="edit row icon"></i>
+                </router-link>
 
-              <i class="trash icon" @click="confirm(prestamo._id)"></i>
-            </td>
-           
-          
-            
-          </tr>
-          <tr v-show="prestamo.showCuotas" >
-            <td colspan="5">
-             <div class="ui padded segments">
-                <div class="ui segment">
+                <i class="trash icon" @click="confirm(prestamo._id)"></i>
+              </td>
 
-                  <div class="content">
-                    <div class="ui divided items">
-                      <div class="item">
-                        <div class="middle aligned content">
-                          <h5> Vencimiento</h5>
+            </tr>
+            <tr v-show="prestamo.showCuotas" :key="prestamo._id">
+              <td colspan="5">
+                <div class="ui padded segments">
+                  <div class="ui segment">
+
+                    <div class="content">
+                      <div class="ui divided items">
+                        <div class="item">
+                          <div class="middle aligned content">
+                            <h5> Vencimiento</h5>
+                          </div>
+                          <div class="middle aligned content">
+                            <h5>Monto</h5>
+                          </div>
+                          <div class="middle aligned content">
+                            <h5>Estado</h5>
+                          </div>
                         </div>
-                        <div class="middle aligned content">
-                          <h5>Monto</h5>
+
+                        <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
+                          <div class="middle aligned content">
+                            <p>{{moment(cuota.vencimiento).format("L")}}</p>
+                          </div>
+                          <div class="middle aligned content">
+                            <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+                          </div>
+
+                          <div class="middle aligned content">
+                            <div class="ui orange horizontal label">{{cuota.estado}}</div>
+                          </div>
                         </div>
-                        <div class="middle aligned content">
-                          <h5>Estado</h5>
-                        </div>
+
                       </div>
-
-                      <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
-                        <div class="middle aligned content">
-                          <p>{{moment(cuota.vencimiento).format("L")}}</p>
-                        </div>
-                        <div class="middle aligned content">
-                          <p>{{cuota.monto}}-{{cuota.moneda}}</p>
-                        </div>
-
-                        <div class="middle aligned content">
-                          <div class="ui orange horizontal label">{{cuota.estado}}</div>
-                        </div>
-                      </div>
-
                     </div>
+
                   </div>
 
                 </div>
-
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
           </template>
-         
 
-
-           
-         
-
-           
         </tbody>
         <tfoot>
           <!-- <tr v-show="showMessage">
@@ -190,18 +136,13 @@
 
     </div>
 
-    
-
   </div>
 </template>
 
 <script>
-import axios from "axios";
 import moment from "moment";
-import { db } from "./../.././config/firebase";
-import { url } from "./../.././config/backend";
+
 import Pagination from ".././shared/Pagination.vue";
-let prestamosRef = db.ref("/prestamos");
 
 export default {
   data() {
@@ -228,14 +169,14 @@ export default {
       this.$router.push({ name: "incluirPrestamo" });
     },
     obtenerPrestamos() {
-      axios
+      this.$http
         .get(
-          `${url}/prestamos?page=${this.pageOne.currentPage}&limit=${
+          `/prestamos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }`
         )
         .then(response => {
-          this.prestamos = response.data.docs.map((item)=> {
+          this.prestamos = response.data.docs.map(item => {
             item.showCuotas = false;
             return item;
           });
@@ -268,12 +209,12 @@ export default {
         });
     },
     eliminarPrestamo(id) {
-      console.log("Id recibido", id)
+      console.log("Id recibido", id);
       var index = this.sucursales.findIndex(i => i.id === id);
-      axios.delete(`${url}/prestamos/delete/${id}`).then(response => {
+      this.$http.delete(`/prestamos/delete/${id}`).then(response => {
         console.log(response);
         this.sucursales.splice(index, 1);
-      })
+      });
     },
     abrirModal() {
       this.modal.modal("show");
@@ -293,6 +234,4 @@ export default {
 .ui.form .field > label {
   margin: 0em 0em 1em;
 }
-
-
 </style>

@@ -144,14 +144,7 @@
 </template>
 <script>
 import { VMoney } from "v-money";
-import axios from "axios";
 import moment from "moment";
-import { eventBus } from "./../../main";
-import { url } from "./../.././config/backend";
-
-import { db } from "./../.././config/firebase";
-let sucursalesRef = db.ref("/sucursales");
-let funcionariosRef = db.ref("/funcionarios");
 
 export default {
   name: "funcionario",
@@ -191,8 +184,8 @@ export default {
     },
     guardarEmpleado() {
       if (typeof this.$route.params.id !== "undefined") {
-        axios
-          .put(`${url}/funcionarios/update/${this.$route.params.id}`, {
+        this.$http
+          .put(`/funcionarios/update/${this.$route.params.id}`, {
             nombre: this.empleado.nombre,
             acnro: this.empleado.acnro,
             nroCedula: this.empleado.nroCedula,
@@ -217,25 +210,9 @@ export default {
             this.fail();
             this.cancelar();
           });
-        // this.empleado.fechaIngreso = moment(
-        //   this.empleado.fechaIngreso,
-        //   "DD/MM/YYYY"
-        // )
-        //   .format("L")
-        //   .toString();
-        // this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
-        // this.empleado.sucursalId[this.sucursalkey] = true;
-        // funcionariosRef
-        //   .child(this.$route.params.id)
-        //   .update(this.empleado)
-        //   .then(response => {
-        //     this.editSuccess();
-        //     this.cancelar();
-        //     console.log(response);
-        //   });
       } else {
-        axios
-          .post(`${url}/funcionarios/add`, {
+        this.$http
+          .post(`/funcionarios/add`, {
             nombre: this.empleado.nombre,
             acnro: this.empleado.acnro,
             nroCedula: this.empleado.nroCedula,
@@ -255,30 +232,12 @@ export default {
             this.success();
             this.cancelar();
           });
-        // this.empleado.fechaIngreso = moment(
-        //   this.empleado.fechaIngreso,
-        //   "DD/MM/YYYY"
-        // )
-        //   .format("L")
-        //   .toString();
-
-        // this.empleado.fechaIngresoUtc = this.empleado.fechaIngreso.toString();
-
-        // this.empleado.sucursalId[this.sucursalkey] = true;
-
-        // console.log("Test", this.empleado.sucursalId);
-
-        // funcionariosRef.push(this.empleado).then(res => {
-        //   this.success();
-        //   this.cancelar();
-        //   console.log(res);
-        // });
       }
     },
     obtenerEmpleado() {
       if (this.$route.params.id) {
-        axios
-          .get(`${url}/funcionarios/edit/${this.$route.params.id}`)
+        this.$http
+          .get(`/funcionarios/edit/${this.$route.params.id}`)
           .then(response => {
             this.empleado.nombre = response.data.nombre;
             this.empleado.acnro = response.data.acnro;
@@ -301,27 +260,11 @@ export default {
               .dropdown("refresh")
               .dropdown("set selected", response.data.moneda);
           });
-        // console.log(funcionariosRef.child(this.$route.params.id));
-        // funcionariosRef.child(this.$route.params.id).once("value", snapshot => {
-        //   console.log(snapshot.val());
-        //   this.empleado.nombre = snapshot.val().nombre;
-        //   this.empleado.acnro = snapshot.val().acnro;
-        //   this.empleado.nroCedula = snapshot.val().nroCedula;
-        //   this.empleado.fechaIngreso = snapshot.val().fechaIngreso;
-        //   this.empleado.medioTiempo = snapshot.val().medioTiempo;
-        //   this.empleado.tipoHoraExtra = snapshot.val().tipoHoraExtra;
-        //   this.empleado.cargaLaboral = snapshot.val().cargaLaboral;
-        //   this.empleado.salario = snapshot.val().salario;
-        //   this.empleado.moneda = snapshot.val().moneda;
-        //   this.empleado.ips = snapshot.val().ips;
-        //   this.empleado.sucursalId = snapshot.val().sucursalId;
-        //   this.sucursalkey = Object.keys(snapshot.val().sucursalId)[0] || "";
-        // });
       }
     },
     obtenerSucursales() {
-      axios
-        .get(`${url}/sucursales/`)
+      this.$http
+        .get(`/sucursales/`)
         .then(response => {
           this.sucursales = response.data;
         })

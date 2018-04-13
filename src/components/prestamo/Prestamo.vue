@@ -106,30 +106,6 @@
 
       </div>
 
-      <!-- <div class="ten wide field">
-        <div class="two fields">
-            <div class="five wide field">
-                <label for="">Fraccion de Cuotas:</label>
-                <div class="field">
-                    <el-input-number v-model="prestamo.cuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
-                </div>
-
-            </div>
-
-            <div class="five wide field">
-                <label for="">Iniciar Pago en:</label>
-                <div class="field">
-                    <el-date-picker
-    v-model="prestamo.incioPago"
-    type="month"
-    placeholder="Seleccionar mes">
-  </el-date-picker>
-                </div>
-                 
-            </div>
-        </div>
-    </div> -->
-
     </div>
 
     <div class="field">
@@ -142,12 +118,8 @@
 
 <script>
 import moment from "moment";
-import axios from "axios";
 import { VMoney } from "v-money";
-import { db } from "./../.././config/firebase";
-import { url } from "./../.././config/backend";
-// let funcionariosRef = db.ref("/funcionarios");
-// let prestamosRef = db.ref("/prestamos");
+
 export default {
   data() {
     return {
@@ -176,8 +148,8 @@ export default {
   },
   methods: {
     obtenerFuncionarios() {
-      axios
-        .get(`${url}/funcionarios/full-list`)
+      this.$http
+        .get(`/funcionarios/full-list`)
         .then(response => {
           this.funcionarios = response.data;
         })
@@ -227,8 +199,8 @@ export default {
       //console.log(this.$route.params.id);
 
       if (this.$route.params.id) {
-        axios
-          .get(`${url}/prestamos/edit/${this.$route.params.id}`)
+        this.$http
+          .get(`/prestamos/edit/${this.$route.params.id}`)
           .then(response => {
             this.prestamo.fecha = response.data.fecha;
             this.prestamo.monto = response.data.monto;
@@ -246,19 +218,6 @@ export default {
               .dropdown("refresh")
               .dropdown("set selected", response.data.moneda);
           });
-        // console.log(prestamosRef.child(this.$route.params.id));
-        // prestamosRef.child(this.$route.params.id).once("value", snapshot => {
-        //   console.log(snapshot.val());
-        //   this.prestamo.fechaUtc = snapshot.val().fechaUtc;
-        //   this.prestamo.monto = snapshot.val().monto;
-        //   this.prestamo.moneda = snapshot.val().moneda;
-        //   this.prestamo.inicioPago = snapshot.val().incioPago;
-        //   this.prestamo.nroCuotas = snapshot.val().nroCuotas;
-        //   $(this.$el)
-        //     .find(".ui.dropdown")
-        //     .dropdown("refresh")
-        //     .dropdown("set selected", snapshot.val().funcionarioId);
-        // });
       }
     },
     guardarPrestamo() {
@@ -270,11 +229,8 @@ export default {
           this.funcionarioSeleccionado
         );
 
-        axios
-          .put(
-            `${url}/prestamos/update/${this.$route.params.id}`,
-            this.prestamo
-          )
+        this.$http
+          .put(`/prestamos/update/${this.$route.params.id}`, this.prestamo)
           .then(response => {
             this.success();
             this.cancelar();
@@ -284,29 +240,14 @@ export default {
             console.log(e);
             this.fail();
           });
-
-        // funcionariosRef
-        //   .child(this.funcionarioSeleccionado)
-        //   .once("value", snap => {
-        //     this.prestamo.nombreFuncionario = snap.val().nombre;
-        //   });
-
-        // prestamosRef
-        //   .child(this.$route.params.id)
-        //   .update(this.prestamo)
-        //   .then(response => {
-        //     this.editSuccess();
-        //     this.cancelar();
-        //     console.log(response);
-        //   });
       } else {
         this.prestamo.funcionario = this.funcionarioSeleccionado;
         this.prestamo.nombreFuncionario = this.findFuncionario(
           this.funcionarioSeleccionado
         );
 
-        axios
-          .post(`${url}/prestamos/add`, this.prestamo)
+        this.$http
+          .post(`/prestamos/add`, this.prestamo)
           .then(response => {
             this.success();
             this.cancelar();
@@ -344,11 +285,7 @@ export default {
       .find(".ui.dropdown")
       .dropdown();
   },
-  updated() {
-    // this.obtenerAdelanto();
-  },
   created() {
-    //this.$bindAsArray("funcionarios", funcionariosRef);
     this.obtenerFuncionarios();
     this.obtenerPrestamo();
   },

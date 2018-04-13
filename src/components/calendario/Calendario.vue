@@ -37,7 +37,7 @@
           <select v-model="evento.funcionario">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
-            <!-- <option v-for="funcionario in funcionarios" :key="funcionario['.key']" v-bind:value="funcionario['.key']" :selected="funcionario['.key'] === Object.keys(calendario.funcionarioId)[0] ? true : false">{{funcionario.nombre}}</option> -->
+
           </select>
         </div>
 
@@ -69,11 +69,6 @@
 
 <script>
 import moment from "moment";
-import axios from "axios";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let funcionariosRef = db.ref("/funcionarios");
-let calendarioRef = db.ref("/calendario");
 
 export default {
   data() {
@@ -93,8 +88,8 @@ export default {
       console.log(this.$route.params.id);
 
       if (this.$route.params.id) {
-        axios
-          .get(`${url}/eventos/edit/${this.$route.params.id}`)
+        this.$http
+          .get(`/eventos/edit/${this.$route.params.id}`)
           .then(response => {
             this.evento.tipoEvento = response.data.tipoEvento;
             this.evento.fechaInicio = response.data.fechaInicio;
@@ -103,31 +98,13 @@ export default {
             this.evento.funcionario = response.data.funcionario;
           });
       }
-
-      /*if (typeof this.$route.params.id !== "undefined") {
-        console.log(calendarioRef.child(this.$route.params.id));
-        calendarioRef.child(this.$route.params.id).once("value", snapshot => {
-          console.log(snapshot.val());
-          this.calendario.tipoEvento = snapshot.val().tipoEvento;
-          this.calendario.fechaFeriadoUtc = snapshot.val().fechaFeriadoUtc;
-          this.calendario.funcionarioId = snapshot.val().funcionarioId;
-          this.calendario.fechaInicioUtc = snapshot.val().fechaInicioUtc;
-          this.calendario.fechaFinUtc = snapshot.val().fechaFinUtc;
-          /* $(this.$el)
-            .find(".ui.fluid.dropdown")
-            .dropdown(
-              "set selected",
-              Object.keys(snapshot.val().funcionarioId)[0]
-            );
-        });
-      }*/
     },
     guardarEvento() {
       console.log(this.$route.params.id);
       if (typeof this.$route.params.id !== "undefined") {
         if (this.evento.tipoEvento === "feriado") {
-          axios
-            .put(`${url}/eventos/update/${this.$route.params.id}`, {
+          this.$http
+            .put(`/eventos/update/${this.$route.params.id}`, {
               tipoEvento: this.evento.tipoEvento,
               fechaFeriado: this.evento.fechaFeriado
             })
@@ -142,8 +119,8 @@ export default {
               this.cancelar();
             });
         } else {
-          axios
-            .put(`${url}/eventos/update/${this.$route.params.id}`, {
+          this.$http
+            .put(`/eventos/update/${this.$route.params.id}`, {
               tipoEvento: this.evento.tipoEvento,
               fechaInicio: this.evento.fechaInicio,
               fechaFin: this.evento.fechaFin,
@@ -162,8 +139,8 @@ export default {
         }
       } else {
         if (this.evento.tipoEvento === "feriado") {
-          axios
-            .post(`${url}/eventos/add`, {
+          this.$http
+            .post(`/eventos/add`, {
               tipoEvento: this.evento.tipoEvento,
               fechaFeriado: this.evento.fechaFeriado
             })
@@ -178,8 +155,8 @@ export default {
               this.cancelar();
             });
         } else {
-          axios
-            .post(`${url}/eventos/add`, {
+          this.$http
+            .post(`/eventos/add`, {
               tipoEvento: this.evento.tipoEvento,
               fechaInicio: this.evento.fechaInicio,
               fechaFin: this.evento.fechaFin,
@@ -187,10 +164,8 @@ export default {
             })
             .then(response => {
               console.log(response);
-              axios.put(
-                `${url}/funcionarios/update-vacation/${
-                  this.evento.funcionario
-                }`,
+              this.$http.put(
+                `/funcionarios/update-vacation/${this.evento.funcionario}`,
                 {
                   vacaciones: response.data._id
                 }
@@ -205,115 +180,8 @@ export default {
             });
         }
       }
-      // if (typeof this.$route.params.id !== "undefined") {
-      //   console.log("QUE LO PASAAAA", this.$route.params.id);
-      //   if (this.calendario.tipoEvento === "feriado") {
-      //     console.log("Entro en Feriado");
-      //     this.calendario.fechaFeriado = moment(
-      //       this.calendario.fechaFeriadoUtc,
-      //       "DD/MM/YYYY"
-      //     )
-      //       .format("L")
-      //       .toString();
-      //     this.calendario.fechaFeriadoUtc = this.calendario.fechaFeriadoUtc.toString();
-      //     calendarioRef
-      //       .child(this.$route.params.id)
-      //       .update(this.calendario)
-      //       .then(res => {
-      //         console.log("response", res);
-      //         this.success();
-      //         this.cancelar();
-      //       });
-      //   } else {
-      //     if (this.calendario.tipoEvento === "vacaciones") {
-      //       console.log("Entro en Vacaciones");
-      //       this.calendario.fechaInicioUtc = null;
-      //       this.calendario.fechaFinUtc = null;
-      //       this.calendario.fechaInicio = moment(
-      //         this.calendario.fechaInicioUtc,
-      //         "DD/MM/YYYY"
-      //       )
-      //         .format("L")
-      //         .toString();
-      //       this.calendario.fechaInicioUtc = this.calendario.fechaInicioUtc.toString();
-      //       this.calendario.fechaFin = moment(
-      //         this.calendario.fechaFinUtc,
-      //         "DD/MM/YYYY"
-      //       )
-      //         .format("L")
-      //         .toString();
-      //       this.calendario.fechaFinUtc = this.calendario.fechaFinUtc.toString();
-      //       this.calendario.funcionarioId[this.funcionariokey] = true;
-      //     }
-      //   }
-      // } else {
-      //   console.log("whaaaaaat");
-      //   if (this.calendario.tipoEvento === "feriado") {
-      //     console.log("Entro en Feriado");
-      //     this.calendario.fechaFeriado = moment(
-      //       this.calendario.fechaFeriadoUtc,
-      //       "DD/MM/YYYY"
-      //     )
-      //       .format("L")
-      //       .toString();
-      //     this.calendario.fechaFeriadoUtc = this.calendario.fechaFeriadoUtc.toString();
-      //     //Inserta resgitro feriado en calendario
-      //     calendarioRef
-      //       .push(this.calendario)
-      //       .then(this.success(), this.cancelar());
-      //   } else {
-      //     if (this.calendario.tipoEvento === "vacaciones") {
-      //       console.log("Entro en Vacaciones");
-      //       this.calendario.fechaFeriadoUtc = null;
-      //       this.calendario.fechaInicio = moment(
-      //         this.calendario.fechaInicioUtc,
-      //         "DD/MM/YYYY"
-      //       )
-      //         .format("L")
-      //         .toString();
-      //       this.calendario.fechaInicioUtc = this.calendario.fechaInicioUtc.toString();
-      //       this.calendario.fechaFin = moment(
-      //         this.calendario.fechaFinUtc,
-      //         "DD/MM/YYYY"
-      //       )
-      //         .format("L")
-      //         .toString();
-      //       this.calendario.fechaFinUtc = this.calendario.fechaFinUtc.toString();
-      //       this.calendario.funcionarioId[this.funcionariokey] = true;
-      //       this.calendario.funcionario = this.obtenerNombreFuncionario(
-      //         this.funcionariokey
-      //       );
-      //       //inserta registro en calendario y en funcionario con el mismo id
-      //       // Get a key for a new Post.
-      //       var newEventKey = calendarioRef.child("posts").push().key;
-      //       console.log(newEventKey);
-      //       var vacaciones = {};
-      //       vacaciones[newEventKey] = true;
-      //       // Write the new post's data simultaneously in the posts list and the user's post list.
-      //       var updates = {};
-      //       updates["/calendario/" + newEventKey] = this.calendario;
-      //       updates[
-      //         "/funcionarios/" + this.funcionariokey + "/vacaciones"
-      //       ] = vacaciones;
-      //       db
-      //         .ref()
-      //         .update(updates)
-      //         .then(this.success(), this.cancelar());
-      //     }
-      //   }
-      //   /* calendarioRef
-      //     .push(this.calendario)
-      //     .then(this.success(), this.cancelar());*/
-      // }
     },
-    // obtenerNombreFuncionario(key) {
-    //   var nombre;
-    //   funcionariosRef.child(key).once("value", snap => {
-    //     nombre = snap.val().nombre;
-    //   });
 
-    //   return nombre;
-    // },
     cancelar() {
       this.$router.push({ name: "listadoCalendario" });
     },
@@ -331,8 +199,8 @@ export default {
       });
     },
     obtenerFuncionarios() {
-      axios
-        .get(`${url}/funcionarios/full-list`)
+      this.$http
+        .get(`/funcionarios/full-list`)
         .then(response => {
           this.funcionarios = response.data;
         })
@@ -348,9 +216,6 @@ export default {
       .dropdown();
   },
   created() {
-    // this.$bindAsArray("funcionarios", funcionariosRef);
-    // this.obtenerEvento();
-    // console.log(this.$route.params.id);
     this.obtenerFuncionarios();
     this.obtenerEvento();
   },

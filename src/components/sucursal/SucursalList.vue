@@ -75,11 +75,8 @@
 </template>
 
 <script>
-import axios from "axios";
 import Pagination from ".././shared/Pagination.vue";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let sucursalesRef = db.ref("/sucursales");
+
 export default {
   data() {
     return {
@@ -89,9 +86,6 @@ export default {
         currentPage: 1,
         totalItems: 0,
         itemsPerPage: 11
-      },
-      firebase: {
-        //sucursales: sucursalesRef
       }
     };
   },
@@ -139,13 +133,12 @@ export default {
     },
     eliminarSucursal(id) {
       var index = this.sucursales.findIndex(i => i.id === id);
-      /*db.ref("/sucursales/" + id).remove();*/
       this.sucursales.splice(index, 1);
-      axios.get(`${url}/sucursales/delete/${id}`);
+      this.$http.get(`/sucursales/delete/${id}`);
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      axios
+      this.$http
         .get(url + "/sucursals?_page=" + this.pageOne.currentPage)
         .then(response => {
           this.sucursales = response.data.slice(0, this.pageOne.itemsPerPage);
@@ -168,10 +161,9 @@ export default {
     }
   },
   created() {
-    axios.get("http://localhost:3000/sucursales").then(response => {
+    this.$http.get("/sucursales").then(response => {
       this.sucursales = response.data;
     });
-    // this.$bindAsArray("sucursales", sucursalesRef);
   },
   watch: {
     $route: "obtenerListadoSucursales"

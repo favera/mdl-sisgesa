@@ -116,12 +116,6 @@
 </template>
 
 <script>
-import axios from "axios";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let calendarioRef = db.ref("/calendario");
-let funcionariosRef = db.ref("/funcionarios");
-
 export default {
   name: "calendarioList",
   data() {
@@ -179,45 +173,18 @@ export default {
       var index = this.eventos.findIndex(i => i.id === id);
       this.eventos.splice(index, 1);
       if (funcionario) {
-        axios
-          .put(`${url}/funcionarios/update-vacation/${funcionario}`, {
+        this.$http
+          .put(`/funcionarios/update-vacation/${funcionario}`, {
             vacaciones: "false"
           })
           .then(console.log("Elimino vacaciones de funcionario"));
       }
-      axios.delete(`${url}/eventos/delete/${id}`);
-      //console.log("id", id);
-      //console.log("funcionario", funcionarioId);
-
-      // console.log("valor listado", this.listado);
-      // console.log(this.listado === "feriado");
-
-      // if (this.listado === "feriado") {
-      //   // var index = this.eventos.findIndex(i => i.id === id);
-      //   //console.log("index", index);
-      //   db.ref("/calendario/" + id).remove();
-      //   /*.then(this.feriados.splice(index, 1));*/
-      // }
-      // console.log(this.listado === "vacaciones");
-      // if (this.listado === "vacaciones") {
-      //   //delete from calendario and funcionarios, passing null to update will delete te item
-      //   var updates = {};
-      //   updates["/calendario/" + id] = null;
-      //   updates[
-      //     "/funcionarios/" + Object.keys(funcionarioId)[0] + "/vacaciones/" + id
-      //   ] = null;
-      //   console.log(updates);
-
-      //   db
-      //     .ref()
-      //     .update(updates)
-      //     .then(res => console.log(res));
-      // }
+      this.$http.delete(`/eventos/delete/${id}`);
     },
     obtenerListadoEventos() {
-      axios
+      this.$http
         .get(
-          `${url}/eventos?page=${this.pageOne.currentPage}&limit=${
+          `/eventos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }`
         )
@@ -230,42 +197,9 @@ export default {
           console.log(e);
         });
     }
-    /*separarListados() {
-      this.calendario.forEach(element => {
-        console.log("ejecuta metodo");
-        if (element.tipoEvento === "feriado") {
-          console.log("Entro pero no hace push");
-          this.feriados.push(element);
-        } else {
-          console.log("aca no se que pasa");
-          var calendarioFuncionariosRef = calendarioRef
-            .child(element[".key"])
-            .child("funcionarioId");
-          var vacaciones = this.vacaciones;
-          calendarioFuncionariosRef.on("child_added", function(snap) {
-            funcionariosRef.child(snap.key).once("value", function(snapfunc) {
-              console.log("SNAP PRINT", snap.val());
-              console.log(snapfunc.val());
-              element["funcionario"] = snapfunc.val().nombre;
-              console.log("TESTANDO", JSON.stringify(element));
-              vacaciones.push(element);
-            });
-          });
-        }
-      });
-    }*/
   },
   created() {
-    //this.$bindAsArray("eventos", calendarioRef);
-    //this.separarListados();
     this.obtenerListadoEventos();
-  },
-  updated() {
-    //this.separarListados();
-  },
-
-  mounted() {
-    //this.separarListados();
   }
 };
 </script>

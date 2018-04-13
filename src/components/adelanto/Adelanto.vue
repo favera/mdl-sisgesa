@@ -14,15 +14,6 @@
           <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
         </select>
       </div>
-
-      <!-- <div class="ten wide field">
-        <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector" >
-            <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="funcionario in funcionarios" :key="funcionario['.key']" v-bind:value="funcionario['.key']">{{funcionario.nombre}}</option>
-        </select>
-    </div> -->
-
       <div class="ten wide field">
         <div class="field">
           <label for="">Tipo de Adelanto:</label>
@@ -72,11 +63,7 @@
 
 <script>
 import moment from "moment";
-import axios from "axios";
-import { url } from "./../.././config/backend";
-import { db } from "./../.././config/firebase";
-let funcionariosRef = db.ref("/funcionarios");
-let adelantosRef = db.ref("/adelantos");
+
 export default {
   data() {
     return {
@@ -99,8 +86,8 @@ export default {
       console.log(this.$route.params.id);
 
       if (this.$route.params.id) {
-        axios
-          .get(`${url}/adelantos/edit/${this.$route.params.id}`)
+        this.$http
+          .get(`/adelantos/edit/${this.$route.params.id}`)
           .then(response => {
             this.adelanto.fecha = response.data.fecha;
             this.adelanto.tipoAdelanto = response.data.tipoAdelanto;
@@ -118,26 +105,10 @@ export default {
               .dropdown("set selected", response.data.moneda);
           });
       }
-
-      // if (typeof this.$route.params.id !== "undefined") {
-      //   console.log(adelantosRef.child(this.$route.params.id));
-      //   adelantosRef.child(this.$route.params.id).once("value", snapshot => {
-      //     console.log(snapshot.val());
-      //     this.adelanto.fechaUtc = snapshot.val().fechaUtc;
-      //     this.adelanto.tipoAdelanto = snapshot.val().tipoAdelanto;
-      //     this.disabledInput = true;
-      //     this.adelanto.monto = snapshot.val().monto;
-      //     this.adelanto.moneda = snapshot.val().moneda;
-      //     $(this.$el)
-      //       .find(".ui.dropdown")
-      //       .dropdown("refresh")
-      //       .dropdown("set selected", snapshot.val().funcionarioId);
-      //   });
-      // }
     },
     obtenerFuncionarios() {
-      axios
-        .get(`${url}/funcionarios/full-list`)
+      this.$http
+        .get(`/funcionarios/full-list`)
         .then(response => {
           this.funcionarios = response.data;
         })
@@ -149,9 +120,9 @@ export default {
     guardarAdelanto() {
       if (this.$route.params.id) {
         this.adelanto.funcionario = this.funcionarioSeleccionado;
-        axios
+        this.$http
           .put(
-            `${url}/adelantos/update/${this.$route.params.id}`,
+            `/adelantos/update/${this.$route.params.id}`,
             this.adelanto
           )
           .then(response => {
@@ -165,8 +136,8 @@ export default {
           });
       } else {
         this.adelanto.funcionario = this.funcionarioSeleccionado;
-        axios
-          .post(`${url}/adelantos/add`, this.adelanto)
+        this.$http
+          .post(`/adelantos/add`, this.adelanto)
           .then(response => {
             console.log(response);
             this.success();
@@ -177,34 +148,6 @@ export default {
             this.fail();
           });
       }
-      // if (typeof this.$route.params.id !== null) {
-      //   this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
-      //     .format("L")
-      //     .toString();
-      //   this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
-      //   this.adelanto.funcionarioId = this.funcionarioSeleccionado;
-
-      //   adelantosRef
-      //     .child(this.$route.params.id)
-      //     .update(this.adelanto)
-      //     .then(response => {
-      //       this.editSuccess();
-      //       this.cancelar();
-      //       console.log(response);
-      //     });
-      // } else {
-      //   this.adelanto.fecha = moment(this.adelanto.fechaUtc, "DD/MM/YYYY")
-      //     .format("L")
-      //     .toString();
-      //   this.adelanto.fechaUtc = this.adelanto.fechaUtc.toString();
-      //   this.adelanto.funcionarioId = this.funcionarioSeleccionado;
-
-      //   adelantosRef.push(this.adelanto).then(res => {
-      //     console.log(res);
-      //     this.success();
-      //     this.cancelar();
-      //   });
-      // }
     },
     cancelar() {
       this.$router.push({ name: "listadoAdelanto" });
