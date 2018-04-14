@@ -55,9 +55,6 @@ export default {
         horaEntrada: null,
         horaSalida: null,
         telefono: null
-      },
-      firebase: {
-        sucursal: sucursalRef
       }
     };
   },

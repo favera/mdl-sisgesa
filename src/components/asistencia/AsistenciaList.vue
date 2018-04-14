@@ -232,6 +232,7 @@ export default {
   data() {
     return {
       busquedaAvanzada: false,
+      feriadosAnuales: [],
       showMessage: false,
       call: null,
       query: {
@@ -438,9 +439,15 @@ export default {
       console.log("Horas trabajadas " + result);
       return result;
     },
+    //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
+    retornarDiaFeriado(fecha){
+      return this.feriadosAnuales.findIndex(feriado => feriado.fechaFeriado === fecha)
+    },
     //retorna el valor en horas de horas extras para el banco de horas
     calculoBancoH(entrada, salida, funcionarioId, fecha) {
-      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, horasExtras, verFecha;
+      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, horasExtras, verFecha, diaFeriado;
+      //verifica que la fecha pasada es o no un feriado
+      diaFeriado = this.retornarDiaFeriado(fecha);
       verFecha = new Date(fecha);
       funcionario = this.funcionarios.find(funcionario => {
         if (funcionario._id === funcionarioId) {
@@ -502,7 +509,7 @@ export default {
         }
         //else del verificar si es dia sabado
       } else {
-        if (verFecha.getDay() === 0) {
+        if (verFecha.getDay() === 0 || diaFeriado !== -1) {
           horasExtras = this.handleHorasTrabajadas(entrada, salida);
           console.log(horasExtras);
           return horasExtras
@@ -530,8 +537,9 @@ export default {
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
     calculoHorasFaltantes(entrada, salida, funcionarioId, fecha) {
-      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, result, horasExtras, verFecha;
+      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, result, horasExtras, verFecha, diaFeriado;
 
+      diaFeriado = this.retornarDiaFeriado(fecha);
       verFecha = new Date(fecha);
 
       funcionario = this.funcionarios.find(funcionario => {
@@ -578,7 +586,7 @@ export default {
         }
       } else {
 
-        if(verFecha.getDay()=== 0){
+        if(verFecha.getDay()=== 0 || diaFeriado !== -1){
           horasExtras = "00:00"
 
           return horasExtras;
@@ -654,6 +662,14 @@ export default {
       this.$http
         .delete(`/asistencias/delete/${id}`)
         .then(response => console.log(response));
+    },
+    obtenerFeriados(){
+      var firstDayYear = moment().startOf("year").format();
+      var lastDayYear = moment().endOf("year").format();
+      this.$http.get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`).then(response => {
+        this.feriadosAnuales = response.data;
+      })
+
     },
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
@@ -1019,6 +1035,7 @@ export default {
   created() {
     this.queryData();
     this.obtenerFuncionarios();
+    this.obtenerFeriados();
   },
   mounted() {
     this.modal = $(this.$el).find(".ui.longer.modal");
