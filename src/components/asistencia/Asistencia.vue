@@ -64,6 +64,7 @@ export default {
         observacion: null
       },
       funcionarioSeleccionado: null,
+      feriadosAnuales: [],
       funcionarios: [],
       selPay: ""
     };
@@ -252,6 +253,12 @@ export default {
           .format("HH:mm");
       }
     },
+    //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
+    retornarDiaFeriado(fecha) {
+      return this.feriadosAnuales.findIndex(feriado => {
+        return moment(feriado.fechaFeriado).isSame(fecha);
+      });
+    },
     aplicarEstilo(entrada, salida) {
       var estilo = {};
       estilo.ausente = false;
@@ -272,15 +279,18 @@ export default {
       return estilo;
     },
     getHorasFaltantes(funcionarioId, entrada, salida, fecha) {
-      var cargaLaboral, horasTrabajadas, resultado, horaEntrada, horaSalida;
+      var cargaLaboral,
+        horasTrabajadas,
+        resultado,
+        horaEntrada,
+        horaSalida,
+        diaFeriado;
 
       if (typeof fecha === "string") {
         fecha = new Date(fecha);
       }
 
-      console.log("Horas Faltantes Entrada", entrada);
-      console.log("Horas Faltantes Salida", salida);
-
+      diaFeriado = this.retornarDiaFeriado(fecha);
       horaEntrada = moment(entrada, "HH:mm").format();
       horaSalida = moment(salida, "HH:mm").format();
 
@@ -291,7 +301,7 @@ export default {
       });
       console.log(fecha);
       console.log("Verificando si es Domingo", fecha.getDay === 0);
-      if (fecha.getDay() === 0) {
+      if (fecha.getDay() === 0 || diaFeriado !== -1) {
         resultado = "00:00";
         return resultado;
       } else {
@@ -316,11 +326,18 @@ export default {
       return this.convertToHours(horasTrabajadas);
     },
     getHorasExtras(funcionarioId, entrada, salida, fecha) {
-      var cargaLaboral, horasTrabajadas, resultado, horaEntrada, horaSalida;
+      var cargaLaboral,
+        horasTrabajadas,
+        resultado,
+        horaEntrada,
+        horaSalida,
+        diaFeriado;
 
       if (typeof fecha === "string") {
         fecha = new Date(fecha);
       }
+
+      diaFeriado = this.retornarDiaFeriado(fecha);
 
       this.funcionarios.find(funcionario => {
         if (funcionario._id === funcionarioId) {
@@ -331,7 +348,7 @@ export default {
       horaEntrada = moment(entrada, "HH:mm").format();
       horaSalida = moment(salida, "HH:mm").format();
       console.log("Verificando si es Domingo", fecha.getDay === 0);
-      if (fecha.getDay() === 0) {
+      if (fecha.getDay() === 0 || diaFeriado !== -1) {
         horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
         return this.convertToHours(horasTrabajadas);
       } else {
@@ -392,7 +409,19 @@ export default {
             .dropdown("set selected", response.data.funcionario);
         });
     },
-
+    obtenerFeriados() {
+      var firstDayYear = moment()
+        .startOf("year")
+        .format();
+      var lastDayYear = moment()
+        .endOf("year")
+        .format();
+      this.$http
+        .get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`)
+        .then(response => {
+          this.feriadosAnuales = response.data;
+        });
+    },
     obtenerFuncionarios() {
       this.$http
         .get(`/funcionarios/full-list/`)
@@ -430,6 +459,7 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerMarcacion();
+    this.obtenerFeriados();
   },
   watch: {
     $route: "obtenerMarcacion",

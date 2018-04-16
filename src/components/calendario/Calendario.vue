@@ -46,12 +46,12 @@
           <div class="inline fields">
             <label>Fecha Inicio:</label>
             <div class="field">
-              <el-date-picker v-model="evento.fechaInicio" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
+              <el-date-picker v-model="evento.fechaInicio" type="date" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
             </div>
 
             <label>Fecha Fin:</label>
             <div class="field">
-              <el-date-picker v-model="evento.fechaFin" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
+              <el-date-picker v-model="evento.fechaFin" type="date" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
             </div>
           </div>
         </div>

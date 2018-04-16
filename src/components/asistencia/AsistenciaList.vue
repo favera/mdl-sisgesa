@@ -440,14 +440,28 @@ export default {
       return result;
     },
     //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
-    retornarDiaFeriado(fecha){
-      return this.feriadosAnuales.findIndex(feriado => feriado.fechaFeriado === fecha)
+    retornarDiaFeriado(fecha) {
+      return this.feriadosAnuales.findIndex(feriado => {
+        console.log(
+          "Fecha Recibida en retornarDiaferiado",
+          fecha,
+          feriado.fechaFeriado
+        );
+        return moment(feriado.fechaFeriado).isSame(fecha);
+      });
     },
     //retorna el valor en horas de horas extras para el banco de horas
     calculoBancoH(entrada, salida, funcionarioId, fecha) {
-      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, horasExtras, verFecha, diaFeriado;
+      var sabadoMedioTiempo,
+        cargaLaboral,
+        funcionario,
+        horasTrabajadas,
+        horasExtras,
+        verFecha,
+        diaFeriado;
       //verifica que la fecha pasada es o no un feriado
       diaFeriado = this.retornarDiaFeriado(fecha);
+      console.log("Resultado de retonar dia Feriado", diaFeriado);
       verFecha = new Date(fecha);
       funcionario = this.funcionarios.find(funcionario => {
         if (funcionario._id === funcionarioId) {
@@ -495,7 +509,7 @@ export default {
 
           console.log("Carga Laboral", cargaLaboral);
 
-         horasExtras =
+          horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
             moment.duration(cargaLaboral, "HH:mm").asMinutes();
           console.log(moment.duration(cargaLaboral, "HH:mm").asMinutes());
@@ -512,7 +526,7 @@ export default {
         if (verFecha.getDay() === 0 || diaFeriado !== -1) {
           horasExtras = this.handleHorasTrabajadas(entrada, salida);
           console.log(horasExtras);
-          return horasExtras
+          return horasExtras;
         } else {
           horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
@@ -537,7 +551,14 @@ export default {
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
     calculoHorasFaltantes(entrada, salida, funcionarioId, fecha) {
-      var sabadoMedioTiempo, cargaLaboral, funcionario, horasTrabajadas, result, horasExtras, verFecha, diaFeriado;
+      var sabadoMedioTiempo,
+        cargaLaboral,
+        funcionario,
+        horasTrabajadas,
+        result,
+        horasExtras,
+        verFecha,
+        diaFeriado;
 
       diaFeriado = this.retornarDiaFeriado(fecha);
       verFecha = new Date(fecha);
@@ -556,8 +577,8 @@ export default {
 
       if (this.isSabado !== -1) {
         if (sabadoMedioTiempo) {
-          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida),
-          console.log("Horas trabajadas " + horasTrabajadas);
+          (horasTrabajadas = this.handleHorasTrabajadas(entrada, salida)),
+            console.log("Horas trabajadas " + horasTrabajadas);
 
           if (!horasTrabajadas.localeCompare("00:00")) {
             return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
@@ -585,39 +606,38 @@ export default {
           return null;
         }
       } else {
-
-        if(verFecha.getDay()=== 0 || diaFeriado !== -1){
-          horasExtras = "00:00"
+        if (verFecha.getDay() === 0 || diaFeriado !== -1) {
+          horasExtras = "00:00";
 
           return horasExtras;
+        } else {
+          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
-        }else{
+          if (!horasTrabajadas.localeCompare("00:00")) {
+            return "-" + cargaLaboral;
+          }
+          var horasExtras =
+            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+            moment.duration(cargaLaboral, "HH:mm").asMinutes();
 
-            var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          if (horasExtras < 0) {
+            return this.handleNegative(horasExtras);
+          }
 
-        if (!horasTrabajadas.localeCompare("00:00")) {
-          return "-" + cargaLaboral;
+          return null;
         }
-        var horasExtras =
-          moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-          moment.duration(cargaLaboral, "HH:mm").asMinutes();
-
-        if (horasExtras < 0) {
-          return this.handleNegative(horasExtras);
-        }
-
-        return null;
-
-        }
-
-      
       }
     },
     //verifica si es domingo o no para insertar texto en observacion
     handleObservacion(fecha) {
       var domingo = new Date(fecha);
+      var diaFeriado = this.retornarDiaFeriado(new Date(fecha));
       if (domingo.getDay() === 0) {
         return "Hora Extra Domingo";
+      }
+
+      if (diaFeriado !== -1) {
+        return "Hora Extra por Dia Feriado";
       }
 
       return "";
@@ -663,13 +683,18 @@ export default {
         .delete(`/asistencias/delete/${id}`)
         .then(response => console.log(response));
     },
-    obtenerFeriados(){
-      var firstDayYear = moment().startOf("year").format();
-      var lastDayYear = moment().endOf("year").format();
-      this.$http.get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`).then(response => {
-        this.feriadosAnuales = response.data;
-      })
-
+    obtenerFeriados() {
+      var firstDayYear = moment()
+        .startOf("year")
+        .format();
+      var lastDayYear = moment()
+        .endOf("year")
+        .format();
+      this.$http
+        .get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`)
+        .then(response => {
+          this.feriadosAnuales = response.data;
+        });
     },
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
@@ -927,8 +952,9 @@ export default {
       });
       console.log(this.datosMarcaciones[0].fecha);
       var fecha = new Date(this.datosMarcaciones[0].fecha);
+      var diaFeriado = this.retornarDiaFeriado(fecha);
       //si no es domingo verificar si esta de vacaciones o ausente
-      if (fecha.getDay() !== 0) {
+      if (fecha.getDay() !== 0 && diaFeriado === -1) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
         this.funcionarios.forEach(funcionario => {
           var ausencia = this.datosMarcaciones.findIndex(item => {
