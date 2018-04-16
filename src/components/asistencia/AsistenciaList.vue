@@ -698,11 +698,12 @@ export default {
     },
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
+      this.validarPlanilla.length = 0;
       //Pasamos los datos del archivo excel a preDatos
       this.preDatos = convertedData.body;
       var fecha = moment(this.preDatos[0].Horario, "DD/MM/YYYY").format();
       console.log("Fecha Format", fecha);
-
+      //Trae las asistencias de la fecha pasada
       this.$http
         .get(`/asistencias/full-list?fechaPlanilla=${fecha}`)
         .then(response => {
@@ -718,12 +719,12 @@ export default {
                   asistenciaPlanilla["AC-No."]
                 );
               });
-              console.log("Existe Funcionario", existe);
+              console.log("Existe Funcionario", noExiste);
               if (noExiste === -1) {
                 this.validarPlanilla.push(asistenciaPlanilla);
               }
             });
-            if (this.validarPlanilla.length) {
+            if (!this.validarPlanilla.length) {
               this.warningMessage = true;
             }
           } else {
