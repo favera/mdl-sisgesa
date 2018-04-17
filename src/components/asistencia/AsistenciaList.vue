@@ -1002,9 +1002,7 @@ export default {
                     "Resultado de evaluacion fecha vacaciones",
                     isFechaVacaciones
                   );
-                  if (
-                    moment(fecha).isBetween(fechaInicio, fechaFin, null, "[]")
-                  ) {
+                  if (isFechaVacaciones) {
                     marcacion.fecha = this.datosMarcaciones[0].fecha;
                     marcacion.funcionario = funcionario._id;
                     marcacion.nombreFuncionario = funcionario.nombre;
@@ -1017,7 +1015,12 @@ export default {
                     marcacion.estilo.ausente = false;
                     marcacion.estilo.incompleto = false;
                     marcacion.estilo.vacaciones = true;
+                    console.log(
+                      "Persona de vacaciones",
+                      JSON.stringify(marcacion)
+                    );
                     this.ausencias.push(marcacion);
+                    console.log(this.ausencias);
                   }
                 });
             } else {
