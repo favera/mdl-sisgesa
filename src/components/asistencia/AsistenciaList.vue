@@ -951,13 +951,129 @@ export default {
 
         this.postMarcaciones.push(marcacion);
       });
+
+      this.verificarAusenciasVacaciones();
+      // console.log(this.datosMarcaciones[0].fecha);
+      // var fecha = new Date(this.datosMarcaciones[0].fecha);
+      // var diaFeriado = this.retornarDiaFeriado(fecha);
+      // //si no es domingo verificar si esta de vacaciones o ausente
+      // if (fecha.getDay() !== 0 && diaFeriado === -1) {
+      //   //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
+      //   this.funcionarios.forEach(async funcionario => {
+      //     var ausencia = this.datosMarcaciones.findIndex(item => {
+      //       console.log("comparacion", item.funcionarioId, funcionario._id);
+      //       return funcionario._id === item.funcionarioId;
+      //     });
+      //     console.log("Ausente:", ausencia);
+      //     if (ausencia === -1) {
+      //       console.log(
+      //         "Funcionario Ausente, verificar si esta de vacaciones",
+      //         funcionario._id
+      //       );
+      //       var marcacion = {};
+      //       marcacion.estilo = {};
+
+      //       //Verifica si el funcionario esta de vacaciones
+      //       if (funcionario.vacaciones !== "false") {
+      //         console.log("Esta de vacaciones");
+      //         var fecha, fechaInicio, fechaFin, isFechaVacaciones, respuesta;
+      //         respuesta = await this.$http.get(
+      //           `/eventos/edit/${funcionario.vacaciones}`
+      //         );
+      //         console.log(respuesta);
+
+      //         // debugger;
+      //         // respuesta = await this.returnVacacionesData(
+      //         //   funcionario.vacaciones
+      //         // );
+      //         // debugger;
+
+      //         console.log("Respuesta del async", respuesta);
+      //         fechaInicio = respuesta.data.fechaInicio;
+      //         fechaFin = respuesta.data.fechaFin;
+
+      //         fecha = moment(this.datosMarcaciones[0].fecha).format();
+      //         console.log("Fecha a comparar", fecha, typeof fecha);
+      //         isFechaVacaciones = moment(fecha).isBetween(
+      //           fechaInicio,
+      //           fechaFin,
+      //           null,
+      //           "[]"
+      //         );
+      //         console.log(
+      //           "Resultado de evaluacion fecha vacaciones",
+      //           isFechaVacaciones
+      //         );
+      //         if (isFechaVacaciones) {
+      //           marcacion.fecha = this.datosMarcaciones[0].fecha;
+      //           marcacion.funcionario = funcionario._id;
+      //           marcacion.nombreFuncionario = funcionario.nombre;
+      //           marcacion.entrada = null;
+      //           marcacion.salida = null;
+      //           marcacion.horasTrabajadas = null;
+      //           marcacion.horasExtras = null;
+      //           marcacion.horasFaltantes = null;
+      //           marcacion.observacion = "Vacaciones";
+      //           marcacion.estilo.ausente = false;
+      //           marcacion.estilo.incompleto = false;
+      //           marcacion.estilo.vacaciones = true;
+      //           console.log("Persona de vacaciones", JSON.stringify(marcacion));
+      //           this.ausencias.push(marcacion);
+      //           console.log(JSON.stringify(this.ausencias));
+      //         }
+      //       } else {
+      //         console.log("Entro en el Else");
+      //         //si no cumplio condiciones anteriores, es una ausencia.
+      //         marcacion.fecha = this.datosMarcaciones[0].fecha;
+      //         marcacion.funcionario = funcionario._id;
+      //         marcacion.nombreFuncionario = funcionario.nombre;
+      //         marcacion.entrada = null;
+      //         marcacion.salida = null;
+      //         marcacion.horasTrabajadas = null;
+      //         marcacion.horasExtras = null;
+      //         marcacion.horasFaltantes = null;
+      //         marcacion.observacion = "Ausencia";
+      //         marcacion.estilo.ausente = true;
+      //         marcacion.estilo.incompleto = false;
+      //         marcacion.estilo.vacaciones = false;
+
+      //         this.ausencias.push(marcacion);
+      //       }
+      //     }
+      //   });
+      // }
+      // console.log("Array Ausencias", JSON.stringify(this.ausencias));
+      // console.log("Array Marcaciones", JSON.stringify(this.postMarcaciones));
+      // if (this.ausencias.length > 0) {
+      //   this.postMarcaciones = this.ausencias.concat(this.postMarcaciones);
+      // }
+
+      // console.log(
+      //   "Despues de concatenar",
+      //   JSON.stringify(this.postMarcaciones)
+      // );
+
+      // this.$http
+      //   .post(`/asistencias/test-data`, this.postMarcaciones)
+      //   .then(response => {
+      //     this.$message({
+      //       type: "success",
+      //       message: "Registro insertado exitosamente"
+      //     });
+      //     this.postMarcaciones.length = 0;
+      //     this.queryData();
+      //     // this.obtenerAsistencias();
+      //     console.log(response);
+      //   });
+    },
+    async verificarAusenciasVacaciones() {
       console.log(this.datosMarcaciones[0].fecha);
       var fecha = new Date(this.datosMarcaciones[0].fecha);
       var diaFeriado = this.retornarDiaFeriado(fecha);
       //si no es domingo verificar si esta de vacaciones o ausente
       if (fecha.getDay() !== 0 && diaFeriado === -1) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
-        this.funcionarios.forEach(funcionario => {
+        for (let funcionario of this.funcionarios) {
           var ausencia = this.datosMarcaciones.findIndex(item => {
             console.log("comparacion", item.funcionarioId, funcionario._id);
             return funcionario._id === item.funcionarioId;
@@ -974,55 +1090,45 @@ export default {
             //Verifica si el funcionario esta de vacaciones
             if (funcionario.vacaciones !== "false") {
               console.log("Esta de vacaciones");
-              var fecha, fechaInicio, fechaFin, isFechaVacaciones;
-              this.$http
-                .get(`/eventos/edit/${funcionario.vacaciones}`)
-                .then(response => {
-                  fechaInicio = response.data.fechaInicio;
-                  console.log(
-                    "Fecha Incio Vacaciones",
-                    fechaInicio,
-                    typeof fechaInicio
-                  );
-                  fechaFin = response.data.fechaFin;
-                  console.log(
-                    "Fecha Fin Vacaciones",
-                    fechaFin,
-                    typeof fechaFin
-                  );
-                  fecha = moment(this.datosMarcaciones[0].fecha).format();
-                  console.log("Fecha a comparar", fecha, typeof fecha);
-                  isFechaVacaciones = moment(fecha).isBetween(
-                    fechaInicio,
-                    fechaFin,
-                    null,
-                    "[]"
-                  );
-                  console.log(
-                    "Resultado de evaluacion fecha vacaciones",
-                    isFechaVacaciones
-                  );
-                  if (isFechaVacaciones) {
-                    marcacion.fecha = this.datosMarcaciones[0].fecha;
-                    marcacion.funcionario = funcionario._id;
-                    marcacion.nombreFuncionario = funcionario.nombre;
-                    marcacion.entrada = null;
-                    marcacion.salida = null;
-                    marcacion.horasTrabajadas = null;
-                    marcacion.horasExtras = null;
-                    marcacion.horasFaltantes = null;
-                    marcacion.observacion = "Vacaciones";
-                    marcacion.estilo.ausente = false;
-                    marcacion.estilo.incompleto = false;
-                    marcacion.estilo.vacaciones = true;
-                    console.log(
-                      "Persona de vacaciones",
-                      JSON.stringify(marcacion)
-                    );
-                    this.ausencias.push(marcacion);
-                    console.log(this.ausencias);
-                  }
-                });
+              var fecha, fechaInicio, fechaFin, isFechaVacaciones, respuesta;
+              respuesta = await this.$http.get(
+                `/eventos/edit/${funcionario.vacaciones}`
+              );
+              console.log(respuesta);
+
+              console.log("Respuesta del async", respuesta);
+              fechaInicio = respuesta.data.fechaInicio;
+              fechaFin = respuesta.data.fechaFin;
+
+              fecha = moment(this.datosMarcaciones[0].fecha).format();
+              console.log("Fecha a comparar", fecha, typeof fecha);
+              isFechaVacaciones = moment(fecha).isBetween(
+                fechaInicio,
+                fechaFin,
+                null,
+                "[]"
+              );
+              console.log(
+                "Resultado de evaluacion fecha vacaciones",
+                isFechaVacaciones
+              );
+              if (isFechaVacaciones) {
+                marcacion.fecha = this.datosMarcaciones[0].fecha;
+                marcacion.funcionario = funcionario._id;
+                marcacion.nombreFuncionario = funcionario.nombre;
+                marcacion.entrada = null;
+                marcacion.salida = null;
+                marcacion.horasTrabajadas = null;
+                marcacion.horasExtras = null;
+                marcacion.horasFaltantes = null;
+                marcacion.observacion = "Vacaciones";
+                marcacion.estilo.ausente = false;
+                marcacion.estilo.incompleto = false;
+                marcacion.estilo.vacaciones = true;
+                console.log("Persona de vacaciones", JSON.stringify(marcacion));
+                this.ausencias.push(marcacion);
+                console.log(JSON.stringify(this.ausencias));
+              }
             } else {
               console.log("Entro en el Else");
               //si no cumplio condiciones anteriores, es una ausencia.
@@ -1042,12 +1148,18 @@ export default {
               this.ausencias.push(marcacion);
             }
           }
-        });
+        }
       }
-
+      console.log("Array Ausencias", JSON.stringify(this.ausencias));
+      console.log("Array Marcaciones", JSON.stringify(this.postMarcaciones));
       if (this.ausencias.length > 0) {
         this.postMarcaciones = this.ausencias.concat(this.postMarcaciones);
       }
+
+      console.log(
+        "Despues de concatenar",
+        JSON.stringify(this.postMarcaciones)
+      );
 
       this.$http
         .post(`/asistencias/test-data`, this.postMarcaciones)
@@ -1057,9 +1169,15 @@ export default {
             message: "Registro insertado exitosamente"
           });
           this.postMarcaciones.length = 0;
-          this.obtenerAsistencias();
+          this.queryData();
+          // this.obtenerAsistencias();
           console.log(response);
         });
+    },
+    async returnVacacionesData(vacaciones) {
+      let response = await this.$http.get(`/eventos/edit/${vacaciones}`);
+      console.log("Response", response);
+      return response;
     }
   },
   created() {
