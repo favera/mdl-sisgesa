@@ -68,7 +68,7 @@
               </td>
 
             </tr>
-            <tr v-show="prestamo.showCuotas" :key="prestamo._id">
+            <tr v-show="prestamo.showCuotas" :key="prestamo.funcionario">
               <td colspan="5">
                 <div class="ui padded segments">
                   <div class="ui segment">

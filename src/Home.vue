@@ -11,7 +11,7 @@
     <div class="ui left inverted vertical menu visible sidebar">
       <div class="header item">
         <h4>
-          <router-link class="item" :to="{name: 'Dashboard'}">MDL | SISGESA</router-link>
+          <router-link class="item" :to="{name: 'Home'}">MDL | SISGESA</router-link>
         </h4>
         <p>sistema de Gestion Salarial</p>
       </div>
@@ -28,6 +28,7 @@
 
     <div class="pusher">
       <div class="ui grid">
+        <app-dash v-if="this.$route.name === 'Home'"></app-dash>
         <router-view></router-view>
       </div>
     </div>
@@ -36,6 +37,7 @@
 </template>
 
 <script>
+import Dashboard from "./Dashboard.vue";
 export default {
   name: "home",
   data() {
@@ -55,7 +57,9 @@ export default {
       }
     }
   },
-  components: {}
+  components: {
+    appDash: Dashboard
+  }
 };
 </script>
 
