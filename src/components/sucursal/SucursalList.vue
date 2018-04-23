@@ -78,6 +78,7 @@
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
+  name: "sucursaslList",
   data() {
     return {
       sucursales: [],
@@ -104,11 +105,27 @@ export default {
         }
       )
         .then(() => {
-          this.eliminarSucursal(id);
-          this.$message({
-            type: "success",
-            message: "Registro Eliminado"
-          });
+          var index = this.sucursales.findIndex(i => i.id === id);
+          this.$http
+            .delete(`/sucursales/delete/${id}`)
+            .then(response => {
+              console.log("response from then", response);
+              this.sucursales.splice(index, 1);
+              this.$message({
+                type: "success",
+                message: "Registro Eliminado"
+              });
+            })
+            .catch(e => {
+              console.log("Response error", e.response);
+
+              if (e.response.status === 403) {
+                this.$message({
+                  type: "error",
+                  message: e.response.data
+                });
+              }
+            });
         })
         .catch(() => {
           this.$message({
@@ -133,8 +150,20 @@ export default {
     },
     eliminarSucursal(id) {
       var index = this.sucursales.findIndex(i => i.id === id);
-      this.sucursales.splice(index, 1);
-      this.$http.get(`/sucursales/delete/${id}`);
+
+      this.$http
+        .get(`/sucursales/delete/${id}`)
+        .then(response => {
+          // this.sucursales.splice(index, 1);
+          console.log("Respuesta", response);
+        })
+        .catch(e => {
+          console.log(e);
+          this.$message({
+            type: "info",
+            message: "Proceso Cancelado"
+          });
+        });
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
@@ -144,7 +173,11 @@ export default {
           this.sucursales = response.data.slice(0, this.pageOne.itemsPerPage);
         })
         .catch(e => {
-          console.log(e);
+          console.log("error: from", e);
+          this.$message({
+            type: "info",
+            message: "Proceso Cancelado"
+          });
         });
     }
   },

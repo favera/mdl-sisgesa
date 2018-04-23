@@ -49,6 +49,7 @@
 <script>
 import moment from "moment";
 export default {
+  name: "asistencia",
   data() {
     return {
       marcacion: {

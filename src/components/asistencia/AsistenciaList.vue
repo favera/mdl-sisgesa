@@ -229,6 +229,7 @@ import moment from "moment";
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
+  name: "asistenciaList",
   data() {
     return {
       busquedaAvanzada: false,

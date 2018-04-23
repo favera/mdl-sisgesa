@@ -37,7 +37,7 @@
 
 <script>
 export default {
-  name: "app",
+  name: "home",
   data() {
     return {};
   },

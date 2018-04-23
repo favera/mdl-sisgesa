@@ -65,6 +65,7 @@
 import moment from "moment";
 
 export default {
+  name: "adelanto",
   data() {
     return {
       adelanto: {
@@ -121,10 +122,7 @@ export default {
       if (this.$route.params.id) {
         this.adelanto.funcionario = this.funcionarioSeleccionado;
         this.$http
-          .put(
-            `/adelantos/update/${this.$route.params.id}`,
-            this.adelanto
-          )
+          .put(`/adelantos/update/${this.$route.params.id}`, this.adelanto)
           .then(response => {
             console.log(response);
             this.editSuccess();
@@ -189,7 +187,7 @@ export default {
         var quincena;
         var funcionario = this.funcionarios.find(funcionario => {
           if (funcionario._id === this.funcionarioSeleccionado) {
-            this.adelanto.monto = (
+            this.adelanto.monto = Math.floor(
               funcionario.salario.split(".").join("") / 2
             ).toLocaleString();
             $(this.$el)

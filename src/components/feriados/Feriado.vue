@@ -56,6 +56,7 @@
 import moment from "moment";
 
 export default {
+  name: "feriados",
   data() {
     return {
       feriado: {

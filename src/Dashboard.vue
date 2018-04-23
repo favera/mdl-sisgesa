@@ -68,6 +68,7 @@
 import moment from "moment";
 
 export default {
+  name: "dashboard",
   data() {
     return {
       marcaciones: [],

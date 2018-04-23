@@ -145,6 +145,7 @@ import moment from "moment";
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
+  name: "prestamoList",
   data() {
     return {
       prestamos: [],

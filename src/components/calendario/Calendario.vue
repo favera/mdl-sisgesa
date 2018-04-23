@@ -27,8 +27,16 @@
       </div>
 
       <div class="ten wide field" v-if="evento.tipoEvento === 'feriado'">
-        <label for="">Seleccionar Fecha del Feriado</label>
-        <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
+        <div class="ten wide field">
+          <label for="">Seleccionar Fecha del Feriado:</label>
+          <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
+        </div>
+
+        <div class="tend wide field">
+          <label for="">Motivo del Feriado:</label>
+          <input type="text" v-model="evento.motivoFeriado">
+        </div>
+
       </div>
 
       <div class="ten wide field" v-else-if="evento.tipoEvento ==='vacaciones'">
@@ -71,6 +79,7 @@
 import moment from "moment";
 
 export default {
+  name: "calendario",
   data() {
     return {
       evento: {
@@ -78,7 +87,8 @@ export default {
         fechaFeriado: null,
         fechaInicio: null,
         fechaFin: null,
-        funcionario: null
+        funcionario: null,
+        motivoFeriado: null
       },
       funcionarios: []
     };
@@ -96,6 +106,7 @@ export default {
             this.evento.fechaFin = response.data.fechaFin;
             this.evento.fechaFeriado = response.data.fechaFeriado;
             this.evento.funcionario = response.data.funcionario;
+            this.evento.motivoFeriado = response.data.motivoFeriado;
           });
       }
     },
@@ -106,7 +117,8 @@ export default {
           this.$http
             .put(`/eventos/update/${this.$route.params.id}`, {
               tipoEvento: this.evento.tipoEvento,
-              fechaFeriado: this.evento.fechaFeriado
+              fechaFeriado: this.evento.fechaFeriado,
+              motivoFeriado: this.evento.motivoFeriado
             })
             .then(response => {
               console.log(response);
@@ -127,7 +139,13 @@ export default {
               funcionario: this.evento.funcionario
             })
             .then(response => {
-              console.log(response);
+              console.log("Response from update", response);
+              this.$http.put(
+                `/funcionarios/update-vacation/${this.evento.funcionario}`,
+                {
+                  vacaciones: response.data._id
+                }
+              );
               this.success();
               this.cancelar();
             })
@@ -142,7 +160,8 @@ export default {
           this.$http
             .post(`/eventos/add`, {
               tipoEvento: this.evento.tipoEvento,
-              fechaFeriado: this.evento.fechaFeriado
+              fechaFeriado: this.evento.fechaFeriado,
+              motivoFeriado: this.evento.motivoFeriado
             })
             .then(response => {
               console.log(response);

@@ -54,6 +54,7 @@
         <thead>
           <tr>
             <th>Tipo de Evento</th>
+            <th>Motivo del Feriado</th>
             <th>Fecha del Feriado</th>
             <th>Opciones</th>
           </tr>
@@ -61,6 +62,7 @@
         <tbody>
           <tr v-for="evento in eventos" :key="evento._id" v-if="evento.tipoEvento==='feriado'">
             <td class="capital">{{evento.tipoEvento}}</td>
+            <td>{{evento.motivoFeriado}}</td>
             <td>{{moment(evento.fechaFeriado).format("L")}}</td>
             <td>
               <router-link :to="{name: 'editarEvento', params: { id: evento._id}}">

@@ -147,7 +147,7 @@ import { VMoney } from "v-money";
 import moment from "moment";
 
 export default {
-  name: "funcionario",
+  name: "empleado",
   data() {
     return {
       empleado: {

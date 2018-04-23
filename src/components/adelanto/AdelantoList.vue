@@ -218,6 +218,7 @@
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
+  name: "adelantoList",
   data() {
     return {
       adelantos: [],

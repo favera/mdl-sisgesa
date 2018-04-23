@@ -121,6 +121,7 @@ import moment from "moment";
 import { VMoney } from "v-money";
 
 export default {
+  name: "prestamo",
   data() {
     return {
       prestamo: {
