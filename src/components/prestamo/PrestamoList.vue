@@ -7,14 +7,31 @@
         <div class="field">
           <div class="inline fields">
 
-            <div class="ten wide field">
+            <div class="ten wide field field">
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre del funcionario...">
-                <i class="inverted teal circular search link icon"></i>
+                <input type="text" v-model="query.busqueda" @keydown="consultarPrestamos" placeholder="Buscar por nombre del funcionario...">
               </div>
             </div>
+            <div class="two wide field">
+              <label for="">Rango de Fechas:</label>
+            </div>
+            <div class="four wide field">
 
-            <div class="field">
+              <div class="inline fields">
+                <div class="field">
+                  <el-date-picker v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+                  </el-date-picker>
+                </div>
+
+                <div class="field">
+                  <el-date-picker v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+                  </el-date-picker>
+                </div>
+
+                <button class="ui circular teal icon button" @click="consultarPrestamos">
+                  <i class="search icon"></i>
+                </button>
+              </div>
 
             </div>
 
@@ -25,9 +42,6 @@
           <div class="ui right floated main menu">
             <a class="icon item" @click="incluirPrestamo">
               <i class="plus icon"></i>
-            </a>
-            <a class="icon item">
-              <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
             </a>
 
           </div>
@@ -150,7 +164,11 @@ export default {
     return {
       prestamos: [],
       modal: null,
-      busquedaAvanzada: false,
+      query: {
+        fechaInicio: null,
+        fechaFin: null,
+        busqueda: null
+      },
       pageOne: {
         currentPage: 1,
         totalItems: 0,
@@ -169,12 +187,25 @@ export default {
     incluirPrestamo() {
       this.$router.push({ name: "incluirPrestamo" });
     },
-    obtenerPrestamos() {
+    consultarPrestamos(e) {
+      if (e && e.keyEvent === 13) {
+        this.obtenerPrestamos(true);
+        return;
+      } else {
+        this.obtenerPrestamos();
+      }
+    },
+    obtenerPrestamos(pageReset) {
+      if (pageReset) {
+        this.currentPage.pageOne = 1;
+      }
       this.$http
         .get(
           `/prestamos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }`
+          }&inicio=${this.query.fechaInicio}&fin=${
+            this.query.fechaFin
+          }&busqueda=${this.query.busqueda}`
         )
         .then(response => {
           this.prestamos = response.data.docs.map(item => {

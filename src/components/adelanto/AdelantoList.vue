@@ -7,9 +7,9 @@
         <div class="field">
           <div class="inline fields">
 
-            <div class="ten wide field field">
+            <div class="ten wide field">
               <div class="ui icon input">
-                <input type="text" v-model="query.busqueda" placeholder="Buscar por nombre del funcionario...">
+                <input type="text" v-model="query.busqueda" @keydown="consultarAdelantos" placeholder="Buscar por nombre del funcionario...">
               </div>
             </div>
             <div class="two wide field">
@@ -28,7 +28,7 @@
                   </el-date-picker>
                 </div>
 
-                <button class="ui circular teal icon button" @click="getDataAdelantos(true)">
+                <button class="ui circular teal icon button" @click="consultarAdelantos">
                   <i class="search icon"></i>
                 </button>
               </div>
@@ -51,46 +51,6 @@
 
         </div>
       </div>
-      <!-- <h4 class="ui dividing header"></h4> -->
-      <!-- <div class="two fields" v-show="busquedaAvanzada">
-        <div class="field">
-          <label for="">Rango de Fechas:</label>
-          <div class="inline fields">
-            <div class="field">
-              <el-date-picker  type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
-              </el-date-picker>
-            </div>
-
-            <div class="field">
-              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
-              </el-date-picker>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="field">
-          <label for="">Tipo de Adelanto:</label>
-          <div class="inline fields">
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" value="quincena" v-model="tipoAdelanto">
-                <label>Quincena</label>
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" value="especificado" v-model="tipoAdelanto">
-                <label>Monto Especificado</label>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </div> -->
-
     </div>
 
     <div class="field">
@@ -278,35 +238,31 @@ export default {
         targetStyles: ["*"]
       });
     },
+    consultarAdelantos(e) {
+      if (e && e.keyCode === 13) {
+        this.getDataAdelantos(true);
+        return;
+      } else {
+        this.getDataAdelantos(true);
+      }
+    },
     getDataAdelantos(pageReset) {
       if (pageReset) {
         this.pageOne.currentPage = 1;
       }
-      if (this.query.fechaInicio && this.query.fechaFin) {
-        this.$http
-          .get(
-            `/adelantos/?page=${this.pageOne.currentPage}&limit=${
-              this.pageOne.itemsPerPage
-            }&inicio=${this.query.fechaInicio}&fin=${
-              this.query.fechaFin
-            }&busqueda=${this.query.busqueda}`
-          )
-          .then(response => {
-            this.adelantos = response.data.docs;
-            this.pageOne.totalItems = response.data.total;
-          });
-      } else {
-        this.$http
-          .get(
-            `/adelantos/?page=${this.pageOne.currentPage}&limit=${
-              this.pageOne.itemsPerPage
-            }&busqueda=${this.query.busqueda}`
-          )
-          .then(response => {
-            this.adelantos = response.data.docs;
-            this.pageOne.totalItems = response.data.total;
-          });
-      }
+
+      this.$http
+        .get(
+          `/adelantos/?page=${this.pageOne.currentPage}&limit=${
+            this.pageOne.itemsPerPage
+          }&inicio=${this.query.fechaInicio}&fin=${
+            this.query.fechaFin
+          }&busqueda=${this.query.busqueda}`
+        )
+        .then(response => {
+          this.adelantos = response.data.docs;
+          this.pageOne.totalItems = response.data.total;
+        });
     },
     obtenerListadoAdelanto() {
       this.$http
@@ -385,9 +341,7 @@ export default {
 .ui.form .field > label {
   margin: 0em 0em 1em;
 }
-.ui.right.floated.menu {
-  margin-top: 1.7rem;
-}
+
 .print {
   display: none;
 }

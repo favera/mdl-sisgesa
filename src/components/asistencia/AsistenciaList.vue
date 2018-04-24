@@ -47,16 +47,15 @@
       <div class="two fields">
 
         <div class="fifteen wide field">
-          <label for="salaryQuery">Consultar por:</label>
 
           <div class="inline fields">
 
             <div class="ten wide field">
 
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre" v-model="query.busqueda">
+                <input type="text" placeholder="Buscar por nombre" @keydown="consultarAsistencia" v-model="query.busqueda">
                 <i class="search icon" v-if="busquedaAvanzada"></i>
-                <i @click="queryData" class="inverted teal circular search link icon" v-else></i>
+                <i @click="consultarAsistencia" class="inverted teal circular search link icon" v-else></i>
 
               </div>
 
@@ -145,7 +144,7 @@
             </div>
 
             <div class="field" style="margin-left: 20px">
-              <button @click="queryData(true)" class="ui circular teal icon button">
+              <button @click="consultarAsistencia" class="ui circular teal icon button">
                 <i class="search icon"></i>
               </button>
 
@@ -323,6 +322,14 @@ export default {
         name: "editarAsistencia",
         params: { id: marcacionId }
       });
+    },
+    consultarAsistencia(e) {
+      if (e && e.keyEvent === 13) {
+        this.queryData(true);
+        return;
+      } else {
+        this.queryData(true);
+      }
     },
     queryData(pageReset) {
       if (pageReset) {
@@ -1202,9 +1209,7 @@ export default {
   padding: 0;
   color: rgba(0, 0, 0, 0.87) !important;
 }
-.ui.right.floated.menu {
-  margin-top: 1.7rem;
-}
+
 .not-active {
   pointer-events: none;
   cursor: default;

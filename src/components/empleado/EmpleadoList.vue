@@ -103,24 +103,12 @@ export default {
       this.sortNameParam = this.sortNameParam * -1;
     },
     consultarEmpleado(e) {
-      if (e.keyCode === 13) {
+      if (e && e.keyCode === 13) {
         this.obtenerListadoEmpleado(true);
-        // this.$http
-        //   .get(
-        //     `/funcionarios?page=${
-        //       this.pageOne.currentPage
-        //     }&limit=${this.pageOne.itemsPerPage}&search=${this.search}`
-        //   )
-        //   .then(response => {
-        //     console.log("response mongo", response);
 
-        //     this.pageOne.totalItems = response.data.total;
-        //     this.empleados = response.data.docs;
-        //   })
-        //   .catch(e => {
-        //     console.log(e);
-        //   });
         return;
+      } else {
+        this.obtenerListadoEmpleado(true);
       }
     },
     guardarPaginacion(empleadoId) {

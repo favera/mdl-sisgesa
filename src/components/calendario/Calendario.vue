@@ -42,10 +42,9 @@
       <div class="ten wide field" v-else-if="evento.tipoEvento ==='vacaciones'">
         <div class="field">
           <label for="">Seleccionar Funcionario</label>
-          <select v-model="evento.funcionario">
+          <select name="funcionarios" v-model="evento.funcionario" class="ui dropdown">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
-
           </select>
         </div>
 
@@ -88,6 +87,7 @@ export default {
         fechaInicio: null,
         fechaFin: null,
         funcionario: null,
+        nombreFuncionario: null,
         motivoFeriado: null
       },
       funcionarios: []
@@ -136,7 +136,10 @@ export default {
               tipoEvento: this.evento.tipoEvento,
               fechaInicio: this.evento.fechaInicio,
               fechaFin: this.evento.fechaFin,
-              funcionario: this.evento.funcionario
+              funcionario: this.evento.funcionario,
+              nombreFuncionario: this.getNombreFuncionario(
+                this.evento.funcionario
+              )
             })
             .then(response => {
               console.log("Response from update", response);
@@ -179,7 +182,10 @@ export default {
               tipoEvento: this.evento.tipoEvento,
               fechaInicio: this.evento.fechaInicio,
               fechaFin: this.evento.fechaFin,
-              funcionario: this.evento.funcionario
+              funcionario: this.evento.funcionario,
+              nombreFuncionario: this.getNombreFuncionario(
+                this.evento.funcionario
+              )
             })
             .then(response => {
               console.log(response);
@@ -217,6 +223,16 @@ export default {
         message: "No se ha podido guardar el registro"
       });
     },
+    getNombreFuncionario(id) {
+      var nombre;
+      this.funcionarios.find(funcionario => {
+        if (funcionario._id === id) {
+          nombre = funcionario.nombre;
+        }
+      });
+
+      return nombre;
+    },
     obtenerFuncionarios() {
       this.$http
         .get(`/funcionarios/full-list`)
@@ -231,7 +247,7 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.fluid.dropdown")
+      .find(".ui.dropdown")
       .dropdown();
   },
   created() {

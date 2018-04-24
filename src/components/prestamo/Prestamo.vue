@@ -125,7 +125,7 @@ export default {
   data() {
     return {
       prestamo: {
-        fecha: null,
+        fecha: new Date(),
         funcionario: null,
         nombreFuncionario: null,
         moneda: null,

@@ -13,21 +13,21 @@
                 <i class="inverted teal circular search link icon"></i>
               </div>
             </div>
+            <div class="four wide field">
+              <label>Tipo de Evento:</label>
+            </div>
 
-            <div class="sixteen wide field">
-              <label>Listar por</label>
-              <div class="field">
-                <div class="ui radio checkbox">
-                  <input type="radio" name="feriado" value="feriado" v-model="listado">
-                  <label>Feriados</label>
-                </div>
+            <div class="three wide field">
+              <div class="ui radio checkbox">
+                <input type="radio" name="feriado" value="feriado" v-model="listado">
+                <label>Feriados</label>
               </div>
+            </div>
 
-              <div class="field">
-                <div class="ui radio checkbox">
-                  <input type="radio" name="vacaciones" value="vacaciones" v-model="listado">
-                  <label>Vacaciones</label>
-                </div>
+            <div class="two wide field">
+              <div class="ui radio checkbox">
+                <input type="radio" name="vacaciones" value="vacaciones" v-model="listado">
+                <label>Vacaciones</label>
               </div>
             </div>
 
@@ -39,9 +39,7 @@
             <a class="icon item" @click="incluirEvento">
               <i class="plus icon"></i>
             </a>
-            <a class="icon item">
-              <i class="print icon"></i>
-            </a>
+
           </div>
 
         </div>
@@ -75,6 +73,14 @@
           </tr>
 
         </tbody>
+        <tfoot v-show="pageOne.totalItems > 10">
+          <tr>
+            <th colspan="4">
+              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              </app-pagination>
+            </th>
+          </tr>
+        </tfoot>
       </table>
 
     </div>
@@ -94,7 +100,7 @@
         <tbody>
           <tr v-for="evento in eventos" :key="evento._id" v-if="evento.tipoEvento==='vacaciones'">
             <td class="capital">{{evento.tipoEvento}}</td>
-            <td>{{evento.funcionario.nombre}}</td>
+            <td>{{evento.nombreFuncionario}}</td>
             <td>{{moment(evento.fechaInicio).format("L")}}</td>
             <td>{{moment(evento.fechaFin).format("L")}}</td>
             <td>
@@ -108,8 +114,13 @@
           </tr>
         </tbody>
 
-        <tfoot>
-
+        <tfoot v-show="pageOne.totalItems > 10">
+          <tr>
+            <th colspan="5">
+              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              </app-pagination>
+            </th>
+          </tr>
         </tfoot>
       </table>
     </div>
@@ -118,12 +129,17 @@
 </template>
 
 <script>
+import Pagination from ".././shared/Pagination.vue";
+
 export default {
   name: "calendarioList",
   data() {
     return {
       eventos: [],
       listado: "vacaciones",
+      query: {
+        busqueda: null
+      },
       pageOne: {
         currentPage: 1,
         totalItems: 0,
@@ -134,6 +150,10 @@ export default {
   methods: {
     incluirEvento() {
       this.$router.push({ name: "incluirEvento" });
+    },
+    pageOneChanged(pageNum) {
+      this.pageOne.currentPage = pageNum;
+      this.obtenerListadoEventos();
     },
     archivarVacaciones(eventokey, funcionarioId) {
       console.log(eventokey, Object.keys(funcionarioId)[0]);
@@ -188,7 +208,7 @@ export default {
         .get(
           `/eventos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }`
+          }&tipoEvento=${this.listado}&busqueda=${this.query.busqueda}`
         )
         .then(response => {
           console.log(response);
@@ -200,8 +220,16 @@ export default {
         });
     }
   },
+  watch: {
+    listado: function() {
+      return this.obtenerListadoEventos();
+    }
+  },
   created() {
     this.obtenerListadoEventos();
+  },
+  components: {
+    appPagination: Pagination
   }
 };
 </script>
@@ -209,9 +237,6 @@ export default {
 <style>
 .ui.form .field > label {
   margin: 0em 0em 1em;
-}
-.ui.right.floated.menu {
-  margin-top: 1.7rem;
 }
 
 #app > div.pusher > div > div > div.field > table > tbody > tr > td.capital {
