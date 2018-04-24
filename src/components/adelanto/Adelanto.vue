@@ -69,9 +69,9 @@ export default {
   data() {
     return {
       adelanto: {
-        //fechaUtc: new Date(),
         fecha: new Date(),
         funcionario: null,
+        nombreFuncionario: null,
         tipoAdelanto: "quincena",
         moneda: null,
         monto: null
@@ -118,9 +118,22 @@ export default {
           this.fail();
         });
     },
+    getNombreFuncionario(id) {
+      var nombre;
+      this.funcionarios.find(funcionario => {
+        if (funcionario._id === id) {
+          nombre = funcionario.nombre;
+        }
+      });
+      console.log("Nombre", nombre);
+      return nombre;
+    },
     guardarAdelanto() {
       if (this.$route.params.id) {
         this.adelanto.funcionario = this.funcionarioSeleccionado;
+        this.adelanto.nombreFuncionario = this.getNombreFuncionario(
+          this.funcionarioSeleccionado
+        );
         this.$http
           .put(`/adelantos/update/${this.$route.params.id}`, this.adelanto)
           .then(response => {
@@ -134,6 +147,9 @@ export default {
           });
       } else {
         this.adelanto.funcionario = this.funcionarioSeleccionado;
+        this.adelanto.nombreFuncionario = this.getNombreFuncionario(
+          this.funcionarioSeleccionado
+        );
         this.$http
           .post(`/adelantos/add`, this.adelanto)
           .then(response => {

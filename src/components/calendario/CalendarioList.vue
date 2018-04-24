@@ -210,6 +210,10 @@ export default {
 .ui.form .field > label {
   margin: 0em 0em 1em;
 }
+.ui.right.floated.menu {
+  margin-top: 1.7rem;
+}
+
 #app > div.pusher > div > div > div.field > table > tbody > tr > td.capital {
   text-transform: capitalize;
 }

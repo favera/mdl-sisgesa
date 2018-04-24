@@ -208,7 +208,7 @@
               </th>
             </tr>
 
-            <tr v-if="pageOne.totalItems > 0">
+            <tr v-if="pageOne.totalItems > 10">
               <th colspan="9">
                 <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
                 </app-pagination>

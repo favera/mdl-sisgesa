@@ -7,11 +7,32 @@
         <div class="field">
           <div class="inline fields">
 
-            <div class="ten wide field">
+            <div class="ten wide field field">
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre del funcionario...">
-                <i class="inverted teal circular search link icon"></i>
+                <input type="text" v-model="query.busqueda" placeholder="Buscar por nombre del funcionario...">
               </div>
+            </div>
+            <div class="two wide field">
+              <label for="">Rango de Fechas:</label>
+            </div>
+            <div class="four wide field">
+
+              <div class="inline fields">
+                <div class="field">
+                  <el-date-picker v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+                  </el-date-picker>
+                </div>
+
+                <div class="field">
+                  <el-date-picker v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+                  </el-date-picker>
+                </div>
+
+                <button class="ui circular teal icon button" @click="getDataAdelantos(true)">
+                  <i class="search icon"></i>
+                </button>
+              </div>
+
             </div>
 
           </div>
@@ -22,9 +43,7 @@
             <a class="icon item" @click="incluirAdelanto">
               <i class="plus icon"></i>
             </a>
-            <a class="icon item">
-              <i class="find icon" @click="busquedaAvanzada=!busquedaAvanzada"></i>
-            </a>
+
             <a class="icon item" @click="exportRecibo">
               <i class="print icon"></i>
             </a>
@@ -33,17 +52,17 @@
         </div>
       </div>
       <!-- <h4 class="ui dividing header"></h4> -->
-      <div class="two fields" v-show="busquedaAvanzada">
+      <!-- <div class="two fields" v-show="busquedaAvanzada">
         <div class="field">
           <label for="">Rango de Fechas:</label>
           <div class="inline fields">
             <div class="field">
-              <el-date-picker v-model="fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+              <el-date-picker  type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker v-model="fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
               </el-date-picker>
             </div>
           </div>
@@ -70,7 +89,7 @@
           </div>
 
         </div>
-      </div>
+      </div> -->
 
     </div>
 
@@ -100,7 +119,7 @@
               </div>
             </td>
             <td>{{moment(adelanto.fecha).format("L")}}</td>
-            <td>{{adelanto.funcionario.nombre}}</td>
+            <td>{{adelanto.nombreFuncionario}}</td>
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
             <td>
               <router-link :to="{name: 'editarAdelanto', params: { id: adelanto._id}}">
@@ -225,8 +244,11 @@ export default {
       busquedaAvanzada: false,
       print: false,
       tipoAdelanto: "quincena",
-      fechaInicio: "",
-      fechaFin: "",
+      query: {
+        fechaInicio: null,
+        fechaFin: null,
+        busqueda: null
+      },
       checked: false,
       checkedAll: false,
       seleccionados: [],
@@ -243,7 +265,8 @@ export default {
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      this.obtenerListadoAdelanto();
+      this.getDataAdelantos();
+      // this.obtenerListadoAdelanto();
     },
     showPrint() {
       this.print = !this.print;
@@ -254,6 +277,36 @@ export default {
         type: "html",
         targetStyles: ["*"]
       });
+    },
+    getDataAdelantos(pageReset) {
+      if (pageReset) {
+        this.pageOne.currentPage = 1;
+      }
+      if (this.query.fechaInicio && this.query.fechaFin) {
+        this.$http
+          .get(
+            `/adelantos/?page=${this.pageOne.currentPage}&limit=${
+              this.pageOne.itemsPerPage
+            }&inicio=${this.query.fechaInicio}&fin=${
+              this.query.fechaFin
+            }&busqueda=${this.query.busqueda}`
+          )
+          .then(response => {
+            this.adelantos = response.data.docs;
+            this.pageOne.totalItems = response.data.total;
+          });
+      } else {
+        this.$http
+          .get(
+            `/adelantos/?page=${this.pageOne.currentPage}&limit=${
+              this.pageOne.itemsPerPage
+            }&busqueda=${this.query.busqueda}`
+          )
+          .then(response => {
+            this.adelantos = response.data.docs;
+            this.pageOne.totalItems = response.data.total;
+          });
+      }
     },
     obtenerListadoAdelanto() {
       this.$http
@@ -322,7 +375,8 @@ export default {
     }
   },
   created() {
-    this.obtenerListadoAdelanto();
+    // this.obtenerListadoAdelanto();
+    this.getDataAdelantos();
   }
 };
 </script>
@@ -330,6 +384,9 @@ export default {
 <style>
 .ui.form .field > label {
   margin: 0em 0em 1em;
+}
+.ui.right.floated.menu {
+  margin-top: 1.7rem;
 }
 .print {
   display: none;
