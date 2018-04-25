@@ -11,38 +11,25 @@
         <div class="inline fields">
           <div class="four wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="evento.tipoEvento" value="feriado">
-              <label>Feriado</label>
-            </div>
-          </div>
-
-          <div class="four wide field">
-            <div class="ui radio checkbox">
               <input type="radio" v-model="evento.tipoEvento" value="vacaciones">
               <label>Vacaciones</label>
             </div>
           </div>
 
+          <div class="four wide field">
+            <div class="ui radio checkbox">
+              <input type="radio" v-model="evento.tipoEvento" value="feriado">
+              <label>Feriado</label>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="ten wide field" v-if="evento.tipoEvento === 'feriado'">
-        <div class="ten wide field">
-          <label for="">Seleccionar Fecha del Feriado:</label>
-          <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
-        </div>
-
-        <div class="tend wide field">
-          <label for="">Motivo del Feriado:</label>
-          <input type="text" v-model="evento.motivoFeriado">
-        </div>
-
-      </div>
-
-      <div class="ten wide field" v-else-if="evento.tipoEvento ==='vacaciones'">
+      <div class="ten wide field" v-if="evento.tipoEvento ==='vacaciones'">
         <div class="field">
           <label for="">Seleccionar Funcionario</label>
-          <select name="funcionarios" v-model="evento.funcionario" class="ui dropdown">
+
+          <select class="ui dropdown" name="funcionarios" v-model="evento.funcionario">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
           </select>
@@ -64,6 +51,18 @@
         </div>
       </div>
 
+      <div class="ten wide field" v-else-if="evento.tipoEvento === 'feriado'">
+        <div class="ten wide field">
+          <label for="">Seleccionar Fecha del Feriado:</label>
+          <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
+        </div>
+
+        <div class="tend wide field">
+          <label for="">Motivo del Feriado:</label>
+          <input type="text" v-model="evento.motivoFeriado">
+        </div>
+      </div>
+
       <div class="ten wide field">
         <div class="ui teal button" @click="guardarEvento()">Guardar</div>
         <div class="ui button" @click="cancelar()">Cancelar</div>
@@ -82,7 +81,7 @@ export default {
   data() {
     return {
       evento: {
-        tipoEvento: "feriado",
+        tipoEvento: "vacaciones",
         fechaFeriado: null,
         fechaInicio: null,
         fechaFin: null,
@@ -206,7 +205,6 @@ export default {
         }
       }
     },
-
     cancelar() {
       this.$router.push({ name: "listadoCalendario" });
     },
