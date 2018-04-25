@@ -25,11 +25,11 @@
         </div>
       </div>
 
-      <div class="ten wide field" v-if="evento.tipoEvento ==='vacaciones'">
+      <div class="ten wide field" v-show="evento.tipoEvento ==='vacaciones'">
         <div class="field">
           <label for="">Seleccionar Funcionario</label>
 
-          <select class="ui dropdown" name="funcionarios" v-model="evento.funcionario">
+          <select class="ui dropdown" name="funcionarios" v-model="funcionarioSeleccionado">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
           </select>
@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <div class="ten wide field" v-else-if="evento.tipoEvento === 'feriado'">
+      <div class="ten wide field" v-show="evento.tipoEvento === 'feriado'">
         <div class="ten wide field">
           <label for="">Seleccionar Fecha del Feriado:</label>
           <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
@@ -89,7 +89,8 @@ export default {
         nombreFuncionario: null,
         motivoFeriado: null
       },
-      funcionarios: []
+      funcionarios: [],
+      funcionarioSeleccionado: null
     };
   },
   methods: {
@@ -100,12 +101,18 @@ export default {
         this.$http
           .get(`/eventos/edit/${this.$route.params.id}`)
           .then(response => {
+            console.log("Response edit", response);
             this.evento.tipoEvento = response.data.tipoEvento;
             this.evento.fechaInicio = response.data.fechaInicio;
             this.evento.fechaFin = response.data.fechaFin;
             this.evento.fechaFeriado = response.data.fechaFeriado;
             this.evento.funcionario = response.data.funcionario;
             this.evento.motivoFeriado = response.data.motivoFeriado;
+            this.funcionarioSeleccionado = response.data.funcionario;
+            $(this.$el)
+              .find(".ui.dropdown")
+              .dropdown("refresh")
+              .dropdown("set selected", response.data.funcionario);
           });
       }
     },
@@ -135,15 +142,15 @@ export default {
               tipoEvento: this.evento.tipoEvento,
               fechaInicio: this.evento.fechaInicio,
               fechaFin: this.evento.fechaFin,
-              funcionario: this.evento.funcionario,
+              funcionario: this.funcionarioSeleccionado,
               nombreFuncionario: this.getNombreFuncionario(
-                this.evento.funcionario
+                this.funcionarioSeleccionado
               )
             })
             .then(response => {
               console.log("Response from update", response);
               this.$http.put(
-                `/funcionarios/update-vacation/${this.evento.funcionario}`,
+                `/funcionarios/update-vacation/${this.funcionarioSeleccionado}`,
                 {
                   vacaciones: response.data._id
                 }
@@ -181,15 +188,15 @@ export default {
               tipoEvento: this.evento.tipoEvento,
               fechaInicio: this.evento.fechaInicio,
               fechaFin: this.evento.fechaFin,
-              funcionario: this.evento.funcionario,
+              funcionario: this.funcionarioSeleccionado,
               nombreFuncionario: this.getNombreFuncionario(
-                this.evento.funcionario
+                this.funcionarioSeleccionado
               )
             })
             .then(response => {
               console.log(response);
               this.$http.put(
-                `/funcionarios/update-vacation/${this.evento.funcionario}`,
+                `/funcionarios/update-vacation/${this.funcionarioSeleccionado}`,
                 {
                   vacaciones: response.data._id
                 }

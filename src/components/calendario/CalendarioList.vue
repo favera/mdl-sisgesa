@@ -9,8 +9,8 @@
           <div class="inline fields">
             <div class="ten wide field">
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar Evento...">
-                <i class="inverted teal circular search link icon"></i>
+                <input type="text" v-model="query.busqueda" @keydown="consultarEventos" placeholder="Buscar Evento...">
+                <i @click="consultarEventos" class="inverted teal circular search link icon"></i>
               </div>
             </div>
             <div class="four wide field">
@@ -19,15 +19,15 @@
 
             <div class="three wide field">
               <div class="ui radio checkbox">
-                <input type="radio" name="feriado" value="feriado" v-model="listado">
-                <label>Feriados</label>
+                <input type="radio" name="vacaciones" value="vacaciones" v-model="listado">
+                <label>Vacaciones</label>
               </div>
             </div>
 
             <div class="two wide field">
               <div class="ui radio checkbox">
-                <input type="radio" name="vacaciones" value="vacaciones" v-model="listado">
-                <label>Vacaciones</label>
+                <input type="radio" name="feriado" value="feriado" v-model="listado">
+                <label>Feriados</label>
               </div>
             </div>
 
@@ -191,6 +191,14 @@ export default {
           });
         });
     },
+    consultarEventos(e) {
+      if (e && e.keyCode === 13) {
+        this.obtenerListadoEventos(true);
+        return;
+      } else {
+        this.obtenerListadoEventos(true);
+      }
+    },
     eliminarEvento(id, funcionario) {
       var index = this.eventos.findIndex(i => i.id === id);
       this.eventos.splice(index, 1);
@@ -203,7 +211,10 @@ export default {
       }
       this.$http.delete(`/eventos/delete/${id}`);
     },
-    obtenerListadoEventos() {
+    obtenerListadoEventos(pageReset) {
+      if (pageReset) {
+        this.pageOne.currentPage = 1;
+      }
       this.$http
         .get(
           `/eventos?page=${this.pageOne.currentPage}&limit=${

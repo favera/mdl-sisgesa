@@ -7,9 +7,9 @@
         <label for="">Fecha:</label>
         <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date"></el-date-picker>
       </div>
-      <div class="ten wide field">
+      <div class="ten wide field" :class="{'field error': errors.has('funcionarios')}">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown">
+        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'" :class="'ui'">
           <option disabled value="">Seleccionar Funcionario..</option>
           <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
         </select>
@@ -36,7 +36,7 @@
 
           <div class="four wide field">
             <div class="ui input">
-              <input type="text" v-model="adelanto.monto" v-bind:class="{'disabled': disabledInput}">
+              <input type="text" v-model.lazy="adelanto.monto" v-money="money" v-bind:class="{'disabled': disabledInput}">
             </div>
           </div>
 
@@ -63,6 +63,7 @@
 
 <script>
 import moment from "moment";
+import { VMoney } from "v-money";
 
 export default {
   name: "adelanto",
@@ -79,7 +80,15 @@ export default {
       disabledInput: true,
       funcionarioSeleccionado: null,
       setDate: new Date(),
-      funcionarios: []
+      funcionarios: [],
+      money: {
+        decimal: ",",
+        thousands: ".",
+        prefix: "",
+        suffix: "",
+        precision: 0,
+        masked: false /* doesn't work with directive */
+      }
     };
   },
   methods: {
@@ -196,6 +205,7 @@ export default {
     this.obtenerFuncionarios();
     this.obtenerAdelanto();
   },
+  directives: { money: VMoney },
   watch: {
     $route: "obtenerAdelanto",
     funcionarioSeleccionado: function() {

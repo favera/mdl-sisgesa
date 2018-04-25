@@ -1,6 +1,7 @@
 import Vue from "vue";
 import JsonExcel from "vue-json-excel";
 import VueRouter from "vue-router";
+import VeeValidate from "vee-validate";
 import App from "./App.vue";
 import {
   DatePicker,
@@ -29,7 +30,7 @@ locale.use(lang);
 import { routes } from "./routes";
 import vueXlsxTable from "vue-xlsx-table";
 import moment from "moment";
-import axios from "./config/vue-axios"
+import axios from "./config/vue-axios";
 //import axios from "axios";
 
 Vue.use(VueRouter);
@@ -39,6 +40,7 @@ Vue.use(TimePicker);
 Vue.use(TimeSelect);
 Vue.use(DatePicker);
 Vue.use(InputNumber);
+Vue.use(VeeValidate);
 Vue.component("downloadExcel", JsonExcel);
 
 Vue.prototype.moment = moment;
