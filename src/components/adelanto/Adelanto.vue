@@ -1,15 +1,15 @@
 <template>
   <div class="ui twelve wide column">
-    <div class="ui form">
+    <form class="ui form" @submit.prevent="guardarAdelanto">
       <div class="ui dividing header">Incluir Adelanto</div>
 
-      <div class="ten wide field">
+      <div class="ten wide field" :class="{'error': errors.has('fecha')}">
         <label for="">Fecha:</label>
-        <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date"></el-date-picker>
+        <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date" name="fecha" v-validate="'required'"></el-date-picker>
       </div>
-      <div class="ten wide field" :class="{'field error': errors.has('funcionarios')}">
+      <div class="ten wide field" :class="{'error': errors.has('funcionario')}">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'" :class="'ui'">
+        <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
           <option disabled value="">Seleccionar Funcionario..</option>
           <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
         </select>
@@ -27,9 +27,9 @@
             </div>
           </div>
 
-          <div class="four wide field">
+          <div class="four wide field" :class="{'error': errors.has('monto')}">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="adelanto.tipoAdelanto" value="especificado" @click="disabledInput = false">
+              <input type="radio" v-model="adelanto.tipoAdelanto" value="especificado" @click="disabledInput = false" name="monto" v-validate="'required|validar_monto'">
               <label>Especificar Monto</label>
             </div>
           </div>
@@ -40,9 +40,9 @@
             </div>
           </div>
 
-          <div class="four wide field">
+          <div class="four wide field" :class="{'error': errors.has('moneda')}">
 
-            <select v-model="adelanto.moneda" class="ui dropdown" id="monedaSelector">
+            <select v-model="adelanto.moneda" class="ui dropdown" id="monedaSelector" name="moneda" v-validate="'required'">
               <option disbled value="">Seleccionar Moneda..</option>
               <option value="Gs">Guaranies - Gs.</option>
               <option value="Us">Dolares - Us.</option>
@@ -54,9 +54,9 @@
         </div>
       </div>
 
-      <div class="ui teal button" @click="guardarAdelanto()">Guardar</div>
+      <button class="ui teal button" type="submit">Guardar</button>
       <div class="ui button" @click="cancelar()">Cancelar</div>
-    </div>
+    </form>
 
   </div>
 </template>
@@ -64,6 +64,7 @@
 <script>
 import moment from "moment";
 import { VMoney } from "v-money";
+import { Validator } from "vee-validate";
 
 export default {
   name: "adelanto",
@@ -138,6 +139,7 @@ export default {
       return nombre;
     },
     guardarAdelanto() {
+      this.$validator.validateAll();
       if (this.$route.params.id) {
         this.adelanto.funcionario = this.funcionarioSeleccionado;
         this.adelanto.nombreFuncionario = this.getNombreFuncionario(
@@ -204,6 +206,16 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerAdelanto();
+    Validator.extend("validarMonto", {
+      getMessage: field => `El ${field} debe ser superior a 0`,
+      validate: value => {
+        if (value !== "0") {
+          return true;
+        }
+
+        return false;
+      }
+    });
   },
   directives: { money: VMoney },
   watch: {
