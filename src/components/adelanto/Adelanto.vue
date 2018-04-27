@@ -27,18 +27,19 @@
             </div>
           </div>
 
-          <div class="four wide field" :class="{'error': errors.has('monto')}">
+          <div class="four wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="adelanto.tipoAdelanto" value="especificado" @click="disabledInput = false" name="monto" v-validate="'required|validar_monto'">
+              <input type="radio" v-model="adelanto.tipoAdelanto" value="especificado" @click="disabledInput = false">
               <label>Especificar Monto</label>
             </div>
           </div>
 
-          <div class="four wide field">
+          <div class="four wide field" :class="{'error': errors.has('monto')}">
             <div class="ui input">
-              <input type="text" v-model.lazy="adelanto.monto" v-money="money" v-bind:class="{'disabled': disabledInput}">
+              <input type="text" v-model.lazy="adelanto.monto" v-money="money" name="monto" v-validate="'validarMonto'" v-bind:class="{'disabled': disabledInput}">
             </div>
           </div>
+          <!-- <span class="info-error" v-show="errors.has('monto')">El monto debe ser mayor a 0</span> -->
 
           <div class="four wide field" :class="{'error': errors.has('moneda')}">
 
@@ -54,7 +55,7 @@
         </div>
       </div>
 
-      <button class="ui teal button" type="submit">Guardar</button>
+      <button class="ui teal button" :class="{disabled: errors.any()}" type="submit">Guardar</button>
       <div class="ui button" @click="cancelar()">Cancelar</div>
     </form>
 
@@ -82,6 +83,7 @@ export default {
       funcionarioSeleccionado: null,
       setDate: new Date(),
       funcionarios: [],
+      totalSalario: null,
       money: {
         decimal: ",",
         thousands: ".",
@@ -209,11 +211,9 @@ export default {
     Validator.extend("validarMonto", {
       getMessage: field => `El ${field} debe ser superior a 0`,
       validate: value => {
-        if (value !== "0") {
-          return true;
-        }
-
-        return false;
+        console.log()
+        value.split(".").join("") > 0 &&
+          value.split(".").join("") < this.totalSalario.split(".").join("");
       }
     });
   },
@@ -221,10 +221,12 @@ export default {
   watch: {
     $route: "obtenerAdelanto",
     funcionarioSeleccionado: function() {
-      if (this.adelanto.tipoAdelanto === "quincena") {
-        var quincena;
-        var funcionario = this.funcionarios.find(funcionario => {
-          if (funcionario._id === this.funcionarioSeleccionado) {
+      var quincena;
+      var funcionario = this.funcionarios.find(funcionario => {
+        if (funcionario._id === this.funcionarioSeleccionado) {
+          if (this.adelanto.tipoAdelanto === "quincena") {
+            this.totalSalario = funcionario.salario;
+            console.log(this.totalSalario);
             this.adelanto.monto = Math.floor(
               funcionario.salario.split(".").join("") / 2
             ).toLocaleString();
@@ -233,8 +235,8 @@ export default {
               .dropdown("refresh")
               .dropdown("set selected", funcionario.moneda);
           }
-        });
-      }
+        }
+      });
 
       $(this.$el)
         .find("#monedaSelector")
@@ -246,7 +248,9 @@ export default {
 </script>
 
 <style>
-
+.info-error {
+  color: #9f3a38;
+}
 </style>
 
 
