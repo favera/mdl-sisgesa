@@ -18,13 +18,13 @@
             <div class="four wide field">
 
               <div class="inline fields">
-                <div class="field">
-                  <el-date-picker v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+                <div class="field" :class="{error: error.hasError}">
+                  <el-date-picker name="fechaInicio" v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
                   </el-date-picker>
-                </div>
 
+                </div>
                 <div class="field">
-                  <el-date-picker v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+                  <el-date-picker name="fechaFin" v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
@@ -51,6 +51,13 @@
 
         </div>
       </div>
+    </div>
+    <div class="ui error message" v-show="error.hasError">
+      <i class="close icon"></i>
+      <div class="header">
+        {{this.error.message}}
+      </div>
+
     </div>
 
     <div class="field">
@@ -194,6 +201,7 @@
 </template>
 
 <script>
+import moment from "moment";
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
@@ -205,13 +213,21 @@ export default {
       print: false,
       tipoAdelanto: "quincena",
       query: {
-        fechaInicio: null,
-        fechaFin: null,
+        fechaInicio: moment()
+          .startOf("month")
+          .format(),
+        fechaFin: moment()
+          .endOf("month")
+          .format(),
         busqueda: null
       },
       checked: false,
       checkedAll: false,
       seleccionados: [],
+      error: {
+        hasError: false,
+        message: null
+      },
       pageOne: {
         currentPage: 1,
         itemsPerPage: 10,
@@ -327,6 +343,18 @@ export default {
         }
 
         this.seleccionados = seleccionados;
+      }
+    }
+  },
+  watch: {
+    "query.fechaInicio": function(fecha) {
+      console.log("Print from watch", fecha);
+      if (moment(fecha).isAfter(this.query.fechaFin)) {
+        this.error.hasError = true;
+        this.error.message =
+          "La fecha inicial debe ser menor o igual a la fecha final";
+      } else {
+        this.error.hasError = false;
       }
     }
   },

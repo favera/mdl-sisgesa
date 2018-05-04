@@ -211,9 +211,7 @@ export default {
     Validator.extend("validarMonto", {
       getMessage: field => `El ${field} debe ser superior a 0`,
       validate: value => {
-        console.log()
-        value.split(".").join("") > 0 &&
-          value.split(".").join("") < this.totalSalario.split(".").join("");
+        return value.split(".").join("") > 0;
       }
     });
   },
