@@ -18,17 +18,17 @@
             <div class="four wide field">
 
               <div class="inline fields">
-                <div class="field" :class="{error: error.hasError}">
+                <div class="field" :class="{error: error.fechaInicio}">
                   <el-date-picker name="fechaInicio" v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
                   </el-date-picker>
 
                 </div>
-                <div class="field">
+                <div class="field" :class="{error: error.fechaFin}">
                   <el-date-picker name="fechaFin" v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
-                <button class="ui circular teal icon button" @click="consultarAdelantos">
+                <button :class="{disabled: error.hasError}" class="ui circular teal icon button" @click="consultarAdelantos">
                   <i class="search icon"></i>
                 </button>
               </div>
@@ -226,7 +226,9 @@ export default {
       seleccionados: [],
       error: {
         hasError: false,
-        message: null
+        message: null,
+        fechaInicio: false,
+        fechaFin: false,
       },
       pageOne: {
         currentPage: 1,
@@ -353,8 +355,20 @@ export default {
         this.error.hasError = true;
         this.error.message =
           "La fecha inicial debe ser menor o igual a la fecha final";
+        this.error.fechaInicio = true;
       } else {
         this.error.hasError = false;
+        this.error.fechaInicio = false;
+      }
+    },
+    "query.fechaFin": function(fecha){
+      if(moment(fecha).isBefore(this.query.fechaInicio)){
+        this.error.hasError = true;
+        this.error.message = "La fecha final debe ser mayor o igual a la fecha inicial";
+        this.error.fechaFin = true;
+      }else{
+        this.error.hasError = false;
+        this.error.fechaFin = false;
       }
     }
   },
