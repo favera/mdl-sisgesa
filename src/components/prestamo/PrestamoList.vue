@@ -12,18 +12,20 @@
                 <input type="text" v-model="query.busqueda" @keydown="consultarPrestamos" placeholder="Buscar por nombre del funcionario...">
               </div>
             </div>
+
             <div class="two wide field">
-              <label for="">Rango de Fechas:</label>
+              <label for="">Rango de Fechas</label>
             </div>
+
             <div class="four wide field">
 
               <div class="inline fields">
-                <div class="field">
+                <div class="field" :class="{error: error.fechaInicio}">
                   <el-date-picker v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
-                <div class="field">
+                <div class="field" :class="{error: error.fechaFin}">
                   <el-date-picker v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
@@ -32,9 +34,7 @@
                   <i class="search icon"></i>
                 </button>
               </div>
-
             </div>
-
           </div>
         </div>
 
@@ -43,10 +43,15 @@
             <a class="icon item" @click="incluirPrestamo">
               <i class="plus icon"></i>
             </a>
-
           </div>
-
         </div>
+      </div>
+    </div>
+
+    <div class="ui error message" v-show="error.hasError">
+      <i class="close icon"></i>
+      <div class="header">
+        {{this.error.message}}
       </div>
 
     </div>
@@ -59,8 +64,8 @@
             <th>Fecha</th>
             <th>Funcionario</th>
             <th>Monto del Prestamo</th>
-            <th>Cuotas</th>
-            <th>Opciones</th>
+            <th class="center aligned">Cuotas</th>
+            <th class="center aligned">Opciones</th>
           </tr>
         </thead>
         <tbody>
@@ -70,10 +75,10 @@
               <td>{{moment(prestamo.fecha).format("L")}}</td>
               <td>{{prestamo.nombreFuncionario}}</td>
               <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
-              <td>
+              <td class="center aligned">
                 <i class="browser icon" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
               </td>
-              <td>
+              <td class="center aligned">
                 <router-link :to="{name: 'editarPrestamo', params: { id: prestamo._id}}">
                   <i class="edit row icon"></i>
                 </router-link>
@@ -165,9 +170,19 @@ export default {
       prestamos: [],
       modal: null,
       query: {
-        fechaInicio: null,
-        fechaFin: null,
+        fechaInicio: moment()
+          .startOf("month")
+          .format(),
+        fechaFin: moment()
+          .endOf("month")
+          .format(),
         busqueda: null
+      },
+      error: {
+        hasError: false,
+        message: null,
+        fechaInicio: false,
+        fechaFin: false
       },
       pageOne: {
         currentPage: 1,
@@ -250,6 +265,30 @@ export default {
     },
     abrirModal() {
       this.modal.modal("show");
+    }
+  },
+  watch: {
+    "query.fechaInicio": function(fecha) {
+      if (moment(fecha).isAfter(this.fechaFin)) {
+        this.error.hasError = true;
+        this.error.fechaInicio = true;
+        this.error.message =
+          "La fecha inicial debe ser menor o igual a la fecha final";
+      } else {
+        this.error.hasError = false;
+        this.error.fechaInicio = false;
+      }
+    },
+    "query.fechaFin": function(fecha) {
+      if (moment(fecha).isBefore(this.fechaInicio)) {
+        this.error.hasError = true;
+        this.error.fechaFin = true;
+        this.error.message =
+          "La fecha final debe ser mayor o igual a la fecha inicial";
+      } else {
+        this.error.hasError = false;
+        this.error.fechaFin = false;
+      }
     }
   },
   created() {

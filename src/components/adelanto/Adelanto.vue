@@ -3,11 +3,11 @@
     <form class="ui form" @submit.prevent="guardarAdelanto">
       <div class="ui dividing header">Incluir Adelanto</div>
 
-      <div class="ten wide field" :class="{'error': errors.has('fecha')}">
-        <label for="">Fecha:</label>
+      <div class="ten wide required field" :class="{'error': errors.has('fecha')}">
+        <label for="">Fecha</label>
         <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date" name="fecha" v-validate="'required'"></el-date-picker>
       </div>
-      <div class="ten wide field" :class="{'error': errors.has('funcionario')}">
+      <div class="ten wide required field" :class="{'error': errors.has('funcionario')}">
         <label for="">Seleccionar Funcionario</label>
         <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
           <option disabled value="">Seleccionar Funcionario..</option>
@@ -15,8 +15,8 @@
         </select>
       </div>
       <div class="ten wide field">
-        <div class="field">
-          <label for="">Tipo de Adelanto:</label>
+        <div class=" required field">
+          <label for="">Tipo de Adelanto</label>
         </div>
 
         <div class="inline fields">

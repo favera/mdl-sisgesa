@@ -12,17 +12,19 @@
                 <input type="text" v-model="query.busqueda" @keydown="consultarAdelantos" placeholder="Buscar por nombre del funcionario...">
               </div>
             </div>
+
             <div class="two wide field">
-              <label for="">Rango de Fechas:</label>
+              <label for="">Rango de Fechas</label>
             </div>
+
             <div class="four wide field">
 
               <div class="inline fields">
                 <div class="field" :class="{error: error.fechaInicio}">
                   <el-date-picker name="fechaInicio" v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
                   </el-date-picker>
-
                 </div>
+
                 <div class="field" :class="{error: error.fechaFin}">
                   <el-date-picker name="fechaFin" v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
                   </el-date-picker>
@@ -32,9 +34,7 @@
                   <i class="search icon"></i>
                 </button>
               </div>
-
             </div>
-
           </div>
         </div>
 
@@ -48,7 +48,6 @@
               <i class="print icon"></i>
             </a>
           </div>
-
         </div>
       </div>
     </div>
@@ -228,7 +227,7 @@ export default {
         hasError: false,
         message: null,
         fechaInicio: false,
-        fechaFin: false,
+        fechaFin: false
       },
       pageOne: {
         currentPage: 1,
@@ -361,12 +360,13 @@ export default {
         this.error.fechaInicio = false;
       }
     },
-    "query.fechaFin": function(fecha){
-      if(moment(fecha).isBefore(this.query.fechaInicio)){
+    "query.fechaFin": function(fecha) {
+      if (moment(fecha).isBefore(this.query.fechaInicio)) {
         this.error.hasError = true;
-        this.error.message = "La fecha final debe ser mayor o igual a la fecha inicial";
+        this.error.message =
+          "La fecha final debe ser mayor o igual a la fecha inicial";
         this.error.fechaFin = true;
-      }else{
+      } else {
         this.error.hasError = false;
         this.error.fechaFin = false;
       }

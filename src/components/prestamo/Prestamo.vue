@@ -1,14 +1,14 @@
 <template>
   <div class="ui twelve wide column">
-    <div class="ui form">
+    <form class="ui form" @submit.prevent="guardarPrestamo()">
       <div class="ui dividing header">Incluir Prestamo</div>
 
-      <div class="ten wide field">
-        <label for="">Fecha:</label>
+      <div class="ten wide required field">
+        <label for="">Fecha</label>
         <el-date-picker v-model="prestamo.fecha" format="dd/MM/yyyy" type="date"></el-date-picker>
       </div>
 
-      <div class="six wide field">
+      <div class="six wide required field">
         <label for="">Seleccionar Funcionario</label>
         <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown">
           <option disabled value="">Seleccionar Funcionario..</option>
@@ -19,8 +19,8 @@
       <div class="fifteen wide field">
         <div class="two fields">
           <div class="sixteen wide field">
-            <div class="field">
-              <label for="">Monto del Prestamo:</label>
+            <div class="required field">
+              <label for="">Monto del Prestamo</label>
             </div>
 
             <div class="inline fields">
@@ -45,16 +45,16 @@
             </div>
 
             <div class="two fields">
-              <div class="five wide field">
-                <label for="">Iniciar Pago en:</label>
+              <div class="five wide required field">
+                <label for="">Iniciar Pago en</label>
                 <div class="field">
                   <el-date-picker v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes">
                   </el-date-picker>
                 </div>
 
               </div>
-              <div class="five wide field">
-                <label for="">Fraccion de Cuotas:</label>
+              <div class="five wide required field">
+                <label for="">Fraccion de Cuotas</label>
                 <div class="field">
                   <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
                 </div>
@@ -106,12 +106,12 @@
 
       </div>
 
-    </div>
+      <div class="field">
+        <button class="ui teal button">Guardar</button>
+        <div class="ui button" @click="cancelar()">Cancelar</div>
+      </div>
 
-    <div class="field">
-      <div class="ui teal button" @click="guardarPrestamo()">Guardar</div>
-      <div class="ui button" @click="cancelar()">Cancelar</div>
-    </div>
+    </form>
 
   </div>
 </template>
@@ -119,6 +119,7 @@
 <script>
 import moment from "moment";
 import { VMoney } from "v-money";
+import { Validator } from "vee-validate";
 
 export default {
   name: "prestamo",
