@@ -5,15 +5,23 @@
 
       <div class="ten wide required field">
         <label for="">Fecha</label>
-        <el-date-picker v-model="prestamo.fecha" format="dd/MM/yyyy" type="date"></el-date-picker>
+        <div class="field" :class="{error: errors.has('fechaPrestamo')}">
+          <el-date-picker name="fechaPrestamo" v-model="prestamo.fecha" format="dd/MM/yyyy" type="date" v-validate="'required'"></el-date-picker>
+          <span class="info-error" v-show="errors.has('fechaPrestamo')">{{errors.first('fechaPrestamo')}}</span>
+        </div>
       </div>
 
       <div class="six wide required field">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown">
-          <option disabled value="">Seleccionar Funcionario..</option>
-          <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
-        </select>
+        <div class="field" :class="{error: errors.has('funcionario')}">
+          <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
+            <option disabled value="">Seleccionar Funcionario..</option>
+            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+          </select>
+          <span class="info-error" v-show="errors.has('funcionario')">{{errors.first('funcionario')}}</span>
+
+        </div>
+
       </div>
 
       <div class="fifteen wide field">
@@ -23,23 +31,24 @@
               <label for="">Monto del Prestamo</label>
             </div>
 
-            <div class="inline fields">
+            <div class="two fields">
 
-              <div class="five wide field">
+              <div class="five wide field" :class="{error: errors.has('monto')}">
                 <div class="ui input">
-                  <input v-model.lazy="prestamo.monto" v-money="money">
+                  <input name="monto" v-model.lazy="prestamo.monto" v-money="money" v-validate="'required|validarMonto'">
                 </div>
+                <span class="info-error" v-show="errors.has('monto')">{{errors.first('monto')}}</span>
               </div>
 
-              <div class="five wide field">
+              <div class="five wide field" :class="{error: errors.has('moneda')}">
 
-                <select v-model="prestamo.moneda" class="ui dropdown" id="monedaSelector">
+                <select name="moneda" v-model="prestamo.moneda" class="ui dropdown" id="monedaSelector" v-validate="'required'">
                   <option disbled value="">Seleccionar Moneda..</option>
                   <option value="Gs">Guaranies - Gs.</option>
                   <option value="Us">Dolares - Us.</option>
                   <option value="Rs">Reales - Rs.</option>
                 </select>
-
+                <span class="info-error" v-show="errors.has('moneda')">{{errors.first('moneda')}}</span>
               </div>
 
             </div>
@@ -47,17 +56,19 @@
             <div class="two fields">
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
-                <div class="field">
-                  <el-date-picker v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes">
+                <div class="field" :class="{error: errors.has('mesPagos')}">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="'required|validarMes'">
                   </el-date-picker>
                 </div>
+                <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
 
               </div>
               <div class="five wide required field">
                 <label for="">Fraccion de Cuotas</label>
-                <div class="field">
-                  <el-input-number v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="10"></el-input-number>
+                <div class="field" :class="{error: errors.has('nroCuotas')}">
+                  <el-input-number name="nroCuotas" v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="this.maxPrestamo" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
                 </div>
+                <span class="info-error" v-show="errors.has('nroCuotas')">{{errors.first('nroCuotas')}}</span>
 
               </div>
 
@@ -134,6 +145,7 @@ export default {
         inicioPago: null,
         cuotas: []
       },
+      maxPrestamo: null,
       disabledInput: true,
       funcionarioSeleccionado: null,
       setDate: new Date(),
@@ -224,6 +236,7 @@ export default {
     },
     guardarPrestamo() {
       console.log(this.$route.params.id);
+      this.$validator.validateAll();
       if (this.$route.params.id) {
         console.log("entra aca");
         this.prestamo.funcionario = this.funcionarioSeleccionado;
@@ -244,9 +257,11 @@ export default {
           });
       } else {
         this.prestamo.funcionario = this.funcionarioSeleccionado;
-        this.prestamo.nombreFuncionario = this.findFuncionario(
-          this.funcionarioSeleccionado
-        );
+        if (this.funcionarioSeleccionado) {
+          this.prestamo.nombreFuncionario = this.findFuncionario(
+            this.funcionarioSeleccionado
+          );
+        }
 
         this.$http
           .post(`/prestamos/add`, this.prestamo)
@@ -255,7 +270,10 @@ export default {
             this.cancelar();
             console.log(response);
           })
-          .catch(e => console.log(e));
+          .catch(e => {
+            console.log(e);
+            this.fail();
+          });
       }
     },
     cancelar() {
@@ -290,9 +308,24 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerPrestamo();
+    Validator.extend("validarMonto", {
+      getMessage: field => `El ${field} debe ser superior a 0`,
+      validate: value => {
+        return value.split(".").join("") > 0;
+      }
+    });
+    Validator.extend("validarMes", {
+      getMessage: field => `El ${field} deber ser siguiente al mes actual`,
+      validate: function(value) {
+        return moment(value).isAfter(new Date(), "month");
+      }
+    });
   },
   watch: {
-    $route: "obtenerPrestamo"
+    $route: "obtenerPrestamo",
+    "prestamo.monto": function(valor) {
+      return (this.maxPrestamo = parseInt(valor.split(".").join("")));
+    }
   },
   directives: { money: VMoney }
 };

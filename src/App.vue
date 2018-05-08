@@ -16,6 +16,8 @@ export default {
 </script>
 
 <style>
-
+info-error {
+  color: #9f3a38;
+}
 </style>
 

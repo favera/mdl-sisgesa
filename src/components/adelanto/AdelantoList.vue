@@ -73,7 +73,7 @@
             <th>Fecha</th>
             <th>Funcionario</th>
             <th>Monto</th>
-            <th>Opciones</th>
+            <th class="center aligned">Opciones</th>
           </tr>
         </thead>
         <tbody>
@@ -87,7 +87,7 @@
             <td>{{moment(adelanto.fecha).format("L")}}</td>
             <td>{{adelanto.nombreFuncionario}}</td>
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
-            <td>
+            <td class="center aligned">
               <router-link :to="{name: 'editarAdelanto', params: { id: adelanto._id}}">
                 <i class="edit row icon"></i>
               </router-link>

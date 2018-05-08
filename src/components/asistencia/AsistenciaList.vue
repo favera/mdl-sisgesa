@@ -198,9 +198,9 @@
               <th colspan="9">
                 <div class="ui icon info message">
                   <i class="close icon"></i>
-                  <i class="frown outline icon"></i>
+                  <i class="meh outline icon"></i>
                   <div class="header">
-                    No hay registros con el resultado que buscabas
+                    No existen registros con la busqueda esperada o aun no existe movimiento para el mes
                   </div>
 
                 </div>
@@ -254,7 +254,6 @@ export default {
       ausente: false,
       atrasado: false,
       modal: null,
-      errors: [],
       isSabado: null,
       marcacion: {
         fecha: null,

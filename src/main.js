@@ -1,7 +1,8 @@
 import Vue from "vue";
 import JsonExcel from "vue-json-excel";
 import VueRouter from "vue-router";
-import VeeValidate from "vee-validate";
+import es from "./../node_modules/vee-validate/dist/locale/es";
+import VeeValidate, { Validator } from "vee-validate";
 import App from "./App.vue";
 import {
   DatePicker,
@@ -32,6 +33,11 @@ import vueXlsxTable from "vue-xlsx-table";
 import moment from "moment";
 import axios from "./config/vue-axios";
 //import axios from "axios";
+Validator.localize("es", es);
+
+const config = {
+  locale: "es"
+};
 
 Vue.use(VueRouter);
 Vue.use(VueFire);
@@ -40,7 +46,7 @@ Vue.use(TimePicker);
 Vue.use(TimeSelect);
 Vue.use(DatePicker);
 Vue.use(InputNumber);
-Vue.use(VeeValidate);
+Vue.use(VeeValidate, config);
 Vue.component("downloadExcel", JsonExcel);
 
 Vue.prototype.moment = moment;

@@ -3,16 +3,23 @@
     <form class="ui form" @submit.prevent="guardarAdelanto">
       <div class="ui dividing header">Incluir Adelanto</div>
 
-      <div class="ten wide required field" :class="{'error': errors.has('fecha')}">
+      <div class="ten wide required field">
         <label for="">Fecha</label>
-        <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date" name="fecha" v-validate="'required'"></el-date-picker>
+        <div class="field" :class="{'error': errors.has('fecha')}">
+          <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date" name="fecha" v-validate="'required'"></el-date-picker>
+          <div v-show="errors.has('fecha')" class="info-error">{{errors.first('fecha')}}</div>
+        </div>
       </div>
-      <div class="ten wide required field" :class="{'error': errors.has('funcionario')}">
+      <div class="ten wide required field">
         <label for="">Seleccionar Funcionario</label>
-        <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
-          <option disabled value="">Seleccionar Funcionario..</option>
-          <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
-        </select>
+        <div class="field" :class="{'error': errors.has('funcionario')}">
+          <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
+            <option disabled value="">Seleccionar Funcionario..</option>
+            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+          </select>
+          <span v-show="errors.has('funcionario')" class="info-error">{{errors.first('funcionario')}}</span>
+        </div>
+
       </div>
       <div class="ten wide field">
         <div class=" required field">
@@ -20,7 +27,7 @@
         </div>
 
         <div class="inline fields">
-          <div class="four wide field">
+          <div class="three wide field">
             <div class="ui radio checkbox">
               <input type="radio" v-model="adelanto.tipoAdelanto" value="quincena" @click="disabledInput = true">
               <label>Quincena</label>
@@ -33,23 +40,22 @@
               <label>Especificar Monto</label>
             </div>
           </div>
-
           <div class="four wide field" :class="{'error': errors.has('monto')}">
             <div class="ui input">
               <input type="text" v-model.lazy="adelanto.monto" v-money="money" name="monto" v-validate="'validarMonto'" v-bind:class="{'disabled': disabledInput}">
             </div>
+            <span class="info-error" v-show="errors.has('monto')">{{errors.first('monto')}}</span>
+
           </div>
-          <!-- <span class="info-error" v-show="errors.has('monto')">El monto debe ser mayor a 0</span> -->
 
           <div class="four wide field" :class="{'error': errors.has('moneda')}">
-
             <select v-model="adelanto.moneda" class="ui dropdown" id="monedaSelector" name="moneda" v-validate="'required'">
               <option disbled value="">Seleccionar Moneda..</option>
               <option value="Gs">Guaranies - Gs.</option>
               <option value="Us">Dolares - Us.</option>
               <option value="Rs">Reales - Rs.</option>
             </select>
-
+            <span class="info-error" v-show="errors.has('moneda')">{{errors.first('moneda')}}</span>
           </div>
 
         </div>
