@@ -87,7 +87,7 @@
               </td>
 
             </tr>
-            <tr v-show="prestamo.showCuotas" :key="prestamo.funcionario">
+            <tr v-show="prestamo.showCuotas">
               <td colspan="5">
                 <div class="ui padded segments">
                   <div class="ui segment">
@@ -171,10 +171,10 @@ export default {
       modal: null,
       query: {
         fechaInicio: moment()
-          .startOf("month")
+          .startOf("year")
           .format(),
         fechaFin: moment()
-          .endOf("month")
+          .endOf("year")
           .format(),
         busqueda: null
       },
@@ -248,7 +248,8 @@ export default {
             message: "Registro Eliminado"
           });
         })
-        .catch(() => {
+        .catch(e => {
+          console.log(e);
           this.$message({
             type: "info",
             message: "Proceso Cancelado"
@@ -257,10 +258,10 @@ export default {
     },
     eliminarPrestamo(id) {
       console.log("Id recibido", id);
-      var index = this.sucursales.findIndex(i => i.id === id);
+      var index = this.prestamos.findIndex(i => i.id === id);
       this.$http.delete(`/prestamos/delete/${id}`).then(response => {
         console.log(response);
-        this.sucursales.splice(index, 1);
+        this.prestamos.splice(index, 1);
       });
     },
     abrirModal() {

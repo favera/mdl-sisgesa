@@ -57,7 +57,7 @@
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
                 <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="'required|validarMes'">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="{required: true, validarMes: {prestamo}}">
                   </el-date-picker>
                 </div>
                 <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
@@ -65,10 +65,17 @@
               </div>
               <div class="five wide required field">
                 <label for="">Fraccion de Cuotas</label>
-                <div class="field" :class="{error: errors.has('nroCuotas')}">
-                  <el-input-number name="nroCuotas" v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="this.maxPrestamo" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
+                <div class="inline fields">
+                  <div class="field">
+                    <div class="field" :class="{error: errors.has('nroCuotas')}">
+                      <el-input-number name="nroCuotas" v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="this.maxPrestamo" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
+                    </div>
+                    <span class="info-error" v-show="errors.has('nroCuotas')">{{errors.first('nroCuotas')}}</span>
+                  </div>
+                  <div class="circular ui icon button" @click="generarCuotas(prestamo.nroCuotas)">
+                    <i class="undo icon"></i>
+                  </div>
                 </div>
-                <span class="info-error" v-show="errors.has('nroCuotas')">{{errors.first('nroCuotas')}}</span>
 
               </div>
 
@@ -137,6 +144,7 @@ export default {
   data() {
     return {
       prestamo: {
+        id: null,
         fecha: new Date(),
         funcionario: null,
         nombreFuncionario: null,
@@ -173,10 +181,12 @@ export default {
         });
     },
     handleChange(value) {
+      // debugger;
       this.generarCuotas(value);
     },
     generarCuotas(value) {
       this.prestamo.cuotas.length = 0;
+      console.log("Al editar", this.prestamo.cuotas);
 
       if (this.prestamo.monto && this.prestamo.inicioPago) {
         var i = 0;
@@ -188,10 +198,11 @@ export default {
           ).toLocaleString();
           cuota.moneda = this.prestamo.moneda;
           cuota.estado = "pendiente";
-
-          cuota.vencimiento = moment(this.prestamo.inicioPago, "llll")
+          // debugger;
+          cuota.vencimiento = moment(this.prestamo.inicioPago)
             .add(i, "months")
             .format();
+          // debugger;
           console.log(cuota.vencimiento);
           console.log(JSON.stringify(cuota, undefined, 2));
 
@@ -216,6 +227,7 @@ export default {
         this.$http
           .get(`/prestamos/edit/${this.$route.params.id}`)
           .then(response => {
+            this.prestamo.id = response.data._id;
             this.prestamo.fecha = response.data.fecha;
             this.prestamo.monto = response.data.monto;
             this.prestamo.moneda = response.data.moneda;
@@ -316,7 +328,11 @@ export default {
     });
     Validator.extend("validarMes", {
       getMessage: field => `El ${field} deber ser siguiente al mes actual`,
-      validate: function(value) {
+      validate: function(value, prestamo) {
+        console.log(prestamo);
+        if (prestamo[0].prestamo.id) {
+          return true;
+        }
         return moment(value).isAfter(new Date(), "month");
       }
     });
