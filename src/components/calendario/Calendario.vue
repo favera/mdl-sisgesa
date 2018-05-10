@@ -195,12 +195,18 @@ export default {
             })
             .then(response => {
               console.log(response);
-              this.$http.put(
-                `/funcionarios/update-vacation/${this.funcionarioSeleccionado}`,
-                {
-                  vacaciones: response.data._id
-                }
-              );
+              // debugger;
+              this.$http
+                .put(
+                  `/funcionarios/update-vacation/${
+                    this.funcionarioSeleccionado
+                  }`,
+                  {
+                    vacaciones: response.data._id,
+                    activo: true
+                  }
+                )
+                .then(response => console.log(response));
               this.success();
               this.cancelar();
             })

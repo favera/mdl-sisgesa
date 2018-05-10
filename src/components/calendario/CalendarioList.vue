@@ -108,8 +108,8 @@
                 <i class="edit row icon"></i>
               </router-link>
 
-              <i class="trash icon" @click="confirm(evento._id, evento.funcionario._id)"></i>
-              <i class="archive icon" @click="archivarVacaciones(evento._id, evento.funcionario._id)"></i>
+              <i class="trash icon" @click="confirm(evento._id, evento.funcionario)"></i>
+              <i class="archive icon" @click="archivarVacaciones(evento._id, evento.funcionario)"></i>
             </td>
           </tr>
         </tbody>
@@ -200,16 +200,20 @@ export default {
       }
     },
     eliminarEvento(id, funcionario) {
+      debugger;
       var index = this.eventos.findIndex(i => i.id === id);
-      this.eventos.splice(index, 1);
       if (funcionario) {
         this.$http
           .put(`/funcionarios/update-vacation/${funcionario}`, {
-            vacaciones: "false"
+            vacaciones: id,
+            activo: false
           })
-          .then(console.log("Elimino vacaciones de funcionario"));
+          .then(response => {
+            this.$http.delete(`/eventos/delete/${id}`).then(response => {
+              this.eventos.splice(index, 1);
+            });
+          });
       }
-      this.$http.delete(`/eventos/delete/${id}`);
     },
     obtenerListadoEventos(pageReset) {
       if (pageReset) {
