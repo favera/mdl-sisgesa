@@ -200,7 +200,7 @@ export default {
       }
     },
     eliminarEvento(id, funcionario) {
-      debugger;
+      // debugger;
       var index = this.eventos.findIndex(i => i.id === id);
       if (funcionario) {
         this.$http
@@ -213,6 +213,10 @@ export default {
               this.eventos.splice(index, 1);
             });
           });
+      } else {
+        this.$http.delete(`/eventos/delete/${id}`).then(response => {
+          this.eventos.splice(index, 1);
+        });
       }
     },
     obtenerListadoEventos(pageReset) {

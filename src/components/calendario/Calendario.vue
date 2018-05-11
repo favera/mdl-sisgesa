@@ -1,11 +1,11 @@
 <template>
   <div class="ui twelve wide column">
-    <div class="ui form">
+    <form class="ui form" @submit.prevent="guardarEvento">
       <div class="ui dividing header">Incluir Evento</div>
 
       <div class="ten wide field">
-        <div class="field">
-          <label for="">Tipo de Evento:</label>
+        <div class="required field">
+          <label for="">Tipo de Evento</label>
         </div>
 
         <div class="inline fields">
@@ -26,7 +26,7 @@
       </div>
 
       <div class="ten wide field" v-show="evento.tipoEvento ==='vacaciones'">
-        <div class="field">
+        <div class="required field">
           <label for="">Seleccionar Funcionario</label>
 
           <select class="ui dropdown" name="funcionarios" v-model="funcionarioSeleccionado">
@@ -35,15 +35,15 @@
           </select>
         </div>
 
-        <div class="field">
+        <div class="required field">
           <label>Periodo de Vacaciones</label>
           <div class="inline fields">
-            <label>Fecha Inicio:</label>
+            <label>Fecha Inicio</label>
             <div class="field">
               <el-date-picker v-model="evento.fechaInicio" type="date" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
             </div>
 
-            <label>Fecha Fin:</label>
+            <label>Fecha Fin</label>
             <div class="field">
               <el-date-picker v-model="evento.fechaFin" type="date" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
             </div>
@@ -52,29 +52,33 @@
       </div>
 
       <div class="ten wide field" v-show="evento.tipoEvento === 'feriado'">
-        <div class="ten wide field">
-          <label for="">Seleccionar Fecha del Feriado:</label>
+        <div class="ten wide required field">
+          <label for="">Seleccionar Fecha del Feriado</label>
           <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
         </div>
 
-        <div class="tend wide field">
-          <label for="">Motivo del Feriado:</label>
-          <input type="text" v-model="evento.motivoFeriado">
+        <div class="tend wide required field">
+          <label for="">Motivo del Feriado</label>
+          <div class="field" :class="{error: errors.has('motivoFeriado')}">
+            <input type="text" name="motivoFeriado" v-model="evento.motivoFeriado" v-validate="'required'">
+          </div>
+          <span v-show="errors.has('motivoFeriaod')">{{errors.first('motivoFeriado')}}</span>
         </div>
       </div>
 
       <div class="ten wide field">
-        <div class="ui teal button" @click="guardarEvento()">Guardar</div>
+        <button class="ui teal button">Guardar</button>
         <div class="ui button" @click="cancelar()">Cancelar</div>
       </div>
 
-    </div>
+    </form>
 
   </div>
 </template>
 
 <script>
 import moment from "moment";
+import { Validator } from "vee-validate";
 
 export default {
   name: "calendario",
@@ -118,6 +122,7 @@ export default {
     },
     guardarEvento() {
       console.log(this.$route.params.id);
+      this.$validator.validateAll();
       if (typeof this.$route.params.id !== "undefined") {
         if (this.evento.tipoEvento === "feriado") {
           this.$http
@@ -133,8 +138,8 @@ export default {
             })
             .catch(e => {
               console.log(e);
-              this.fail();
-              this.cancelar();
+              //this.fail();
+              //this.cancelar();
             });
         } else {
           this.$http
@@ -160,8 +165,8 @@ export default {
             })
             .catch(e => {
               console.log(e);
-              this.fail();
-              this.cancelar();
+              // this.fail();
+              // this.cancelar();
             });
         }
       } else {
@@ -174,13 +179,13 @@ export default {
             })
             .then(response => {
               console.log(response);
-              this.success();
-              this.cancelar();
+              // this.success();
+              // this.cancelar();
             })
             .catch(e => {
               console.log(e);
-              this.fail();
-              this.cancelar();
+              // this.fail();
+              // this.cancelar();
             });
         } else {
           this.$http
@@ -212,8 +217,8 @@ export default {
             })
             .catch(e => {
               console.log(e);
-              this.fail();
-              this.cancelar();
+              // this.fail();
+              // this.cancelar();
             });
         }
       }
