@@ -11,14 +11,14 @@
         <div class="inline fields">
           <div class="four wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="evento.tipoEvento" value="vacaciones">
+              <input type="radio" v-model="evento.tipoEvento" @click="errors.items.length=0" value="vacaciones">
               <label>Vacaciones</label>
             </div>
           </div>
 
           <div class="four wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="evento.tipoEvento" value="feriado">
+              <input type="radio" v-model="evento.tipoEvento" @click="errors.items.length = 0" value="feriado">
               <label>Feriado</label>
             </div>
           </div>
@@ -29,23 +29,30 @@
         <div class="required field">
           <label for="">Seleccionar Funcionario</label>
 
-          <select class="ui dropdown" name="funcionarios" v-model="funcionarioSeleccionado">
+          <div class="field" :class="{error: errors.has('funcionario')}">
+            <select class="ui dropdown" name="funcionario" v-model="funcionarioSeleccionado" data-vv-as="funcionario" v-validate="'required'">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
           </select>
+          <span class="info-error" v-show="errors.has('funcionario')">{{errors.first('funcionario')}}</span>
+          </div>
+
+          
         </div>
 
         <div class="required field">
           <label>Periodo de Vacaciones</label>
           <div class="inline fields">
             <label>Fecha Inicio</label>
-            <div class="field">
-              <el-date-picker v-model="evento.fechaInicio" type="date" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
+            <div class="field" :class="{error: errors.has('fechaInicio')}">
+              <el-date-picker name="fechaInicio" v-model="evento.fechaInicio" type="date" format="dd/MM/yyyy" v-validate="'required|before:fechaFin'" data-vv-as="fecha inicio" placeholder="Seleccionar Fecha"></el-date-picker>
+              <div class="info-error" v-show="errors.has('fechaInicio')">{{errors.first('fechaInicio')}}</div>
             </div>
 
             <label>Fecha Fin</label>
-            <div class="field">
-              <el-date-picker v-model="evento.fechaFin" type="date" format="dd/MM/yyyy" placeholder="Seleccionar Fecha"></el-date-picker>
+            <div class="field" :class="{error: errors.has('fechaInicio')}">
+              <el-date-picker name="fechaFin" v-model="evento.fechaFin" type="date" format="dd/MM/yyyy" data-vv-as="fecha fin" v-validate="'required|after:fechaInicio'" placeholder="Seleccionar Fecha"></el-date-picker>
+              <div class="info-error" v-show="errors.has('fechaFin')">{{errors.first('fechaFin')}}</div>
             </div>
           </div>
         </div>
@@ -54,20 +61,26 @@
       <div class="ten wide field" v-show="evento.tipoEvento === 'feriado'">
         <div class="ten wide required field">
           <label for="">Seleccionar Fecha del Feriado</label>
-          <el-date-picker v-model="evento.fechaFeriado" format="dd/MM/yyyy" placeholder="Seleccionar fecha"></el-date-picker>
+          <div class="field" :class="{error: errors.has('fechaFeriado')}">
+            <el-date-picker name="fechaFeriado" v-model="evento.fechaFeriado" format="dd/MM/yyyy" data-vv-as="fecha del feriado" v-validate="'required'" placeholder="Seleccionar fecha"></el-date-picker>
+            <div class="info-error" v-show="errors.has('fechaFeriado')">{{this.errors.first('fechaFeriado')}}</div>
+          </div>
+          
+          
         </div>
 
         <div class="tend wide required field">
           <label for="">Motivo del Feriado</label>
           <div class="field" :class="{error: errors.has('motivoFeriado')}">
-            <input type="text" name="motivoFeriado" v-model="evento.motivoFeriado" v-validate="'required'">
+            <input type="text" name="motivoFeriado" v-model="evento.motivoFeriado" data-vv-as="motivo del feriado" v-validate="'required'">
+            <span class="info-error" v-show="errors.has('motivoFeriado')">{{errors.first('motivoFeriado')}}</span>
           </div>
-          <span v-show="errors.has('motivoFeriaod')">{{errors.first('motivoFeriado')}}</span>
+          
         </div>
       </div>
 
       <div class="ten wide field">
-        <button class="ui teal button">Guardar</button>
+        <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
         <div class="ui button" @click="cancelar()">Cancelar</div>
       </div>
 
@@ -99,129 +112,144 @@ export default {
   },
   methods: {
     obtenerEvento() {
-      console.log(this.$route.params.id);
-
+      // debugger;
       if (this.$route.params.id) {
         this.$http
           .get(`/eventos/edit/${this.$route.params.id}`)
           .then(response => {
-            console.log("Response edit", response);
             this.evento.tipoEvento = response.data.tipoEvento;
-            this.evento.fechaInicio = response.data.fechaInicio;
-            this.evento.fechaFin = response.data.fechaFin;
-            this.evento.fechaFeriado = response.data.fechaFeriado;
-            this.evento.funcionario = response.data.funcionario;
-            this.evento.motivoFeriado = response.data.motivoFeriado;
-            this.funcionarioSeleccionado = response.data.funcionario;
-            $(this.$el)
-              .find(".ui.dropdown")
-              .dropdown("refresh")
-              .dropdown("set selected", response.data.funcionario);
+
+            if (response.data.tipoEvento === "vacaciones") {
+              this.evento.fechaFin = response.data.fechaFin;
+              this.evento.fechaInicio = response.data.fechaInicio;
+              this.evento.funcionario = response.data.funcionario;
+              this.funcionarioSeleccionado = response.data.funcionario;
+              $(this.$el)
+                .find(".ui.dropdown")
+                .dropdown("refresh")
+                .dropdown("set selected", response.data.funcionario);
+            } else {
+              this.evento.fechaFeriado = response.data.fechaFeriado;
+              this.evento.motivoFeriado = response.data.motivoFeriado;
+            }
           });
       }
     },
     guardarEvento() {
       console.log(this.$route.params.id);
-      this.$validator.validateAll();
-      if (typeof this.$route.params.id !== "undefined") {
-        if (this.evento.tipoEvento === "feriado") {
-          this.$http
-            .put(`/eventos/update/${this.$route.params.id}`, {
-              tipoEvento: this.evento.tipoEvento,
-              fechaFeriado: this.evento.fechaFeriado,
-              motivoFeriado: this.evento.motivoFeriado
-            })
-            .then(response => {
-              console.log(response);
-              this.success();
-              this.cancelar();
-            })
-            .catch(e => {
-              console.log(e);
-              //this.fail();
-              //this.cancelar();
-            });
-        } else {
-          this.$http
-            .put(`/eventos/update/${this.$route.params.id}`, {
-              tipoEvento: this.evento.tipoEvento,
-              fechaInicio: this.evento.fechaInicio,
-              fechaFin: this.evento.fechaFin,
-              funcionario: this.funcionarioSeleccionado,
-              nombreFuncionario: this.getNombreFuncionario(
-                this.funcionarioSeleccionado
-              )
-            })
-            .then(response => {
-              console.log("Response from update", response);
-              this.$http.put(
-                `/funcionarios/update-vacation/${this.funcionarioSeleccionado}`,
-                {
-                  vacaciones: response.data._id
+      this.$validator.validateAll().then(() => {
+        if (typeof this.$route.params.id !== "undefined") {
+          if (this.evento.tipoEvento === "feriado") {
+            this.$http
+              .put(`/eventos/update/${this.$route.params.id}`, {
+                tipoEvento: this.evento.tipoEvento,
+                fechaFeriado: this.evento.fechaFeriado,
+                motivoFeriado: this.evento.motivoFeriado,
+                fechaInicio: null,
+                fechaFin: null,
+                funcionario: null
+              })
+              .then(response => {
+                console.log(response);
+                this.success();
+                this.cancelar();
+              })
+              .catch(e => {
+                console.log(e);
+                if (e.errmsg && e.errmsg.includes("duplicate")) {
+                  this.errors.add(
+                    "fechaFeriado",
+                    "La fecha indicada ya existe"
+                  );
                 }
-              );
-              this.success();
-              this.cancelar();
-            })
-            .catch(e => {
-              console.log(e);
-              // this.fail();
-              // this.cancelar();
-            });
-        }
-      } else {
-        if (this.evento.tipoEvento === "feriado") {
-          this.$http
-            .post(`/eventos/add`, {
-              tipoEvento: this.evento.tipoEvento,
-              fechaFeriado: this.evento.fechaFeriado,
-              motivoFeriado: this.evento.motivoFeriado
-            })
-            .then(response => {
-              console.log(response);
-              // this.success();
-              // this.cancelar();
-            })
-            .catch(e => {
-              console.log(e);
-              // this.fail();
-              // this.cancelar();
-            });
-        } else {
-          this.$http
-            .post(`/eventos/add`, {
-              tipoEvento: this.evento.tipoEvento,
-              fechaInicio: this.evento.fechaInicio,
-              fechaFin: this.evento.fechaFin,
-              funcionario: this.funcionarioSeleccionado,
-              nombreFuncionario: this.getNombreFuncionario(
-                this.funcionarioSeleccionado
-              )
-            })
-            .then(response => {
-              console.log(response);
-              // debugger;
-              this.$http
-                .put(
+                this.fail();
+              });
+          } else {
+            this.$http
+              .put(`/eventos/update/${this.$route.params.id}`, {
+                tipoEvento: this.evento.tipoEvento,
+                fechaInicio: this.evento.fechaInicio,
+                fechaFin: this.evento.fechaFin,
+                funcionario: this.funcionarioSeleccionado,
+                nombreFuncionario: this.getNombreFuncionario(
+                  this.funcionarioSeleccionado
+                )
+              })
+              .then(response => {
+                console.log("Response from update", response);
+                this.$http.put(
                   `/funcionarios/update-vacation/${
                     this.funcionarioSeleccionado
                   }`,
                   {
-                    vacaciones: response.data._id,
-                    activo: true
+                    vacaciones: response.data._id
                   }
+                );
+                this.success();
+                this.cancelar();
+              })
+              .catch(e => {
+                console.log(e);
+                this.fail();
+              });
+          }
+        } else {
+          if (this.evento.tipoEvento === "feriado") {
+            this.$http
+              .post(`/eventos/add`, {
+                tipoEvento: this.evento.tipoEvento,
+                fechaFeriado: this.evento.fechaFeriado,
+                motivoFeriado: this.evento.motivoFeriado
+              })
+              .then(response => {
+                console.log(response);
+                this.success();
+                this.cancelar();
+              })
+              .catch(error => {
+                if (
+                  error.response.data.errmsg &&
+                  error.response.data.errmsg.includes("duplicate")
+                ) {
+                  this.errors.add(
+                    "fechaFeriado",
+                    "La fecha indicada ya existe"
+                  );
+                }
+                this.fail();
+              });
+          } else {
+            this.$http
+              .post(`/eventos/add`, {
+                tipoEvento: this.evento.tipoEvento,
+                fechaInicio: this.evento.fechaInicio,
+                fechaFin: this.evento.fechaFin,
+                funcionario: this.funcionarioSeleccionado,
+                nombreFuncionario: this.getNombreFuncionario(
+                  this.funcionarioSeleccionado
                 )
-                .then(response => console.log(response));
-              this.success();
-              this.cancelar();
-            })
-            .catch(e => {
-              console.log(e);
-              // this.fail();
-              // this.cancelar();
-            });
+              })
+              .then(response => {
+                this.$http
+                  .put(
+                    `/funcionarios/update-vacation/${
+                      this.funcionarioSeleccionado
+                    }`,
+                    {
+                      vacaciones: response.data._id,
+                      activo: true
+                    }
+                  )
+                  .then(response => console.log(response));
+                this.success();
+                this.cancelar();
+              })
+              .catch(e => {
+                this.fail();
+              });
+          }
         }
-      }
+      });
     },
     cancelar() {
       this.$router.push({ name: "listadoCalendario" });
