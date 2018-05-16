@@ -54,7 +54,7 @@
             <th>Tipo de Evento</th>
             <th>Motivo del Feriado</th>
             <th>Fecha del Feriado</th>
-            <th>Opciones</th>
+            <th class="center aligned">Opciones</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@
             <td class="capital">{{evento.tipoEvento}}</td>
             <td>{{evento.motivoFeriado}}</td>
             <td>{{moment(evento.fechaFeriado).format("L")}}</td>
-            <td>
+            <td class="center aligned">
               <router-link :to="{name: 'editarEvento', params: { id: evento._id}}">
                 <i class="edit row icon"></i>
               </router-link>
@@ -93,7 +93,7 @@
             <th>Funcionario</th>
             <th>Inicio de Vacaciones</th>
             <th>Fin de Vacaciones</th>
-            <th>Opciones</th>
+            <th class="center aligned">Opciones</th>
           </tr>
         </thead>
 
@@ -103,13 +103,10 @@
             <td>{{evento.nombreFuncionario}}</td>
             <td>{{moment(evento.fechaInicio).format("L")}}</td>
             <td>{{moment(evento.fechaFin).format("L")}}</td>
-            <td>
-              <router-link :to="{name: 'editarEvento', params: { id: evento._id}}">
-                <i v-show="evento.activo" class="edit row icon"></i>
-              </router-link>
-
-              <i class="trash icon" v-show="evento.activo" @click="confirm(evento._id, evento.funcionario)"></i>
-              <i class="archive icon" v-show="evento.activo" @click="archivarVacaciones(evento._id, evento.funcionario)"></i>
+            <td class="center aligned">
+              <i class="edit row icon option-icons" :class="{disabled:!evento.activo}" @click="editarEvento(evento.activo)"></i>
+              <i class="trash icon option-icons" :class="{disabled:!evento.activo}" @click="confirm(evento._id, evento.funcionario, evento.activo)"></i>
+              <i class="archive icon option-icons" :class="{disabled:!evento.activo}" @click="archivarVacaciones(evento._id, evento.funcionario, evento.activo)"></i>
             </td>
           </tr>
         </tbody>
@@ -151,38 +148,52 @@ export default {
     incluirEvento() {
       this.$router.push({ name: "incluirEvento" });
     },
+    editarEvento(eventoActivo) {
+      if (eventoActivo) {
+        this.$router.push({ name: "editarEvento", params: { id: evento._id } });
+      }
+    },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.obtenerListadoEventos();
     },
-    archivarVacaciones(eventokey, funcionarioId) {
+    archivarVacaciones(eventokey, funcionarioId, eventoActivo) {
+      if (eventoActivo) {
+      }
       console.log("key", eventokey);
-      this.$http.get(`/eventos/deactivate-vacation/${eventokey}`);
-    },
-    confirm(id, funcionario) {
-      console.log(funcionario);
-      this.$confirm(
-        "El registro sera eliminado permanentemente. Desea Continuar?",
-        "Atencion!",
-        {
-          confirmButtonText: "OK",
-          cancelButtonText: "Cancelar",
-          type: "warning"
-        }
-      )
-        .then(() => {
-          this.eliminarEvento(id, funcionario);
-          this.$message({
-            type: "success",
-            message: "Registro Eliminado"
-          });
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "Proceso Cancelado"
-          });
+      this.$http.get(`/eventos/deactivate-vacation/${eventokey}`).then(() => {
+        this.$message({
+          type: "info",
+          message: "Registro archivado"
         });
+        this.obtenerListadoEventos();
+      });
+    },
+    confirm(id, funcionario, eventoActivo) {
+      if (eventoActivo) {
+        this.$confirm(
+          "El registro sera eliminado permanentemente. Desea Continuar?",
+          "Atencion!",
+          {
+            confirmButtonText: "OK",
+            cancelButtonText: "Cancelar",
+            type: "warning"
+          }
+        )
+          .then(() => {
+            this.eliminarEvento(id, funcionario);
+            this.$message({
+              type: "success",
+              message: "Registro Eliminado"
+            });
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "Proceso Cancelado"
+            });
+          });
+      }
     },
     consultarEventos(e) {
       if (e && e.keyCode === 13) {

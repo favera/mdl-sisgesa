@@ -125,7 +125,7 @@
       </div>
 
       <div class="field">
-        <button class="ui teal button">Guardar</button>
+        <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
         <div class="ui button" @click="cancelar()">Cancelar</div>
       </div>
 
@@ -181,7 +181,6 @@ export default {
         });
     },
     handleChange(value) {
-      // debugger;
       this.generarCuotas(value);
     },
     generarCuotas(value) {
@@ -198,17 +197,12 @@ export default {
           ).toLocaleString();
           cuota.moneda = this.prestamo.moneda;
           cuota.estado = "pendiente";
-          // debugger;
           cuota.vencimiento = moment(this.prestamo.inicioPago)
             .add(i, "months")
             .format();
-          // debugger;
           console.log(cuota.vencimiento);
           console.log(JSON.stringify(cuota, undefined, 2));
 
-          //test.push(cuota);
-
-          // console.log(JSON.stringify(test, undefined, 2));
           this.prestamo.cuotas.push(cuota);
           i++;
         } while (i < value);
@@ -221,8 +215,6 @@ export default {
       return funcionario.nombre;
     },
     obtenerPrestamo() {
-      //console.log(this.$route.params.id);
-
       if (this.$route.params.id) {
         this.$http
           .get(`/prestamos/edit/${this.$route.params.id}`)
@@ -247,46 +239,47 @@ export default {
       }
     },
     guardarPrestamo() {
-      console.log(this.$route.params.id);
-      this.$validator.validateAll();
-      if (this.$route.params.id) {
-        console.log("entra aca");
-        this.prestamo.funcionario = this.funcionarioSeleccionado;
-        this.prestamo.nombreFuncionario = this.findFuncionario(
-          this.funcionarioSeleccionado
-        );
-
-        this.$http
-          .put(`/prestamos/update/${this.$route.params.id}`, this.prestamo)
-          .then(response => {
-            this.success();
-            this.cancelar();
-            console.log(response);
-          })
-          .catch(e => {
-            console.log(e);
-            this.fail();
-          });
-      } else {
-        this.prestamo.funcionario = this.funcionarioSeleccionado;
-        if (this.funcionarioSeleccionado) {
+      this.$validator.validateAll().then(() => {
+        if (this.$route.params.id) {
+          console.log("entra aca");
+          this.prestamo.funcionario = this.funcionarioSeleccionado;
           this.prestamo.nombreFuncionario = this.findFuncionario(
             this.funcionarioSeleccionado
           );
-        }
 
-        this.$http
-          .post(`/prestamos/add`, this.prestamo)
-          .then(response => {
-            this.success();
-            this.cancelar();
-            console.log(response);
-          })
-          .catch(e => {
-            console.log(e);
-            this.fail();
-          });
-      }
+          this.$http
+            .put(`/prestamos/update/${this.$route.params.id}`, this.prestamo)
+            .then(response => {
+              this.success();
+              this.cancelar();
+              console.log(response);
+            })
+            .catch(e => {
+              console.log(e);
+              this.fail();
+            });
+        } else {
+          this.prestamo.funcionario = this.funcionarioSeleccionado;
+
+          if (this.funcionarioSeleccionado) {
+            this.prestamo.nombreFuncionario = this.findFuncionario(
+              this.funcionarioSeleccionado
+            );
+          }
+
+          this.$http
+            .post(`/prestamos/add`, this.prestamo)
+            .then(response => {
+              this.success();
+              this.cancelar();
+              console.log(response);
+            })
+            .catch(e => {
+              console.log(e);
+              this.fail();
+            });
+        }
+      });
     },
     cancelar() {
       this.$router.push({ name: "listadoPrestamo" });
@@ -320,12 +313,6 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerPrestamo();
-    Validator.extend("validar_monto", {
-      getMessage: field => `El ${field} debe ser superior a 0`,
-      validate: value => {
-        return value.split(".").join("") > 0;
-      }
-    });
     Validator.extend("validar_mes", {
       getMessage: field => `El ${field} deber ser siguiente al mes actual`,
       validate: function(value, prestamo) {

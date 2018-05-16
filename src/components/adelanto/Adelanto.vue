@@ -214,12 +214,6 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerAdelanto();
-    Validator.extend("validar_monto", {
-      getMessage: field => `El ${field} debe ser superior a 0`,
-      validate: value => {
-        return value.split(".").join("") > 0;
-      }
-    });
   },
   directives: { money: VMoney },
   watch: {

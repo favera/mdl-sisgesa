@@ -62,6 +62,13 @@ const router = new VueRouter({
   routes
 });
 
+Validator.extend("validar_monto", {
+  getMessage: field => `El ${field} debe ser superior a 0`,
+  validate: value => {
+    return value.split(".").join("") > 0;
+  }
+});
+
 new Vue({
   el: "#app",
   router: router,

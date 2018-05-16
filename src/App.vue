@@ -16,8 +16,12 @@ export default {
 </script>
 
 <style>
-info-error {
+.info-error {
   color: #9f3a38;
+}
+
+.option-icons {
+  cursor: pointer;
 }
 </style>
 

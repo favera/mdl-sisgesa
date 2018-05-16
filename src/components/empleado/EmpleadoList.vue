@@ -41,7 +41,7 @@
             <th>Sucursal</th>
             <th>Carga Laboral</th>
             <th>Salario Base</th>
-            <th>Opciones</th>
+            <th class="center aligned">Opciones</th>
           </tr>
         </thead>
         <tbody>
@@ -50,12 +50,9 @@
             <td> {{empleado.sucursal.nombre}}</td>
             <td> {{empleado.cargaLaboral}}</td>
             <td> {{empleado.salario}}{{empleado.moneda}}</td>
-            <td>
-              <span class="item" @click="guardarPaginacion(empleado._id)">
-                <i class="edit row icon"></i>
-              </span>
-
-              <i class="trash icon" @click="confirm(empleado._id)"></i>
+            <td class="center aligned">
+              <i class="edit row icon option-icons" @click="guardarPaginacion(empleado._id)"></i>
+              <i class="trash icon option-icons" @click="confirm(empleado._id)"></i>
             </td>
           </tr>
 
