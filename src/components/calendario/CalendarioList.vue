@@ -105,11 +105,11 @@
             <td>{{moment(evento.fechaFin).format("L")}}</td>
             <td>
               <router-link :to="{name: 'editarEvento', params: { id: evento._id}}">
-                <i class="edit row icon"></i>
+                <i v-show="evento.activo" class="edit row icon"></i>
               </router-link>
 
-              <i class="trash icon" @click="confirm(evento._id, evento.funcionario)"></i>
-              <i class="archive icon" @click="archivarVacaciones(evento._id, evento.funcionario)"></i>
+              <i class="trash icon" v-show="evento.activo" @click="confirm(evento._id, evento.funcionario)"></i>
+              <i class="archive icon" v-show="evento.activo" @click="archivarVacaciones(evento._id, evento.funcionario)"></i>
             </td>
           </tr>
         </tbody>
@@ -156,15 +156,8 @@ export default {
       this.obtenerListadoEventos();
     },
     archivarVacaciones(eventokey, funcionarioId) {
-      console.log(eventokey, Object.keys(funcionarioId)[0]);
-      var updates = {};
-
-      updates[
-        "/funcionarios/" +
-          Object.keys(funcionarioId)[0] +
-          "/vacaciones/" +
-          eventokey
-      ] = false;
+      console.log("key", eventokey);
+      this.$http.get(`/eventos/deactivate-vacation/${eventokey}`);
     },
     confirm(id, funcionario) {
       console.log(funcionario);

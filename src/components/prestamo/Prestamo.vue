@@ -35,7 +35,7 @@
 
               <div class="five wide field" :class="{error: errors.has('monto')}">
                 <div class="ui input">
-                  <input name="monto" v-model.lazy="prestamo.monto" v-money="money" v-validate="'required|validarMonto'">
+                  <input name="monto" v-model.lazy="prestamo.monto" v-money="money" v-validate="'required|validar_monto'">
                 </div>
                 <span class="info-error" v-show="errors.has('monto')">{{errors.first('monto')}}</span>
               </div>
@@ -57,7 +57,7 @@
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
                 <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="{required: true, validarMes: {prestamo}}">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="{required: true, validar_mes: {prestamo}}">
                   </el-date-picker>
                 </div>
                 <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
@@ -320,13 +320,13 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerPrestamo();
-    Validator.extend("validarMonto", {
+    Validator.extend("validar_monto", {
       getMessage: field => `El ${field} debe ser superior a 0`,
       validate: value => {
         return value.split(".").join("") > 0;
       }
     });
-    Validator.extend("validarMes", {
+    Validator.extend("validar_mes", {
       getMessage: field => `El ${field} deber ser siguiente al mes actual`,
       validate: function(value, prestamo) {
         console.log(prestamo);

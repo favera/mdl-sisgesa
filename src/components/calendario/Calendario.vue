@@ -31,13 +31,12 @@
 
           <div class="field" :class="{error: errors.has('funcionario')}">
             <select class="ui dropdown" name="funcionario" v-model="funcionarioSeleccionado" data-vv-as="funcionario" v-validate="'required'">
-            <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
-          </select>
-          <span class="info-error" v-show="errors.has('funcionario')">{{errors.first('funcionario')}}</span>
+              <option disabled value="">Seleccionar Funcionario..</option>
+              <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+            </select>
+            <span class="info-error" v-show="errors.has('funcionario')">{{errors.first('funcionario')}}</span>
           </div>
 
-          
         </div>
 
         <div class="required field">
@@ -45,13 +44,13 @@
           <div class="inline fields">
             <label>Fecha Inicio</label>
             <div class="field" :class="{error: errors.has('fechaInicio')}">
-              <el-date-picker name="fechaInicio" v-model="evento.fechaInicio" type="date" format="dd/MM/yyyy" v-validate="'required|before:fechaFin'" data-vv-as="fecha inicio" placeholder="Seleccionar Fecha"></el-date-picker>
+              <el-date-picker name="fechaInicio" v-model="evento.fechaInicio" type="date" format="dd/MM/yyyy" v-validate="{required: true}" data-vv-as="fecha inicio" placeholder="Seleccionar Fecha"></el-date-picker>
               <div class="info-error" v-show="errors.has('fechaInicio')">{{errors.first('fechaInicio')}}</div>
             </div>
 
             <label>Fecha Fin</label>
-            <div class="field" :class="{error: errors.has('fechaInicio')}">
-              <el-date-picker name="fechaFin" v-model="evento.fechaFin" type="date" format="dd/MM/yyyy" data-vv-as="fecha fin" v-validate="'required|after:fechaInicio'" placeholder="Seleccionar Fecha"></el-date-picker>
+            <div class="field" :class="{error: errors.has('fechaFin')}">
+              <el-date-picker name="fechaFin" v-model="evento.fechaFin" type="date" format="dd/MM/yyyy" data-vv-as="fecha fin" v-validate="{required:true}" placeholder="Seleccionar Fecha"></el-date-picker>
               <div class="info-error" v-show="errors.has('fechaFin')">{{errors.first('fechaFin')}}</div>
             </div>
           </div>
@@ -65,8 +64,7 @@
             <el-date-picker name="fechaFeriado" v-model="evento.fechaFeriado" format="dd/MM/yyyy" data-vv-as="fecha del feriado" v-validate="'required'" placeholder="Seleccionar fecha"></el-date-picker>
             <div class="info-error" v-show="errors.has('fechaFeriado')">{{this.errors.first('fechaFeriado')}}</div>
           </div>
-          
-          
+
         </div>
 
         <div class="tend wide required field">
@@ -75,12 +73,12 @@
             <input type="text" name="motivoFeriado" v-model="evento.motivoFeriado" data-vv-as="motivo del feriado" v-validate="'required'">
             <span class="info-error" v-show="errors.has('motivoFeriado')">{{errors.first('motivoFeriado')}}</span>
           </div>
-          
+
         </div>
       </div>
 
       <div class="ten wide field">
-        <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
+        <button class="ui teal button">Guardar</button>
         <div class="ui button" @click="cancelar()">Cancelar</div>
       </div>
 
@@ -100,8 +98,12 @@ export default {
       evento: {
         tipoEvento: "vacaciones",
         fechaFeriado: null,
-        fechaInicio: null,
-        fechaFin: null,
+        fechaInicio: moment()
+          .startOf("week")
+          .format(),
+        fechaFin: moment()
+          .endOf("week")
+          .format(),
         funcionario: null,
         nombreFuncionario: null,
         motivoFeriado: null
@@ -144,10 +146,7 @@ export default {
               .put(`/eventos/update/${this.$route.params.id}`, {
                 tipoEvento: this.evento.tipoEvento,
                 fechaFeriado: this.evento.fechaFeriado,
-                motivoFeriado: this.evento.motivoFeriado,
-                fechaInicio: null,
-                fechaFin: null,
-                funcionario: null
+                motivoFeriado: this.evento.motivoFeriado
               })
               .then(response => {
                 console.log(response);
@@ -189,7 +188,7 @@ export default {
                 this.cancelar();
               })
               .catch(e => {
-                console.log(e);
+                console.log("Respuesta", e.response.data.errors);
                 this.fail();
               });
           }
@@ -245,6 +244,26 @@ export default {
                 this.cancelar();
               })
               .catch(e => {
+                if (
+                  e.response.data.errors &&
+                  e.response.data.errors.hasOwnProperty("fechaInicio")
+                ) {
+                  this.errors.add(
+                    "fechaInicio",
+                    e.response.data.errors["fechaInicio"].message
+                  );
+                }
+
+                if (
+                  e.response.data.errors &&
+                  e.response.data.errors.hasOwnProperty("fechaFin")
+                ) {
+                  this.errors.add(
+                    "fechaFin",
+                    e.response.data.errors["fechaFin"].message
+                  );
+                }
+
                 this.fail();
               });
           }
@@ -293,6 +312,22 @@ export default {
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
+  },
+  updated() {
+    Validator.extend("validar_fecha_before", {
+      getMessage: field => `La fecha ${field} debe ser posterior a xxx`,
+      validate: function(fecha, evento) {
+        // debugger;
+        return moment(fecha).isBefore(evento[0].evento.fechaFin);
+      }
+    });
+    Validator.extend("validar_fecha_after", {
+      getMessage: field => `La fecha ${field} debe ser posterior a xxx`,
+      validate: function(fecha, evento) {
+        // debugger;
+        return moment(fecha).isAfter(evento[0].evento.fechaInicio);
+      }
+    });
   },
   created() {
     this.obtenerFuncionarios();

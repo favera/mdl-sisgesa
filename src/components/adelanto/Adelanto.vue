@@ -42,7 +42,7 @@
           </div>
           <div class="four wide field" :class="{'error': errors.has('monto')}">
             <div class="ui input">
-              <input type="text" v-model.lazy="adelanto.monto" v-money="money" name="monto" v-validate="'validarMonto'" v-bind:class="{'disabled': disabledInput}">
+              <input type="text" v-model.lazy="adelanto.monto" v-money="money" name="monto" v-validate="'validar_monto'" v-bind:class="{'disabled': disabledInput}">
             </div>
             <span class="info-error" v-show="errors.has('monto')">{{errors.first('monto')}}</span>
 
@@ -214,7 +214,7 @@ export default {
   created() {
     this.obtenerFuncionarios();
     this.obtenerAdelanto();
-    Validator.extend("validarMonto", {
+    Validator.extend("validar_monto", {
       getMessage: field => `El ${field} debe ser superior a 0`,
       validate: value => {
         return value.split(".").join("") > 0;
