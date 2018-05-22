@@ -54,10 +54,13 @@
 
               <div class="ui icon input">
                 <input type="text" placeholder="Buscar por nombre" @keydown="consultarAsistencia" v-model="query.busqueda">
-                <i class="search icon" v-if="busquedaAvanzada"></i>
-                <i @click="consultarAsistencia" class="inverted teal circular search link icon" v-else></i>
+                <!-- <i class="search icon" v-if="busquedaAvanzada"></i> -->
+                <!-- <i @click="consultarAsistencia" class="inverted teal circular search link icon" v-else></i> -->
 
               </div>
+              <button class="ui circular teal icon button" @click="consultarAsistencia">
+                <i class="search icon"></i>
+              </button>
 
             </div>
 
@@ -169,7 +172,7 @@
               <th>Horas Faltantes</th>
               <th>Banco de Horas</th>
               <th>Observacion</th>
-              <th>Opciones</th>
+              <th class="center aligned">Opciones</th>
             </tr>
           </thead>
 
@@ -184,9 +187,9 @@
               <td>{{(marcacion.horasExtras || "--") + " hs"}}</td>
               <td>{{marcacion.observacion || "--"}}</td>
 
-              <td>
-                <i @click="guardarPaginacion(marcacion._id)" class="edit row icon"></i>
-                <i @click="confirm(marcacion._id)" class="trash icon"></i>
+              <td class="center aligned">
+                <i @click="guardarPaginacion(marcacion._id)" class="edit row link icon"></i>
+                <i @click="confirm(marcacion._id)" class="trash link icon"></i>
 
               </td>
             </tr>

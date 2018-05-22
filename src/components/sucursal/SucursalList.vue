@@ -47,8 +47,8 @@
             <td>{{sucursal.horaSalida + " hs"}}</td>
             <td>{{sucursal.telefono}}</td>
             <td class="center aligned">
-              <i class="edit row icon option-icons" @click="editarSucursal(sucursal._id)"></i>
-              <i class="trash icon option-icons" @click="confirm(sucursal._id)"></i>
+              <i class="edit row link icon" @click="editarSucursal(sucursal._id)"></i>
+              <i class="trash link icon" @click="confirm(sucursal._id)"></i>
             </td>
           </tr>
         </tbody>

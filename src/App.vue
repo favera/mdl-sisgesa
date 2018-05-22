@@ -19,9 +19,5 @@ export default {
 .info-error {
   color: #9f3a38;
 }
-
-.option-icons {
-  cursor: pointer;
-}
 </style>
 

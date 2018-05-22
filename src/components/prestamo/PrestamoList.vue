@@ -76,11 +76,11 @@
               <td>{{prestamo.nombreFuncionario}}</td>
               <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
               <td class="center aligned">
-                <i class="browser icon option-icons" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
+                <i class="browser link icon " @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
               </td>
               <td class="center aligned">
-                <i class="edit row icon option-icons" @click="editarPrestamo(prestamo._id)"></i>
-                <i class="trash icon option-icons" @click="confirm(prestamo._id)"></i>
+                <i class="edit row link icon " @click="editarPrestamo(prestamo._id)"></i>
+                <i class="trash link icon " @click="confirm(prestamo._id)"></i>
               </td>
 
             </tr>

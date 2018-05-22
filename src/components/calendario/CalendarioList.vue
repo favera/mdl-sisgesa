@@ -10,8 +10,12 @@
             <div class="ten wide field">
               <div class="ui icon input">
                 <input type="text" v-model="query.busqueda" @keydown="consultarEventos" placeholder="Buscar Evento...">
-                <i @click="consultarEventos" class="inverted teal circular search link icon"></i>
+                <!-- <i @click="consultarEventos" class="inverted teal circular search link icon"></i> -->
+                <i class="close link icon" v-show="busqueda"></i>
               </div>
+              <button class="ui circular teal icon button" @click="consultarEventos">
+                <i class="search icon"></i>
+              </button>
             </div>
             <div class="four wide field">
               <label>Tipo de Evento:</label>
@@ -63,8 +67,8 @@
             <td>{{evento.motivoFeriado}}</td>
             <td>{{moment(evento.fechaFeriado).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row icon option-icons" @click="editarEvento(evento.activo, evento._id)"></i>
-              <i class="trash icon option-icons" @click="confirm(evento._id)"></i>
+              <i class="edit row link icon" @click="editarEvento(evento.activo, evento._id)"></i>
+              <i class="trash link icon" @click="confirm(evento._id)"></i>
             </td>
           </tr>
 
@@ -100,9 +104,9 @@
             <td>{{moment(evento.fechaInicio).format("L")}}</td>
             <td>{{moment(evento.fechaFin).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row icon option-icons" :class="{disabled:!evento.activo}" @click="editarEvento(evento.activo, evento._id)"></i>
-              <i class="trash icon option-icons" :class="{disabled:!evento.activo}" @click="confirm(evento._id, evento.funcionario, evento.activo)"></i>
-              <i class="archive icon option-icons" :class="{disabled:!evento.activo}" @click="archivarVacaciones(evento._id, evento.funcionario, evento.activo)"></i>
+              <i class="edit row link icon" :class="{disabled:!evento.activo}" @click="editarEvento(evento.activo, evento._id)"></i>
+              <i class="trash link icon" :class="{disabled:!evento.activo}" @click="confirm(evento._id, evento.funcionario, evento.activo)"></i>
+              <i class="archive link icon" :class="{disabled:!evento.activo}" @click="archivarVacaciones(evento._id, evento.funcionario, evento.activo)"></i>
             </td>
           </tr>
         </tbody>

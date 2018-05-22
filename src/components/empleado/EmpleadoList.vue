@@ -51,8 +51,8 @@
             <td> {{empleado.cargaLaboral}}</td>
             <td> {{empleado.salario}}{{empleado.moneda}}</td>
             <td class="center aligned">
-              <i class="edit row icon option-icons" @click="guardarPaginacion(empleado._id)"></i>
-              <i class="trash icon option-icons" @click="confirm(empleado._id)"></i>
+              <i class="edit row link icon" @click="guardarPaginacion(empleado._id)"></i>
+              <i class="trash link icon" @click="confirm(empleado._id)"></i>
             </td>
           </tr>
 

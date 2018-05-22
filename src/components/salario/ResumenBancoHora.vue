@@ -86,6 +86,8 @@
                         <td>
                             <i class="checkmark box icon"></i>
                             <i class="remove icon"></i>
+                            <i class="money bill alternate outline icon"></i>
+                            <i class="clock outline icon"></i>
                         </td>
                     </tr>
                     <tr>

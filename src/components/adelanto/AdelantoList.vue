@@ -88,9 +88,9 @@
             <td>{{adelanto.nombreFuncionario}}</td>
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
             <td class="center aligned">
-              <i class="edit row icon option-icons" @click="editarAdelanto(adelanto._id)"></i>
-              <i class="trash icon option-icons" @click="confirm(adelanto._id)"></i>
-              <i class="print icon option-icons" @click="exportRecibo(adelanto._id)"></i>
+              <i class="edit row link icon" @click="editarAdelanto(adelanto._id)"></i>
+              <i class="trash link icon" @click="confirm(adelanto._id)"></i>
+              <i class="print link icon" @click="exportRecibo(adelanto._id)"></i>
             </td>
             <div class="print">
               <div :id="'recibo'+ adelanto._id" class="ui padded segments">
