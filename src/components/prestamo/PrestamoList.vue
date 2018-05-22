@@ -76,14 +76,11 @@
               <td>{{prestamo.nombreFuncionario}}</td>
               <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
               <td class="center aligned">
-                <i class="browser icon" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
+                <i class="browser icon option-icons" @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
               </td>
               <td class="center aligned">
-                <router-link :to="{name: 'editarPrestamo', params: { id: prestamo._id}}">
-                  <i class="edit row icon"></i>
-                </router-link>
-
-                <i class="trash icon" @click="confirm(prestamo._id)"></i>
+                <i class="edit row icon option-icons" @click="editarPrestamo(prestamo._id)"></i>
+                <i class="trash icon option-icons" @click="confirm(prestamo._id)"></i>
               </td>
 
             </tr>
@@ -201,6 +198,9 @@ export default {
     },
     incluirPrestamo() {
       this.$router.push({ name: "incluirPrestamo" });
+    },
+    editarPrestamo(prestamoId) {
+      this.$router.push({ name: "editarPrestamo", params: { id: prestamoId } });
     },
     consultarPrestamos(e) {
       if (e && e.keyEvent === 13) {

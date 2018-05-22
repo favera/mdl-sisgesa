@@ -88,12 +88,9 @@
             <td>{{adelanto.nombreFuncionario}}</td>
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
             <td class="center aligned">
-              <router-link :to="{name: 'editarAdelanto', params: { id: adelanto._id}}">
-                <i class="edit row icon"></i>
-              </router-link>
-
-              <i class="trash icon" @click="confirm(adelanto._id)"></i>
-              <i class="print icon" @click="exportRecibo(adelanto._id)"></i>
+              <i class="edit row icon option-icons" @click="editarAdelanto(adelanto._id)"></i>
+              <i class="trash icon option-icons" @click="confirm(adelanto._id)"></i>
+              <i class="print icon option-icons" @click="exportRecibo(adelanto._id)"></i>
             </td>
             <div class="print">
               <div :id="'recibo'+ adelanto._id" class="ui padded segments">
@@ -239,6 +236,9 @@ export default {
   methods: {
     incluirAdelanto() {
       this.$router.push({ name: "incluirAdelanto" });
+    },
+    editarAdelanto(adelantoId) {
+      this.$router.push({ name: "editarAdelanto", params: { id: adelantoId } });
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;

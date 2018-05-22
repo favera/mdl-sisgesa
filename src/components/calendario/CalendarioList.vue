@@ -63,12 +63,8 @@
             <td>{{evento.motivoFeriado}}</td>
             <td>{{moment(evento.fechaFeriado).format("L")}}</td>
             <td class="center aligned">
-              <router-link :to="{name: 'editarEvento', params: { id: evento._id}}">
-                <i class="edit row icon"></i>
-              </router-link>
-
-              <i class="trash icon" @click="confirm(evento._id)"></i>
-
+              <i class="edit row icon option-icons" @click="editarEvento(evento.activo, evento._id)"></i>
+              <i class="trash icon option-icons" @click="confirm(evento._id)"></i>
             </td>
           </tr>
 
@@ -104,7 +100,7 @@
             <td>{{moment(evento.fechaInicio).format("L")}}</td>
             <td>{{moment(evento.fechaFin).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row icon option-icons" :class="{disabled:!evento.activo}" @click="editarEvento(evento.activo)"></i>
+              <i class="edit row icon option-icons" :class="{disabled:!evento.activo}" @click="editarEvento(evento.activo, evento._id)"></i>
               <i class="trash icon option-icons" :class="{disabled:!evento.activo}" @click="confirm(evento._id, evento.funcionario, evento.activo)"></i>
               <i class="archive icon option-icons" :class="{disabled:!evento.activo}" @click="archivarVacaciones(evento._id, evento.funcionario, evento.activo)"></i>
             </td>
@@ -148,9 +144,9 @@ export default {
     incluirEvento() {
       this.$router.push({ name: "incluirEvento" });
     },
-    editarEvento(eventoActivo) {
+    editarEvento(eventoActivo, eventId) {
       if (eventoActivo) {
-        this.$router.push({ name: "editarEvento", params: { id: evento._id } });
+        this.$router.push({ name: "editarEvento", params: { id: eventId } });
       }
     },
     pageOneChanged(pageNum) {

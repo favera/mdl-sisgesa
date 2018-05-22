@@ -19,9 +19,7 @@
             <a class="icon item" @click="nuevaSucursal">
               <i class="plus icon"></i>
             </a>
-            <a class="icon item">
-              <i class="print icon"></i>
-            </a>
+
           </div>
 
         </div>
@@ -38,7 +36,7 @@
             <th>Horario Entrada</th>
             <th>Horario Salida</th>
             <th>Telefono</th>
-            <th>Opciones</th>
+            <th class="center aligned">Opciones</th>
           </tr>
         </thead>
 
@@ -48,12 +46,9 @@
             <td>{{sucursal.horaEntrada + " hs"}}</td>
             <td>{{sucursal.horaSalida + " hs"}}</td>
             <td>{{sucursal.telefono}}</td>
-            <td>
-              <router-link :to="{name: 'editarSucursal', params: {id: sucursal._id}}">
-                <i class="edit row icon"></i>
-              </router-link>
-
-              <i class="trash icon" @click="confirm(sucursal._id)"></i>
+            <td class="center aligned">
+              <i class="edit row icon option-icons" @click="editarSucursal(sucursal._id)"></i>
+              <i class="trash icon option-icons" @click="confirm(sucursal._id)"></i>
             </td>
           </tr>
         </tbody>
@@ -93,6 +88,9 @@ export default {
   methods: {
     nuevaSucursal() {
       this.$router.push({ name: "incluirSucursal" });
+    },
+    editarSucursal(sucursalId) {
+      this.$router.push({ name: "editarSucursal", params: { id: sucursalId } });
     },
     confirm(id) {
       this.$confirm(
