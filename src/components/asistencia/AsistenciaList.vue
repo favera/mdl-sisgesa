@@ -281,8 +281,7 @@ export default {
       pageOne: {
         currentPage: 1,
         totalItems: 0,
-        itemsPerPage: 10,
-        test: 1
+        itemsPerPage: 10
       },
       json_fields: {
         funcionario: "Funcionario",

@@ -5,29 +5,34 @@
             <div class="header"> Incluir Periodo para Planilla de Salario </div>
             <div class="content">
 
-                <form class="ui form">
+                <form class="ui form" @submit.prevent="includePeriod">
                     <div class="required field">
                         <label>Seleccione Mes</label>
-                        <div class="field">
-                            <el-date-picker type="month" placeholder="Seleccionar Mes" v-model="salaryData.month" format="MMMM">
+                        <div class="field" :class="{error: errors.has('monthPeriod')}">
+                            <el-date-picker name="monthPeriod" data-vv-as="mes" v-validate="'required'" type="month" placeholder="Seleccionar Mes" v-model="salaryData.month" format="MMMM">
                             </el-date-picker>
+                            <div class="info-error" v-show="errors.has('monthPeriod')">{{errors.first('monthPeriod')}}</div>
                         </div>
                     </div>
                     <div class="required field">
                         <label>Seleccione Año</label>
-                        <div class="field">
-                            <el-date-picker type="yaer" palceholder="Seleccionar Año" v-model="salaryData.year" format="YYYY"></el-date-picker>
+                        <div class="field" :class="{error: errors.has('yearPeriod')}">
+                            <el-date-picker name="yearPeriod" data-vv-as="año" v-validate="'required'" type="year" placeholder="Seleccionar Año" v-model="salaryData.year" format="yyyy"></el-date-picker>
+                            <div class="info-error" v-show="errors.has('yearPeriod')">{{errors.first('yearPeriod')}}</div>
                         </div>
                     </div>
+
+                    <div class="actions">
+
+                        <button class="ui teal button">Aceptar</button>
+                        <div class="ui deny button">Cancelar</div>
+
+                    </div>
+
                 </form>
 
             </div>
-            <div class="actions">
 
-                <button class="ui positive teal button" @click="saveSalaryData">Aceptar</button>
-                <div class="ui deny button">Cancelar</div>
-
-            </div>
         </div>
 
         <div class="ui form">
@@ -58,7 +63,7 @@
                     <div class="ui right floated main menu">
                         <a class="icon item">
 
-                            <i class="plus icon"></i>
+                            <i class="plus icon" @click="abrirModal()"></i>
 
                         </a>
                     </div>
@@ -81,12 +86,12 @@
 
                     <tbody>
 
-                        <tr>
-                            <td>{{payroll.month}} - {{payroll.year}}</td>
-                            <td>{{payroll.status}}</td>
+                        <tr v-for="payment in payroll" :key="payment._id">
+                            <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
+                            <td>{{payment.status}}</td>
                             <td class="center aligned">
-                                <i class="zoom link icon" @click="detallePlanilla"></i>
-                                <i class="plus link  icon"></i>
+                                <i class="zoom link icon" @click="detallePlanilla(payment._id)"></i>
+                                <i class="plus link  icon" @click="detallePlanilla(payment._id)"></i>
                                 <i class="edit link icon"></i>
                                 <i class="checkmark box link icon"></i>
                                 <i class="trash link icon"></i>
@@ -94,6 +99,14 @@
                         </tr>
 
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3">
+                                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged"></app-pagination>
+                            </th>
+                        </tr>
+
+                    </tfoot>
                 </table>
 
             </div>
@@ -107,6 +120,8 @@
 
 <script>
 import moment from "moment";
+import Pagination from ".././shared/Pagination.vue";
+
 export default {
   data() {
     return {
@@ -114,7 +129,13 @@ export default {
         month: null,
         year: null
       },
+      pageOne: {
+        currentPage: 1,
+        totalItems: 0,
+        itemsPerPage: 10
+      },
       payroll: [],
+      modal: null,
       salaryData: {
         month: null,
         year: null,
@@ -123,29 +144,60 @@ export default {
       }
     };
   },
+  components: {
+    appPagination: Pagination
+  },
   methods: {
-    detallePlanilla() {
+    pageOneChanged() {},
+    detallePlanilla(paymentId) {
       this.$router.push({
         name: "detallePlanilla",
+        params: { id: paymentId },
         props: { enableView: true }
       });
     },
-    listPayroll() {
-      this.$http.get("/salarios").then(response => {
-        console.log(response);
-        this.payroll = response.data.docs;
+    getSalaryData() {
+      this.$validator.validateAll().then(() => {
+        this.$http
+          .get(
+            `/salarios?page=${this.pageOne.currentPage}&limit=${
+              this.pageOne.itemsPerPage
+            }`
+          )
+          .then(response => {
+            console.log(response);
+            this.payroll = response.data.docs;
+          });
       });
+    },
+    includePeriod() {
+      this.saveSalaryData();
+      this.getSalaryData();
     },
     saveSalaryData() {
       this.$http
-        .post("/add/period", this.saveSalaryData)
+        .post("/salarios/add/period", this.salaryData)
         .then(response => {
           console.log(response);
         })
         .catch(err => console.log(err));
+    },
+    abrirModal() {
+      this.modal
+        .modal("setting", { observeChanges: true })
+        .modal("show")
+        .modal("refresh");
     }
   },
-  created() {}
+  mounted() {
+    this.modal = $(this.$el).find(".ui.longer.modal");
+    $(this.$el)
+      .find(".ui.dropdown")
+      .dropdown();
+  },
+  created() {
+    this.getSalaryData();
+  }
 };
 </script>
 
