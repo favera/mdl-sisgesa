@@ -30,7 +30,7 @@
             </div>
 
             <div class="field" v-show="fechaInicio != null">
-              <i class="large circle remove grey icon"></i>
+              <i class="large circle remove link grey icon"></i>
             </div>
 
             <!-- <div class="field">
