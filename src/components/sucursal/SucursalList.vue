@@ -4,12 +4,16 @@
     <div class="ui form">
       <h4 class="ui dividing header">Listado de Sucursales</h4>
       <div class="two fields">
-        <div class="field">
-
-          <div class="ui icon input">
-            <input type="text" placeholder="Buscar Sucursal.." v-model="search">
-            <i class="inverted teal circular search link icon"></i>
+        <div class="inline fields">
+          <div class="ui ten wide field">
+            <div class="ui icon input">
+              <input type="text" placeholder="Buscar Sucursal.." v-model="search">
+            </div>
           </div>
+
+          <button class="ui circular teal icon button">
+            <i class="search icon"></i>
+          </button>
 
         </div>
 

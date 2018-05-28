@@ -11,7 +11,7 @@
               <div class="ui icon input">
                 <input type="text" v-model="query.busqueda" @keydown="consultarEventos" placeholder="Buscar Evento...">
                 <!-- <i @click="consultarEventos" class="inverted teal circular search link icon"></i> -->
-                <i class="close link icon" v-show="busqueda"></i>
+                <i class="close link icon" v-show="query.busqueda" @click="cleanField()"></i>
               </div>
               <button class="ui circular teal icon button" @click="consultarEventos">
                 <i class="search icon"></i>
@@ -145,6 +145,10 @@ export default {
     };
   },
   methods: {
+    cleanField() {
+      this.query.busqueda = null;
+      this.obtenerListadoEventos();
+    },
     incluirEvento() {
       this.$router.push({ name: "incluirEvento" });
     },

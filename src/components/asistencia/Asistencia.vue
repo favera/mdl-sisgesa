@@ -1,49 +1,60 @@
 <template>
   <div class="ui twelve wide column">
-    <div class="ui form">
+    <form class="ui form" @submit.prevent="guardarMarcacion">
       <div class="ui dividing header">Registrar Asistencia</div>
-      <div class="five wide field">
-        <label for="">Fecha:</label>
-        <el-date-picker v-model="marcacion.fecha" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-        </el-date-picker>
+      <div class="five wide required field">
+        <label for="">Fecha</label>
+        <div class="field" :class="{error:errors.has('attDate')}">
+          <el-date-picker name="attDate" data-vv-as="fecha" v-validate="'required'" v-model="marcacion.fecha" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+          </el-date-picker>
+          <div class="info-error" v-show="errors.has('attDate')">{{errors.first('attDate')}}</div>
+        </div>
       </div>
 
       <div class="two fields">
-        <div class="six wide field">
-          <label for="">Funcionario:</label>
-          <select name="funcionarios" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector">
-            <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
-          </select>
+        <div class="six wide required field">
+          <label for="">Funcionario</label>
+          <div class="field" :class="{error: errors.has('attEmployee')}">
+            <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector">
+              <option disabled value="">Seleccionar Funcionario..</option>
+              <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+            </select>
+            <span class="info-error" v-show="errors.has('attEmployee')">{{errors.first('attEmployee')}}</span>
+          </div>
         </div>
-
       </div>
 
       <div class="fields">
-        <div class="field">
-          <label for="">Marcacion Entrada:</label>
-          <el-time-picker v-model="marcacion.entrada" value-format="HH:mm" format="HH:mm" :picker-options="{
+        <div class="required field">
+          <label for="">Marcacion Entrada</label>
+          <div class="field" :class="{error: errors.has('attEntry')}">
+            <el-time-picker name="attEntry" data-vv-as="marcación entrada" v-validate="'required'" v-model="marcacion.entrada" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Seleccionar hora">
-          </el-time-picker>
-        </div>
-        <div class="field">
-          <label for="">Marcacion Salida</label>
-          <el-time-picker v-model="marcacion.salida" value-format="HH:mm" format="HH:mm" :picker-options="{
-                    format: 'HH:mm'
-                    }" placeholder="Seleccionar hora">
-          </el-time-picker>
+            </el-time-picker>
+            <div class="info-error" v-show="errors.has('attEntry')">{{errors.first('attEntry')}}</div>
+          </div>
         </div>
 
+        <div class="required field">
+          <label for="">Marcacion Salida</label>
+          <div class="field" :class="{error: errors.has('attExit')}">
+            <el-time-picker name="attExit" data-vv-as="marcación salida" v-validate="'required'" v-model="marcacion.salida" value-format="HH:mm" format="HH:mm" :picker-options="{
+                    format: 'HH:mm'
+                    }" placeholder="Seleccionar hora">
+            </el-time-picker>
+            <div class="info-error" v-show="errors.has('attExit')">{{errors.first('attExit')}}</div>
+          </div>
+        </div>
       </div>
 
       <div class="ten wide field">
-        <label for="">Observacion:</label>
+        <label for="">Observacion</label>
         <textarea name="" id="" rows="2" v-model="marcacion.observacion"></textarea>
       </div>
-      <div class="ui teal button" @click="guardarMarcacion">Guardar</div>
+      <button class="ui teal button">Guardar</button>
       <div class="ui button" @click="cancelar">Cancelar</div>
-    </div>
+    </form>
   </div>
 </template>
 <script>
@@ -72,81 +83,89 @@ export default {
   },
   methods: {
     guardarMarcacion() {
-      console.log("ID", this.$route.params.id);
-      if (typeof this.$route.params.id !== "undefined") {
-        console.log("id", this.$route.params.id);
-        this.marcacion.funcionario = this.funcionarioSeleccionado;
-        this.marcacion.nombreFuncionario = this.getNombreFuncionario(
-          this.funcionarioSeleccionado
-        );
-        this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
-          this.marcacion.entrada,
-          this.marcacion.salida
-        );
-        this.marcacion.horasFaltantes = this.getHorasFaltantes(
-          this.marcacion.funcionario,
-          this.marcacion.entrada,
-          this.marcacion.salida,
-          this.marcacion.fecha
-        );
-        this.marcacion.horasExtras = this.getHorasExtras(
-          this.marcacion.funcionario,
-          this.marcacion.entrada,
-          this.marcacion.salida,
-          this.marcacion.fecha
-        );
-        this.marcacion.estilo.ausente = false;
-        this.marcacion.estilo.vacaciones = false;
-        this.marcacion.estilo.incompleto = false;
+      this.$validator
+        .validateAll()
+        .then(() => {
+          if (this.$route.params.id) {
+            this.marcacion.funcionario = this.funcionarioSeleccionado;
+            this.marcacion.nombreFuncionario = this.getNombreFuncionario(
+              this.funcionarioSeleccionado
+            );
+            this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
+              this.marcacion.entrada,
+              this.marcacion.salida
+            );
+            this.marcacion.horasFaltantes = this.getHorasFaltantes(
+              this.marcacion.funcionario,
+              this.marcacion.entrada,
+              this.marcacion.salida,
+              this.marcacion.fecha
+            );
+            this.marcacion.horasExtras = this.getHorasExtras(
+              this.marcacion.funcionario,
+              this.marcacion.entrada,
+              this.marcacion.salida,
+              this.marcacion.fecha
+            );
+            this.marcacion.estilo.ausente = false;
+            this.marcacion.estilo.vacaciones = false;
+            this.marcacion.estilo.incompleto = false;
 
-        console.log(JSON.stringify(this.marcacion));
+            console.log(JSON.stringify(this.marcacion));
 
-        this.$http
-          .put(`/asistencias/update/${this.$route.params.id}`, this.marcacion)
-          .then(response => {
-            console.log(response);
-            this.success();
-            this.cancelar();
-          })
-          .catch(e => console.log(e));
-      } else {
-        console.log(this.marcacion.fecha);
-        this.marcacion.funcionario = this.funcionarioSeleccionado;
-        this.marcacion.nombreFuncionario = this.getNombreFuncionario(
-          this.funcionarioSeleccionado
-        );
-        this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
-          this.marcacion.entrada,
-          this.marcacion.salida
-        );
-        this.marcacion.horasFaltantes = this.getHorasFaltantes(
-          this.marcacion.funcionario,
-          this.marcacion.entrada,
-          this.marcacion.salida,
-          this.marcacion.fecha
-        );
-        this.marcacion.horasExtras = this.getHorasExtras(
-          this.marcacion.funcionario,
-          this.marcacion.entrada,
-          this.marcacion.salida,
-          this.marcacion.fecha
-        );
+            this.$http
+              .put(
+                `/asistencias/update/${this.$route.params.id}`,
+                this.marcacion
+              )
+              .then(response => {
+                console.log(response);
+                this.success();
+                this.cancelar();
+              })
+              .catch(e => console.log(e));
+          } else {
+            console.log(this.marcacion.fecha);
+            this.marcacion.funcionario = this.funcionarioSeleccionado;
+            this.marcacion.nombreFuncionario = this.getNombreFuncionario(
+              this.funcionarioSeleccionado
+            );
+            this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
+              this.marcacion.entrada,
+              this.marcacion.salida
+            );
+            this.marcacion.horasFaltantes = this.getHorasFaltantes(
+              this.marcacion.funcionario,
+              this.marcacion.entrada,
+              this.marcacion.salida,
+              this.marcacion.fecha
+            );
+            this.marcacion.horasExtras = this.getHorasExtras(
+              this.marcacion.funcionario,
+              this.marcacion.entrada,
+              this.marcacion.salida,
+              this.marcacion.fecha
+            );
 
-        this.marcacion.estilo.ausente = false;
-        this.marcacion.estilo.vacaciones = false;
-        this.marcacion.estilo.incompleto = false;
+            this.marcacion.estilo.ausente = false;
+            this.marcacion.estilo.vacaciones = false;
+            this.marcacion.estilo.incompleto = false;
 
-        console.log(JSON.stringify(this.marcacion));
+            console.log(JSON.stringify(this.marcacion));
 
-        this.$http
-          .post(`/asistencias/add`, this.marcacion)
-          .then(response => {
-            console.log(response);
-            this.success();
-            this.cancelar();
-          })
-          .catch(e => console.log(e));
-      }
+            this.$http
+              .post(`/asistencias/add`, this.marcacion)
+              .then(response => {
+                console.log(response);
+                this.success();
+                this.cancelar();
+              })
+              .catch(e => console.log(e));
+          }
+        })
+        .catch(err => {
+          this.fail();
+        });
     },
     getNombreFuncionario(id) {
       var nombre;

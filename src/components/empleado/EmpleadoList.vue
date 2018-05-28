@@ -3,12 +3,17 @@
     <div class="ui form">
       <h4 class="ui dividing header">Listado de Funcionarios</h4>
       <div class="two fields">
-        <div class="field">
-
-          <div class="ui icon input">
-            <input v-model="search" type="text" placeholder="Buscar Funcionario..." @keydown="consultarEmpleado">
-            <i @click="consultarEmpleado()" class="inverted teal circular search link icon"></i>
+        <div class="inline fields">
+          <div class="ten wide field">
+            <div class="ui icon input">
+              <input v-model="search" type="text" placeholder="Buscar Funcionario..." @keydown="consultarEmpleado">
+              <i @click="cleanField()" v-show="search" class="close link icon"></i>
+            </div>
           </div>
+
+          <button class="ui circular teal icon button" @click="consultarEmpleado">
+            <i class="search icon"></i>
+          </button>
 
         </div>
 
@@ -98,6 +103,10 @@ export default {
   methods: {
     sortName() {
       this.sortNameParam = this.sortNameParam * -1;
+    },
+    cleanField() {
+      this.search = null;
+      this.obtenerListadoEmpleado();
     },
     consultarEmpleado(e) {
       if (e && e.keyCode === 13) {

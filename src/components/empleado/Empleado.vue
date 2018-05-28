@@ -352,6 +352,9 @@ export default {
         .find(".ui.dropdown")
         .dropdown("refresh")
         .dropdown("set selected", this.sucursalSeleccionada);
+    },
+    "empleado.nroCedula": function(value) {
+      return value.toLocaleString();
     }
   },
   directives: { money: VMoney }
