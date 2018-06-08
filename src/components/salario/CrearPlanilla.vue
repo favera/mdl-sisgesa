@@ -90,8 +90,8 @@
                             <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
                             <td>{{payment.status}}</td>
                             <td class="center aligned">
-                                <i class="zoom link icon" @click="detallePlanilla(payment._id)"></i>
-                                <i class="plus link  icon" @click="editarPlanilla(payment._id)"></i>
+                                <i class="zoom link icon" @click="detallePlanilla(payment._id, payment.month, payment.year)"></i>
+                                <i class="plus link  icon" @click="editarPlanilla(payment._id, payment.month, payment.year)"></i>
                                 <i class="edit link icon"></i>
                                 <i class="checkmark box link icon"></i>
                                 <i class="trash link icon"></i>
@@ -149,16 +149,26 @@ export default {
   },
   methods: {
     pageOneChanged() {},
-    detallePlanilla(paymentId) {
+    detallePlanilla(paymentId, month, year) {
       this.$router.push({
         name: "detallePlanilla",
-        params: { id: paymentId, enableView: false }
+        params: {
+          id: paymentId,
+          enableView: false,
+          monthPayment: moment(month).get("month"),
+          yearPayment: moment(month).get("year")
+        }
       });
     },
-    editarPlanilla(paymentId) {
+    editarPlanilla(paymentId, month, year) {
       this.$router.push({
         name: "detallePlanilla",
-        params: { id: paymentId, enableView: true }
+        params: {
+          id: paymentId,
+          enableView: true,
+          monthPayment: moment(month).get("month"),
+          yearPayment: moment(month).get("year")
+        }
       });
     },
     getSalaryData() {

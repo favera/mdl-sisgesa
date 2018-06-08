@@ -52,7 +52,7 @@
           <div class="ui right floated main menu">
             <a class="icon item">
               <i class="icons">
-                <i class="file icon"></i>
+                <i class="file icon" @click="getResumen"></i>
                 <i class="bottom left corner inverted refresh icon"></i>
               </i>
               <!-- <i class="file outline icon"></i> -->
@@ -82,16 +82,15 @@
           <thead>
             <tr>
               <th>Funcionario</th>
-              <th>Hs. del Mes</th>
-              <th>Hs. Trabajadas</th>
               <th>Banco de Hs</th>
               <th>Retrasos</th>
+              <th>Ausencias</th>
               <th>Salario Base</th>
               <th>IPS</th>
-              <th>Descuentos Ausencias</th>
-              <th>Hs. Extras</th>
               <th>Adelantos</th>
               <th>Prestamos</th>
+              <th>Descuentos Ausencias + Retrasos</th>
+              <th>Hs. Extras</th>
               <th>Salario Neto</th>
               <th>Opciones</th>
 
@@ -100,28 +99,33 @@
 
           <tbody>
 
-            <tr v-for="resultado in marcacionesEmpleado" :key="resultado.nombre">
+            <tr v-for="resultado in resultadoTotal" :key="resultado.nombre">
               <td>{{resultado.nombre}}</td>
-              <td>{{resultado.hmformat }}</td>
-              <td>{{resultado.htformat}}</td>
-              <td>{{resultado.heformat}}</td>
-              <td>{{resultado.horasExtras}}</td>
-              <!-- <td>{{resultado.horasExtrasNocturnas}}</td> -->
-              <td>{{resultado.salarioBase}} {{resultado.moneda}}</td>
-              <td>{{resultado.valorHoraExtra}} {{resultado.moneda}}</td>
-              <td>{{resultado.valorAusencias}}</td>
-              <td>{{resultado.salarioNeto}} {{resultado.moneda}}</td>
+              <td>{{resultado.totalExtras }} Min</td>
+              <td>{{resultado.retrasos}} Min</td>
+              <td>{{resultado.ausencias}} dias</td>
+              <td>{{resultado.salario}}</td>
+              <td>{{returnNegative(resultado.ips)}} </td>
+              <td>{{returnNegative(resultado.adelanto)}}</td>
+              <td></td>
+              <td>{{formatRetrasos(resultado.descuentos)}}</td>
+              <td></td>
+              <td></td>
+              <td>
+                <i class="history icon"></i>
+                <i class="money bill alternate outline icon"></i>
+              </td>
 
             </tr>
 
           </tbody>
         </table>
-        <div v-show="loading" class="ui segment large">
+        <!-- <div v-show="loading" class="ui segment large">
           <div class="ui active inverted dimmer">
             <div class="ui large text loader">Loading</div>
           </div>
 
-        </div>
+        </div> -->
 
       </div>
 
@@ -138,6 +142,12 @@ export default {
   props: {
     enableView: {
       type: Boolean
+    },
+    monthPayment: {
+      type: Number
+    },
+    yearPayment: {
+      type: Number
     }
   },
   data() {
@@ -147,8 +157,11 @@ export default {
       feriados: [],
       marcaciones: [],
       empleados: [],
+      eventos: [],
+      resultadoTotal: [],
       diasTrabajados: null,
       marcacionesEmpleado: [],
+      adelantos: [],
       loading: true,
       sucursales: [],
       feriadoSucursal: [],
@@ -177,6 +190,27 @@ export default {
     };
   },
   methods: {
+    formatRetrasos(valor) {
+      return Math.floor(valor * -1).toLocaleString();
+    },
+    formatDate(month, year) {
+      var date = moment()
+        .set({ year: year, month: month })
+        .format();
+      this.fechaInicio = moment(date)
+        .startOf("month")
+        .format();
+      this.fechaFin = moment(date)
+        .endOf("month")
+        .format();
+    },
+    returnNegative(value) {
+      if (value) {
+        value = value * -1;
+        return value.toLocaleString();
+      }
+      return null;
+    },
     limpiarCampos() {
       this.fechaInicio = null;
       this.fechaFin = null;
@@ -197,6 +231,216 @@ export default {
       console.log("Fecha" + fecha);
       console.log("Dias Mes" + moment(fecha).daysInMonth());
       return moment(fecha).daysInMonth() - domingos;
+    },
+    getAttendance() {
+      this.$http
+        .get(
+          `/asistencias/full-list?inicio=${this.fechaInicio}&fin=${
+            this.fechaFin
+          }`
+        )
+        .then(response => {
+          this.marcaciones = response.data;
+        });
+    },
+    async getResumen() {
+      const advancePromise = this.$http.get(
+        `/adelantos/monthly-advance?inicio=${this.fechaInicio}&fin=${
+          this.fechaFin
+        }`
+      );
+      const eventsPromise = this.$http.get(
+        `/eventos/full-list?inicio=${this.fechaInicio}&fin=${this.fechaFin}`
+      );
+      const attendacePromise = this.$http.get(
+        `/asistencias/full-list?inicio=${this.fechaInicio}&fin=${this.fechaFin}`
+      );
+
+      const [advance, event, attendance] = await Promise.all([
+        advancePromise,
+        eventsPromise,
+        attendacePromise
+      ]);
+      // console.log(employee.data, event.data, attendance.data);
+      // this.empleados = employee.data;
+      this.eventos = event.data;
+      this.marcaciones = attendance.data;
+      this.adelantos = advance.data;
+
+      // debugger;
+      this.marcaciones.forEach(marcacion => {
+        var index = -1,
+          funcionarioExists;
+        if (this.resultadoTotal.length > 0) {
+          index = this.resultadoTotal.findIndex(element => {
+            // debugger;
+            if (element.funcionarioId === marcacion.funcionario._id) {
+              return true;
+            }
+            return false;
+          });
+        }
+
+        console.log("Indice", index);
+        funcionarioExists = index != -1;
+
+        if (funcionarioExists) {
+          if (marcacion.estilo.ausente) {
+            this.resultadoTotal[index].ausencias += 1;
+            console.log(
+              "Desde Array antes de la suma",
+              this.resultadoTotal[index].descuentos
+            );
+            this.resultadoTotal[index].descuentos += Math.round(
+              parseInt(marcacion.funcionario.salario.split(".").join("")) / 26
+            );
+            console.log(
+              "Pos Array pos suma",
+              this.resultadoTotal[index].descuentos
+            );
+          }
+
+          if (marcacion.estilo.incompleto) {
+            this.resultadoTotal[index].incompleto += 1;
+          }
+
+          if (marcacion.estilo.vacaciones) {
+            this.resultadoTotal[index].totalVacaciones += 1;
+          }
+
+          if (marcacion.horasExtras) {
+            console.log("HORA EXTRA", marcacion.horasExtras);
+            this.resultadoTotal[index].totalExtras += moment
+              .duration(marcacion.horasExtras, "HH:mm")
+              .asMinutes();
+          }
+          console.log("Horas Faltantes", marcacion.horasFaltantes);
+          if (marcacion.horasFaltantes) {
+            this.resultadoTotal[index].retrasos += moment
+              .duration(marcacion.horasFaltantes, "HH:mm")
+              .asMinutes();
+            console.log(
+              "Descuentos pre horas faltantes",
+              this.resultadoTotal[index].descuentos
+            );
+            this.resultadoTotal[index].descuentos -=
+              moment.duration(marcacion.horasFaltantes, "HH:mm").asMinutes() *
+              marcacion.funcionario.salarioMinuto;
+            console.log(
+              "Descuentos pos horas Faltantes",
+              this.resultadoTotal[index].descuentos
+            );
+          }
+
+          if (
+            marcacion.horasTrabajadas &&
+            marcacion.horasTrabajadas.localeCompare("00:00")
+          ) {
+            this.resultadoTotal[index].totalTrabajado += moment
+              .duration(marcacion.horasTrabajadas, "HH:mm")
+              .asMinutes();
+            this.resultadoTotal[index].totalDiasTrabajados += 1;
+          }
+        } else {
+          var totalMes = {};
+          totalMes.descuentos = 0;
+          totalMes.funcionarioId = marcacion.funcionario._id;
+
+          if (marcacion.estilo.ausente) {
+            totalMes.ausencias = 1;
+
+            totalMes.descuentos += Math.round(
+              parseInt(marcacion.funcionario.salario.split(".").join("")) / 26
+            );
+          } else {
+            totalMes.ausencias = 0;
+          }
+
+          if (marcacion.estilo.incompleto) {
+            totalMes.totalIncompleto = 1;
+          } else {
+            totalMes.totalIncompleto = 0;
+          }
+
+          if (marcacion.estilo.vacaciones) {
+            totalMes.totalVacaciones = 1;
+          } else {
+            totalMes.totalVacaciones = 0;
+          }
+
+          if (marcacion.horasExtras) {
+            totalMes.totalExtras = moment
+              .duration(marcacion.horasExtras, "HH:mm")
+              .asMinutes();
+          } else {
+            totalMes.totalExtras = 0;
+          }
+
+          if (marcacion.horasFaltantes) {
+            totalMes.retrasos = moment
+              .duration(marcacion.horasFaltantes, "HH:mm")
+              .asMinutes();
+            totalMes.descuentos -=
+              totalMes.retrasos * marcacion.funcionario.salarioMinuto;
+          } else {
+            totalMes.retrasos = 0;
+          }
+
+          if (
+            marcacion.horasTrabajadas &&
+            marcacion.horasTrabajadas.localeCompare("00:00")
+          ) {
+            totalMes.totalTrabajado = moment
+              .duration(marcacion.horasTrabajadas, "HH:mm")
+              .asMinutes();
+            totalMes.totalDiasTrabajados = 1;
+            console.log("Dias Trabajados", totalMes.totalDiasTrabajados);
+          } else {
+            totalMes.totalDiasTrabajados = 0;
+            totalMes.totalTrabajado = 0;
+          }
+
+          totalMes.nombre = marcacion.funcionario.nombre;
+          totalMes.salario = marcacion.funcionario.salario;
+          totalMes.salarioMinuto = marcacion.funcionario.salarioMinuto;
+
+          if (marcacion.funcionario.ips === "salario") {
+            totalMes.ips = Math.round(
+              parseInt(marcacion.funcionario.salario.split(".").join("")) * 0.09
+            );
+          }
+
+          var adelantoFunc = this.adelantos.filter(
+            adelanto => adelanto.funcionario === marcacion.funcionario._id
+          );
+
+          if (adelantoFunc.length > 0) {
+            totalMes.adelanto = adelantoFunc.reduce(function(valor, adelanto) {
+              return valor + parseInt(adelanto.monto.split(".").join(""));
+            }, 0);
+          } else {
+            totalMes.adelanto = null;
+          }
+
+          this.resultadoTotal.push(totalMes);
+          // totalMes.totalMes =
+          //   this.getDiasMes() - this.getFeriados() - totalMes.totalVacaciones;
+        }
+      });
+    },
+    getEmployees() {
+      this.$http.get(`/funcionarios/full-list`).then(response => {
+        this.funcionarios = response.data;
+      });
+    },
+    getEvents() {
+      this.$http
+        .get(
+          `/eventos/full-list?inicio=${this.fechaInicio}&fin=${this.fechaFin}`
+        )
+        .then(response => {
+          this.eventos = response.data;
+        });
     },
     //Hacer un arrayfilter funcionario donde sera un array de los datos de un solo funcionario
     //del array resultante sumar horas trabajadas, sumar horas extras, calcular descuento u hora extra
@@ -326,7 +570,7 @@ export default {
                 marcacionEmpleado.valorHoraExtraAlternativa * 2;
             }
 
-            marcacionEmpleado.salarioNetoAlternativo = Math.floor(
+            marcacionEmpleado.salarioNetoAlternativo = Math.round(
               parseInt(marcacionEmpleado.salarioBase.split(".").join("")) +
                 marcacionEmpleado.valorHoraExtraAlternativa
             ).toLocaleString();
@@ -513,7 +757,9 @@ export default {
       );
     }
   },
-
+  created() {
+    this.formatDate(this.monthPayment, this.yearPayment);
+  },
   mounted() {
     // axios.get(url + "/feriados").then(response => {
     //   var feriados = response.data;

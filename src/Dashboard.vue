@@ -124,8 +124,9 @@ export default {
     },
     generateResume() {
       for (const funcionario of this.funcionarios) {
-        var datosMes = this.marcaciones.filter(marcacion => {
-          return marcacion.funcionario === funcionario._id;
+        var datosMes = this.marcaciones.filter(function(marcacion) {
+          debugger;
+          return marcacion.funcionario.id === funcionario._id;
         });
 
         console.log(JSON.stringify(datosMes));
@@ -305,9 +306,9 @@ export default {
     }
   },
   created() {
-    this.obtenerMarcaciones();
     this.obtenerFuncionarios();
     this.obtenerEventos();
+    this.obtenerMarcaciones();
   }
 };
 </script>
