@@ -141,7 +141,9 @@ export default {
         year: null,
         status: "Pendiente",
         salaryDetail: []
-      }
+      },
+      dateStart: null,
+      dateEnd: null
     };
   },
   components: {
@@ -150,24 +152,61 @@ export default {
   methods: {
     pageOneChanged() {},
     detallePlanilla(paymentId, month, year) {
+      var mes = moment(month).get("month"),
+        anho = moment(year).get("year");
+      var date = moment()
+        .set({ year: anho, month: mes })
+        .format();
+      this.dateStart = moment(date)
+        .startOf("month")
+        .format();
+      this.dateEnd = moment(date)
+        .endOf("month")
+        .format();
+
       this.$router.push({
         name: "detallePlanilla",
         params: {
           id: paymentId,
           enableView: false,
-          monthPayment: moment(month).get("month"),
-          yearPayment: moment(month).get("year")
+          dateStart: this.dateStart,
+          dateEnd: this.dateEnd
         }
       });
     },
+    formatDate(month, year) {
+      var mes = moment(month).get("month"),
+        anho = moment(year).get("year");
+      var date = moment()
+        .set({ year: anho, month: mes })
+        .format();
+      this.dateStart = moment(date)
+        .startOf("month")
+        .format();
+      this.dateEnd = moment(date)
+        .endOf("month")
+        .format();
+    },
     editarPlanilla(paymentId, month, year) {
+      var mes = moment(month).get("month"),
+        anho = moment(year).get("year");
+      var date = moment()
+        .set({ year: anho, month: mes })
+        .format();
+      this.dateStart = moment(date)
+        .startOf("month")
+        .format();
+      this.dateEnd = moment(date)
+        .endOf("month")
+        .format();
+
       this.$router.push({
         name: "detallePlanilla",
         params: {
           id: paymentId,
           enableView: true,
-          monthPayment: moment(month).get("month"),
-          yearPayment: moment(month).get("year")
+          dateStart: this.dateStart,
+          dateEnd: this.dateEnd
         }
       });
     },

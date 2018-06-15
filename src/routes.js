@@ -155,7 +155,8 @@ export const routes = [
       {
         path: "/resumen-banco-hora",
         component: ResumenBancoHora,
-        name: "resumenBancoHora"
+        name: "resumenBancoHora",
+        props: true
       }
     ]
   }

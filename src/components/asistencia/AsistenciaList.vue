@@ -616,7 +616,7 @@ export default {
         }
       } else {
         if (verFecha.getDay() === 0 || diaFeriado !== -1) {
-          horasExtras = "00:00";
+          horasExtras = null;
 
           return horasExtras;
         } else {

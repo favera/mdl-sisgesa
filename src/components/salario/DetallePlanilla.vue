@@ -20,21 +20,21 @@
           <div class="inline fields">
 
             <div class="field">
-              <el-date-picker v-model="fechaInicio" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+              <el-date-picker v-model="dateStart" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker v-model="fechaFin" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+              <el-date-picker v-model="dateEnd" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
               </el-date-picker>
             </div>
 
-            <div class="field" v-show="fechaInicio != null">
+            <div class="field" v-show="dateStart != null">
               <i class="large circle remove link grey icon"></i>
             </div>
 
             <!-- <div class="field">
-              <div class="ui vertical teal button" @click="calcularSalario(fechaInicio, fechaFin)">
+              <div class="ui vertical teal button" @click="calcularSalario(dateStart, dateEnd)">
                 Generar Salario
               </div>
             </div>
@@ -99,33 +99,33 @@
 
           <tbody>
 
-            <tr v-for="resultado in resultadoTotal" :key="resultado.nombre">
+            <tr v-for="resultado in resultadoTotal" :key="resultado.funcionarioId">
               <td>{{resultado.nombre}}</td>
               <td>{{resultado.totalExtras }} Min</td>
               <td>{{resultado.retrasos}} Min</td>
               <td>{{resultado.ausencias}} dias</td>
-              <td>{{resultado.salario}}</td>
-              <td>{{returnNegative(resultado.ips)}} </td>
-              <td>{{returnNegative(resultado.adelanto)}}</td>
+              <td>{{resultado.salario}} {{resultado.moneda}}</td>
+              <td>{{returnNegative(resultado.ips, resultado.moneda)}} </td>
+              <td>{{returnNegative(resultado.adelanto, resultado.moneda)}} </td>
+              <td>{{returnNegative(resultado.prestamos, resultado.moneda)}}</td>
+              <td>{{formatRetrasos(resultado.descuentos)}} {{resultado.moneda}}</td>
               <td></td>
-              <td>{{formatRetrasos(resultado.descuentos)}}</td>
-              <td></td>
-              <td></td>
+              <td>{{calcularSalarioNeto(resultado.salario, resultado.ips, resultado.adelanto, resultado.prestamos, resultado.descuentos)}} {{resultado.moneda}}</td>
               <td>
-                <i class="history icon"></i>
-                <i class="money bill alternate outline icon"></i>
+                <i class="history link icon" @click="goToResumenHora(resultado.funcionarioId, resultado.nombre)"></i>
+                <i class="money bill alternate outline link icon"></i>
               </td>
 
             </tr>
 
           </tbody>
         </table>
-        <!-- <div v-show="loading" class="ui segment large">
+        <div v-show="loading" class="ui segment large">
           <div class="ui active inverted dimmer">
             <div class="ui large text loader">Loading</div>
           </div>
 
-        </div> -->
+        </div>
 
       </div>
 
@@ -143,21 +143,21 @@ export default {
     enableView: {
       type: Boolean
     },
-    monthPayment: {
-      type: Number
+    dateStart: {
+      type: String
     },
-    yearPayment: {
-      type: Number
+    dateEnd: {
+      type: String
     }
   },
   data() {
     return {
-      fechaInicio: null,
-      fechaFin: null,
+      // fechaInicio: null,
+      // fechaFin: null,
       feriados: [],
       marcaciones: [],
       empleados: [],
-      eventos: [],
+      prestamos: [],
       resultadoTotal: [],
       diasTrabajados: null,
       marcacionesEmpleado: [],
@@ -191,7 +191,7 @@ export default {
   },
   methods: {
     formatRetrasos(valor) {
-      return Math.floor(valor * -1).toLocaleString();
+      return Math.round(valor * -1).toLocaleString();
     },
     formatDate(month, year) {
       var date = moment()
@@ -204,17 +204,56 @@ export default {
         .endOf("month")
         .format();
     },
-    returnNegative(value) {
+    returnNegative(value, coin) {
       if (value) {
         value = value * -1;
-        return value.toLocaleString();
+        return value.toLocaleString() + " " + coin;
       }
       return null;
     },
+    goToResumenHora(funcionario, nombre) {
+      this.$router.push({
+        name: "resumenBancoHora",
+        params: {
+          funcionario: funcionario,
+          nombre: nombre,
+          dateStart: this.dateStart,
+          dateEnd: this.dateEnd
+        }
+      });
+    },
     limpiarCampos() {
-      this.fechaInicio = null;
-      this.fechaFin = null;
+      this.dateStart = null;
+      this.dateEnd = null;
       marcacionesEmpleado.length = 0;
+    },
+    calcularSalarioNeto(salario, ips, adelanto, prestamo, descuentos) {
+      console.log(salario, ips, adelanto, prestamo, descuentos);
+      console.log(
+        typeof salario,
+        typeof ips,
+        typeof adelanto,
+        typeof prestamo,
+        typeof descuentos
+      );
+      var salarioNeto = parseInt(salario.split(".").join(""));
+      if (ips) {
+        salarioNeto = salarioNeto - ips;
+      }
+
+      if (adelanto) {
+        salarioNeto = salarioNeto - adelanto;
+      }
+
+      if (prestamo) {
+        salarioNeto = salarioNeto - prestamo;
+      }
+
+      if (descuentos) {
+        salarioNeto = salarioNeto - Math.round(descuentos);
+      }
+
+      return Math.round(salarioNeto).toLocaleString();
     },
     returnList() {
       this.$router.push({ name: "listadoSalarios" });
@@ -235,9 +274,7 @@ export default {
     getAttendance() {
       this.$http
         .get(
-          `/asistencias/full-list?inicio=${this.fechaInicio}&fin=${
-            this.fechaFin
-          }`
+          `/asistencias/full-list?inicio=${this.dateStart}&fin=${this.dateEnd}`
         )
         .then(response => {
           this.marcaciones = response.data;
@@ -245,25 +282,25 @@ export default {
     },
     async getResumen() {
       const advancePromise = this.$http.get(
-        `/adelantos/monthly-advance?inicio=${this.fechaInicio}&fin=${
-          this.fechaFin
+        `/adelantos/monthly-advance?inicio=${this.dateStart}&fin=${
+          this.dateEnd
         }`
       );
-      const eventsPromise = this.$http.get(
-        `/eventos/full-list?inicio=${this.fechaInicio}&fin=${this.fechaFin}`
+      const loanPromise = this.$http.get(
+        `/prestamos/loan-period?inicio=${this.dateStart}&fin=${this.dateEnd}`
       );
       const attendacePromise = this.$http.get(
-        `/asistencias/full-list?inicio=${this.fechaInicio}&fin=${this.fechaFin}`
+        `/asistencias/full-list?inicio=${this.dateStart}&fin=${this.dateEnd}`
       );
 
-      const [advance, event, attendance] = await Promise.all([
+      const [advance, loan, attendance] = await Promise.all([
         advancePromise,
-        eventsPromise,
+        loanPromise,
         attendacePromise
       ]);
       // console.log(employee.data, event.data, attendance.data);
       // this.empleados = employee.data;
-      this.eventos = event.data;
+      this.prestamos = loan.data;
       this.marcaciones = attendance.data;
       this.adelantos = advance.data;
 
@@ -403,6 +440,7 @@ export default {
           totalMes.nombre = marcacion.funcionario.nombre;
           totalMes.salario = marcacion.funcionario.salario;
           totalMes.salarioMinuto = marcacion.funcionario.salarioMinuto;
+          totalMes.moneda = marcacion.funcionario.moneda;
 
           if (marcacion.funcionario.ips === "salario") {
             totalMes.ips = Math.round(
@@ -421,6 +459,27 @@ export default {
           } else {
             totalMes.adelanto = null;
           }
+          // debugger;
+          this.prestamos.find(prestamo => {
+            if (prestamo.funcionario === marcacion.funcionario._id) {
+              prestamo.cuotas.forEach(cuota => {
+                if (
+                  moment(cuota.vencimiento).isBetween(
+                    this.dateStart,
+                    this.dateEnd,
+                    null,
+                    []
+                  ) &&
+                  cuota.estado === "pendiente"
+                ) {
+                  console.log("Valor prestamo", cuota.monto);
+                  totalMes.prestamos = parseInt(
+                    cuota.monto.split(".").join("")
+                  );
+                }
+              });
+            }
+          });
 
           this.resultadoTotal.push(totalMes);
           // totalMes.totalMes =
@@ -435,9 +494,7 @@ export default {
     },
     getEvents() {
       this.$http
-        .get(
-          `/eventos/full-list?inicio=${this.fechaInicio}&fin=${this.fechaFin}`
-        )
+        .get(`/eventos/full-list?inicio=${this.dateStart}&fin=${this.dateEnd}`)
         .then(response => {
           this.eventos = response.data;
         });
@@ -445,25 +502,25 @@ export default {
     //Hacer un arrayfilter funcionario donde sera un array de los datos de un solo funcionario
     //del array resultante sumar horas trabajadas, sumar horas extras, calcular descuento u hora extra
     //calcular horas mes segun idsucursal
-    calcularSalario(fechaInicio, fechaFin, horasMes) {
-      horasMes = this.getDiasMes(fechaInicio);
+    calcularSalario(dateStart, dateEnd, horasMes) {
+      horasMes = this.getDiasMes(dateStart);
       console.log(" Dias MES" + horasMes);
-      fechaInicio = moment(fechaInicio, "DD/MM/YYYY").format("L");
-      fechaFin = moment(fechaFin, "DD/MM/YYYY").format("L");
-      console.log("FECHAS" + fechaInicio, fechaFin);
+      dateStart = moment(dateStart, "DD/MM/YYYY").format("L");
+      dateEnd = moment(dateEnd, "DD/MM/YYYY").format("L");
+      console.log("FECHAS" + dateStart, dateEnd);
       console.log("DIAS " + horasMes);
-      this.getData(fechaInicio, fechaFin, horasMes);
+      this.getData(dateStart, dateEnd, horasMes);
     },
 
-    async getData(fechaInicio, fechaFin, horasMes) {
+    async getData(dateStart, dateEnd, horasMes) {
       this.loading = true;
       try {
         const getMarcaciones = await axios.get(
           url +
             "/marcaciones?fecha_gte=" +
-            fechaInicio +
+            dateStart +
             "&fecha_lte=" +
-            fechaFin +
+            dateEnd +
             "&_expand=empleado"
         );
 
@@ -758,7 +815,9 @@ export default {
     }
   },
   created() {
-    this.formatDate(this.monthPayment, this.yearPayment);
+    this.loading = true;
+    //this.formatDate(this.monthPayment, this.yearPayment);
+    this.getResumen().then(response => (this.loading = false));
   },
   mounted() {
     // axios.get(url + "/feriados").then(response => {
