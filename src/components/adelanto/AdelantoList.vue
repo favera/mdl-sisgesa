@@ -107,7 +107,7 @@
                 </div>
                 <div class="ui segment">
                   <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
-                  <span class="ui sub header">CI: 4.5263.621</span>
+                  <span class="ui sub header">CI/RG: {{adelanto.funcionario.nroCedula.toLocaleString()}} </span>
 
                   <div class="ui basic segment">
                     <p>Recibi la suma de {{adelanto.monto}} {{adelanto.moneda}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
@@ -205,6 +205,7 @@ export default {
   data() {
     return {
       adelantos: [],
+      adelantosSeleccionados: [],
       busquedaAvanzada: false,
       print: false,
       tipoAdelanto: "quincena",
