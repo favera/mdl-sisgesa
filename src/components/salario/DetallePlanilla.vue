@@ -1,5 +1,5 @@
 <template>
-  <div class="ui twelve wide column">
+  <div class="ui thirteen wide column">
 
     <div class="ui form">
       <div class="field">
@@ -109,11 +109,14 @@
               <td>{{returnNegative(resultado.adelanto, resultado.moneda)}} </td>
               <td>{{returnNegative(resultado.prestamos, resultado.moneda)}}</td>
               <td>{{formatRetrasos(resultado.descuentos)}} {{resultado.moneda}}</td>
-              <td></td>
+              <td>{{formatHoraExtra(resultado.valorHoraExtra)}} {{resultado.moneda}}</td>
               <td>{{calcularSalarioNeto(resultado.salario, resultado.ips, resultado.adelanto, resultado.prestamos, resultado.descuentos)}} {{resultado.moneda}}</td>
               <td>
                 <i class="history link icon" @click="goToResumenHora(resultado.funcionarioId, resultado.nombre)"></i>
-                <i class="money bill alternate outline link icon"></i>
+                <i class="icons" @click="goToResumenSalarial()">
+                  <i class="file outline link icon"></i>
+                  <i class="bottom left corner dollar sign icon"></i>
+                </i>
               </td>
 
             </tr>
@@ -221,6 +224,14 @@ export default {
           dateEnd: this.dateEnd
         }
       });
+    },
+    goToResumenSalarial(funcionario, nombre) {
+      this.$router.push({
+        name: "resumenSalarial"
+      });
+    },
+    formatHoraExtra(value) {
+      return Math.round(value).toLocaleString();
     },
     limpiarCampos() {
       this.dateStart = null;
@@ -351,6 +362,12 @@ export default {
               .duration(marcacion.horasExtras, "HH:mm")
               .asMinutes();
           }
+          if (marcacion.pagoHoraExtra) {
+            var horaExtra = marcacion.funcionario.salarioMinuto * 1.5;
+            this.resultadoTotal[index].valorHoraExtra +=
+              moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
+              horaExtra;
+          }
           console.log("Horas Faltantes", marcacion.horasFaltantes);
           if (marcacion.horasFaltantes) {
             this.resultadoTotal[index].retrasos += moment
@@ -381,6 +398,7 @@ export default {
         } else {
           var totalMes = {};
           totalMes.descuentos = 0;
+          totalMes.valorHoraExtra = 0;
           totalMes.funcionarioId = marcacion.funcionario._id;
 
           if (marcacion.estilo.ausente) {
@@ -411,6 +429,13 @@ export default {
               .asMinutes();
           } else {
             totalMes.totalExtras = 0;
+          }
+
+          if (marcacion.pagoHoraExtra) {
+            var horaExtra = marcacion.funcionario.salarioMinuto * 1.5;
+            totalMes.valorHoraExtra =
+              moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
+              horaExtra;
           }
 
           if (marcacion.horasFaltantes) {

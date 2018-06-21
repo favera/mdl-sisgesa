@@ -38,13 +38,13 @@
                         <div class="ui basic segment">
                             <div class="ui horizontal statistic">
                                 <div class="value">
-                                    {{this.totalBancoHoras.hours || "00"}}
+                                    {{getHours(this.totalBancoHoras.totalMinutes) || "00"}}
                                 </div>
                                 <div class="label">
                                     horas
                                 </div>
                                 <div class="value">
-                                    {{this.totalBancoHoras.minutes || "00"}}
+                                    {{getMinutes(this.totalBancoHoras.totalMinutes) || "00"}}
                                 </div>
                                 <div class="label">
                                     minutos
@@ -60,14 +60,14 @@
                         <div class="ui basic segment">
                             <div class="ui horizontal statistic">
                                 <div class="value">
-                                    {{this.resumenHoras.horaExtraHora}}
+                                    {{ moment(this.resumenHoras.horaExtraHora, "HH").format("HH")}}
                                 </div>
                                 <div class="label">
                                     horas
                                 </div>
 
                                 <div class="value">
-                                    {{this.resumenHoras.horaExtraMinutos}}
+                                    {{moment(this.resumenHoras.horaExtraMinutos, "mm").format("mm")}}
                                 </div>
                                 <div class="label">
                                     Minutos
@@ -88,15 +88,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="dato in historico" v-bind:key="dato._id" v-if="!dato.pagoHoraExtra">
+                    <tr v-for="(dato, index) in historico" v-bind:key="dato._id" v-if="!dato.pagoHoraExtra">
                         <td>{{moment(dato.fecha).format("DD/MM/YYYY")}}</td>
                         <td class="center aligned">{{getObservacion(dato.observacion, dato.horasFaltantes)}}</td>
                         <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}}</td>
                         <td class="center aligned">
-                            <i class="checkmark box link icon" v-if="dato.horasExtras" @click="saveBankHours(dato.horasExtras, dato.funcionario._id)"></i>
-                            <i class="remove link icon" v-if="dato.horasExtras"></i>
-                            <i class="money bill alternate outline link icon" v-if="dato.horasExtras"></i>
-                            <i class="clock outline link icon" v-if="dato.horasFaltantes"></i>
+                            <span v-if="dato.bancoHora">
+                                <!-- <i class="undo link icon"></i> -->
+                            </span>
+                            <span v-else-if="dato.horasExtras">
+                                <i class="checkmark box link icon" @click="saveBankHours(dato.horasExtras, dato.funcionario._id, dato._id, index)"></i>
+                                <i class="remove link icon" @click="undoBankHour(dato._id, dato.horasExtras, index)"></i>
+                                <i class="money bill alternate outline link icon" @click="payOverTime(dato._id, index)"></i>
+                            </span>
+
+                            <i class="clock outline link icon" v-if="dato.horasFaltantes" @click="amendDelay(dato._id, dato.funcionario._id, dato.horasFaltantes, index)"></i>
                         </td>
                     </tr>
                 </tbody>
@@ -126,9 +132,7 @@ export default {
     return {
       historico: [],
       totalBancoHoras: {
-        hours: null,
         totalMinutes: null,
-        minutes: null,
         funcionario: null
       },
       resumenHoras: {
@@ -155,31 +159,195 @@ export default {
       ]);
 
       this.historico = attendanceHistoric.data;
-      if (totalHours.data > 1) {
-        this.totalBancoHoras = totalHours.data;
+      if (totalHours.data.length > 0) {
+        this.totalBancoHoras.totalMinutes = totalHours.data[0].totalMinutes;
+        this.totalBancoHoras.funcionario = totalHours.data[0].funcionario;
+        this.totalBancoHoras._id = totalHours.data[0]._id;
       }
 
       //Obtener el total de las Horas extras para desplegar
       if (this.historico.length > 0) {
         this.historico.forEach(element => {
-          if (element.horasExtras) {
+          if (element.horasExtras && !element.pagoHoraExtra) {
             this.resumenHoras.totalHoraExtra += moment
               .duration(element.horasExtras, "HH:mm")
               .asMinutes();
           }
         });
-      }
 
-      this.getHoursAndMinutes(this.resumenHoras.totalHoraExtra);
+        var h, m;
+        h = Math.floor(this.resumenHoras.totalHoraExtra / 60);
+        m = this.resumenHoras.totalHoraExtra % 60;
+        this.resumenHoras.horaExtraHora = h;
+        this.resumenHoras.horaExtraMinutos = m;
+      }
     },
-    saveBankHours(value, funcionario) {
-      var minutes = moment.duration(value, "HH:mm").asMinutes();
-      this.totalBancoHoras.totalMinutes = minutes;
-      this.totalBancoHoras.hours = Math.floor(minutes / 60);
-      this.totalBancoHoras.minutes = minutes % 60;
-      this.totalBancoHoras.funcionario = funcionario;
+    getHours(value) {
+      return Math.floor(value / 60);
     },
-    payExtraHours() {},
+    getMinutes(value) {
+      return value % 60;
+    },
+    amendDelay(attendanceId, funcionarioId, horasFaltantes, index) {
+      this.$confirm(
+        "Est accion reducira el descuento del banco de horas acumulado por el funcionario",
+        "Alert",
+        {
+          confirmButtonText: "Aceptar",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      ).then(() => {
+        if (this.totalBancoHoras.totalMinutes > 0) {
+          var descuento = moment.duration(horasFaltantes, "HH:mm").asMinutes();
+          var updateAttendance = {};
+          var updateBancoHora = {};
+          //valor de descuento sale negativo
+          var result = this.totalBancoHoras.totalMinutes + descuento;
+          if (result >= 0) {
+            updateAttendance.horasFaltantes = null;
+            updateBancoHora.totalMinutes = descuento;
+          } else if (result < 0) {
+            result = result * -1;
+            var h = Math.floor(result / 60),
+              m = result % 60;
+            updateAttendance.horasFaltantes = `-${moment
+              .utc()
+              .hours(h)
+              .minutes(m)
+              .format("HH:mm")}`;
+            updateBancoHora.totalMinutes =
+              this.totalBancoHoras.totalMinutes * -1;
+          }
+          this.$http
+            .put(`/asistencias/amend-delay/${attendanceId}`, updateAttendance)
+            .then(() => {
+              this.$http
+                .post(
+                  `/salarios/add/banco-hora/${funcionarioId}`,
+                  updateBancoHora
+                )
+                .then(response => {
+                  this.totalBancoHoras.totalMinutes =
+                    response.data.totalMinutes;
+                  this.$set(this.historico, index, updateAttendance);
+                });
+            });
+        } else {
+          console.log("Entro en el esle");
+          this.$message({
+            type: "error",
+            message: "Funcionario sin banco de horas disponible"
+          });
+        }
+      });
+    },
+    undoBankHour(attendanceId, value, index) {
+      this.$confirm(
+        "Esta accion eliminara el valor de las horas acumuladas en el mes. Continuar?",
+        "Alerta",
+        {
+          confirmButtonText: "Aceptar",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      ).then(() => {
+        this.$http
+          .put(`/asistencias/cancel-overtime/${attendanceId}`)
+          .then(response => {
+            console.log(response);
+            this.resumenHoras.totalHoraExtra -= moment
+              .duration(value, "HH:mm")
+              .asMinutes();
+            this.resumenHoras.horaExtraHora = Math.floor(
+              this.resumenHoras.totalHoraExtra / 60
+            );
+            this.resumenHoras.horaExtraMinutos =
+              this.resumenHoras.totalHoraExtra % 60;
+
+            this.historico.splice(index, 1);
+          });
+      });
+    },
+    saveBankHours(value, funcionario, asistenciaId, index) {
+      this.$confirm(
+        "Las horas acumuladas seran depositadas en el Banco de Horas. Continuar?",
+        "Alerta",
+        {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      )
+        .then(() => {
+          var newItem = {};
+          newItem.funcionario = funcionario;
+          newItem.totalMinutes = moment.duration(value, "HH:mm").asMinutes();
+          this.$http
+            .post(`/salarios/add/banco-hora/${funcionario}`, newItem)
+            .then(response => {
+              this.totalBancoHoras = response.data;
+              //   debugger;
+              this.$http
+                .put(`asistencias/update-banktime/${asistenciaId}`)
+                .then(response => {
+                  console.log(response);
+                  //   this.resumenHoras.totalMinutes -= moment
+                  //     .duration(value, "HH:mm")
+                  //     .asMinutes();
+                  //   this.resumenHoras.totalHoraExtra = 0;
+                  //   this.resumenHoras.horaExtraMinutos = null;
+                  //   this.resumenHoras.horaExtraHora = null;
+                  this.$set(this.historico, index, response.data);
+
+                  //   this.getHistoricAttendance();
+                });
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "Proceso cancelado"
+          });
+        });
+    },
+    payOverTime(attendanceId, index) {
+      this.$confirm(
+        "Esta accion va a realizar el pago de la hora extra en efectivo. Continuar?",
+        "Alerta",
+        {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      )
+        .then(() => {
+          this.$http
+            .put(`/asistencias/update-overtime/${attendanceId}`)
+            .then(response => {
+              if (response.data.pagoHoraExtra) {
+                let [hour, minutes] = this.convertOverTime(
+                  response.data.horasExtras
+                );
+                this.resumenHoras.horaExtraHora -= hour;
+                this.resumenHoras.horaExtraMinutos -= minutes;
+                this.historico.splice(index, 1);
+              }
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "Proceso cancelado"
+          });
+        });
+    },
+    convertOverTime(data) {
+      var totalMinutes = moment.duration(data, "HH:mm").asMinutes(),
+        hour = Math.floor(totalMinutes / 60),
+        minutes = totalMinutes % 60;
+      return [hour, minutes];
+    },
     returnList() {
       this.$router.push({ name: "listadoSalarios" });
     },
@@ -198,23 +366,6 @@ export default {
         return "Retraso";
       }
       return observacion;
-    },
-    getHoursAndMinutes(mins) {
-      var h, m;
-      h = Math.floor(mins / 60);
-      m = mins % 60;
-      var numDig = this.numDigits(h);
-
-      if (numDig > 1) {
-        this.resumenHoras.horaExtraHora = h;
-        this.resumenHoras.horaExtraMinutos = moment(m, "mm").format("mm");
-      } else {
-        this.resumenHoras.horaExtraHora = moment(h, "HH").format("HH");
-        this.resumenHoras.horaExtraMinutos = moment(m, "mm").format("mm");
-      }
-    },
-    numDigits(x) {
-      return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
     }
   },
   created() {
