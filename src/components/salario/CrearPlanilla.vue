@@ -1,119 +1,125 @@
 <template>
-    <div class="ui twelve wide column">
+  <div class="ui twelve wide column">
 
-        <div class="ui longer modal">
-            <div class="header"> Incluir Periodo para Planilla de Salario </div>
-            <div class="content">
+    <div class="ui longer modal">
+      <div class="header"> Incluir Periodo para Planilla de Salario </div>
+      <div class="content">
 
-                <form class="ui form" @submit.prevent="includePeriod">
-                    <div class="required field">
-                        <label>Seleccione Mes</label>
-                        <div class="field" :class="{error: errors.has('monthPeriod')}">
-                            <el-date-picker name="monthPeriod" data-vv-as="mes" v-validate="'required'" type="month" placeholder="Seleccionar Mes" v-model="salaryData.month" format="MMMM">
-                            </el-date-picker>
-                            <div class="info-error" v-show="errors.has('monthPeriod')">{{errors.first('monthPeriod')}}</div>
-                        </div>
-                    </div>
-                    <div class="required field">
-                        <label>Seleccione Año</label>
-                        <div class="field" :class="{error: errors.has('yearPeriod')}">
-                            <el-date-picker name="yearPeriod" data-vv-as="año" v-validate="'required'" type="year" placeholder="Seleccionar Año" v-model="salaryData.year" format="yyyy"></el-date-picker>
-                            <div class="info-error" v-show="errors.has('yearPeriod')">{{errors.first('yearPeriod')}}</div>
-                        </div>
-                    </div>
-
-                    <div class="actions">
-
-                        <button class="ui teal button">Aceptar</button>
-                        <div class="ui deny button">Cancelar</div>
-
-                    </div>
-
-                </form>
-
+        <form class="ui form" @submit.prevent="includePeriod">
+          <div class="required field">
+            <label>Seleccione Mes</label>
+            <div class="field" :class="{error: errors.has('monthPeriod')}">
+              <el-date-picker name="monthPeriod" data-vv-as="mes" v-validate="'required'" type="month" placeholder="Seleccionar Mes" v-model="salaryData.month" format="MMMM">
+              </el-date-picker>
+              <div class="info-error" v-show="errors.has('monthPeriod')">{{errors.first('monthPeriod')}}</div>
             </div>
-
-        </div>
-
-        <div class="ui form">
-            <h4 class="ui dividing header">Listado de Planilla de Salarios</h4>
-            <div class="two fields">
-                <div class="ui twelve wide field">
-                    <div class="inline fields">
-
-                        <label for="">Mes:</label>
-
-                        <div class="field">
-                            <el-date-picker type="month" placeholder="Seleccionar Mes" v-model="query.month" format="MMMM">
-                            </el-date-picker>
-                        </div>
-                        <label for="">Año:</label>
-
-                        <div class="field">
-                            <el-date-picker type="year" placeholder="Seleccionar Año" format="yyyy" v-model="query.year">
-                            </el-date-picker>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="ui four wide field">
-
-                    <div class="ui right floated main menu">
-                        <a class="icon item">
-
-                            <i class="plus icon" @click="abrirModal()"></i>
-
-                        </a>
-                    </div>
-
-                </div>
-
+          </div>
+          <div class="required field">
+            <label>Seleccione Año</label>
+            <div class="field" :class="{error: errors.has('yearPeriod')}">
+              <el-date-picker name="yearPeriod" data-vv-as="año" v-validate="'required'" type="year" placeholder="Seleccionar Año" v-model="salaryData.year" format="yyyy"></el-date-picker>
+              <div class="info-error" v-show="errors.has('yearPeriod')">{{errors.first('yearPeriod')}}</div>
             </div>
+          </div>
 
-            <div class="field">
+          <div class="actions">
 
-                <table class="ui teal celled table">
-                    <thead>
-                        <tr>
-                            <th>Periodo</th>
-                            <th>Estado</th>
-                            <th class="center aligned">Opciones</th>
+            <button class="ui approve teal button">Aceptar</button>
+            <div class="ui deny button">Cancelar</div>
 
-                        </tr>
-                    </thead>
+          </div>
 
-                    <tbody>
+        </form>
 
-                        <tr v-for="payment in payroll" :key="payment._id">
-                            <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
-                            <td>{{payment.status}}</td>
-                            <td class="center aligned">
-                                <i class="zoom link icon" @click="detallePlanilla(payment._id, payment.month, payment.year)"></i>
-                                <i class="plus link  icon" @click="editarPlanilla(payment._id, payment.month, payment.year)"></i>
-                                <i class="edit link icon"></i>
-                                <i class="checkmark box link icon"></i>
-                                <i class="trash link icon"></i>
-                            </td>
-                        </tr>
-
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="3">
-                                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged"></app-pagination>
-                            </th>
-                        </tr>
-
-                    </tfoot>
-                </table>
-
-            </div>
-
-        </div>
+      </div>
 
     </div>
+
+    <div class="ui form">
+      <h4 class="ui dividing header">Listado de Planilla de Salarios</h4>
+      <div class="two fields">
+        <div class="ui twelve wide field">
+          <div class="inline fields">
+
+            <label for="">Mes:</label>
+
+            <div class="field">
+              <el-date-picker type="month" placeholder="Seleccionar Mes" v-model="query.month" format="MMMM">
+              </el-date-picker>
+            </div>
+            <label for="">Año:</label>
+
+            <div class="field">
+              <el-date-picker type="year" placeholder="Seleccionar Año" format="yyyy" v-model="query.year">
+              </el-date-picker>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="ui four wide field">
+
+          <div class="ui right floated main menu">
+            <a class="icon item">
+
+              <i class="plus icon" @click="abrirModal()"></i>
+
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <table class="ui teal celled table">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th>Estado</th>
+              <th class="center aligned">Opciones</th>
+
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr v-for="payment in payroll" :key="payment._id">
+              <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
+              <td>{{payment.status}}</td>
+              <td class="center aligned">
+                <span v-if="!payment.detail">
+                  <i class="plus link icon" @click="editarPlanilla(payment._id, payment.month, payment.year)"></i>
+                </span>
+
+                <span v-else>
+                  <i class="zoom link icon" @click="paymentDetail(payment._id)"></i>
+                  <i class="edit link icon" @click="detallePlanilla(payment._id, payment.month, payment.year)"></i>
+                  <i class="checkmark box link icon"></i>
+                  <i class="trash link icon"></i>
+                </span>
+
+              </td>
+            </tr>
+
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="3">
+                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged"></app-pagination>
+              </th>
+            </tr>
+
+          </tfoot>
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
 </template>
 
 
@@ -142,8 +148,8 @@ export default {
         status: "Pendiente",
         salaryDetail: []
       },
-      dateStart: null,
-      dateEnd: null
+      startDate: null,
+      endDate: null
     };
   },
   components: {
@@ -151,62 +157,58 @@ export default {
   },
   methods: {
     pageOneChanged() {},
-    detallePlanilla(paymentId, month, year) {
-      var mes = moment(month).get("month"),
-        anho = moment(year).get("year");
+    paymentDetail(paymentId, month, year) {
+      this.getDates(month, year);
+      this.$router.push({
+        name: "detallePlanilla",
+        params: {
+          id: paymentId,
+          enableView: false,
+          detail: true,
+          startDate: this.startDate,
+          endDate: this.endDate
+        }
+      });
+    },
+    //Metodo para devolver la fecha inicio y fecha fin.
+    getDates(month, year) {
+      var monthNumber = moment(month).get("month"),
+        yearNumber = moment(year).get("year");
       var date = moment()
-        .set({ year: anho, month: mes })
+        .set({ year: yearNumber, month: monthNumber })
         .format();
-      this.dateStart = moment(date)
+
+      this.startDate = moment(date)
         .startOf("month")
         .format();
-      this.dateEnd = moment(date)
+      this.endDate = moment(date)
         .endOf("month")
         .format();
+    },
+    detallePlanilla(paymentId, month, year) {
+      this.getDates(month, year);
 
       this.$router.push({
         name: "detallePlanilla",
         params: {
           id: paymentId,
           enableView: false,
-          dateStart: this.dateStart,
-          dateEnd: this.dateEnd
+          startDate: this.startDate,
+          endDate: this.endDate
         }
       });
     },
-    formatDate(month, year) {
-      var mes = moment(month).get("month"),
-        anho = moment(year).get("year");
-      var date = moment()
-        .set({ year: anho, month: mes })
-        .format();
-      this.dateStart = moment(date)
-        .startOf("month")
-        .format();
-      this.dateEnd = moment(date)
-        .endOf("month")
-        .format();
-    },
+
     editarPlanilla(paymentId, month, year) {
-      var mes = moment(month).get("month"),
-        anho = moment(year).get("year");
-      var date = moment()
-        .set({ year: anho, month: mes })
-        .format();
-      this.dateStart = moment(date)
-        .startOf("month")
-        .format();
-      this.dateEnd = moment(date)
-        .endOf("month")
-        .format();
+      this.getDates(month, year);
 
       this.$router.push({
         name: "detallePlanilla",
         params: {
           id: paymentId,
           enableView: true,
-          dateStart: this.dateStart,
-          dateEnd: this.dateEnd
+          startDate: this.startDate,
+          endDate: this.endDate
         }
       });
     },

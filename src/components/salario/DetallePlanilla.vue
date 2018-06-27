@@ -20,21 +20,21 @@
           <div class="inline fields">
 
             <div class="field">
-              <el-date-picker v-model="dateStart" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+              <el-date-picker v-model="startDate" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker v-model="dateEnd" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+              <el-date-picker v-model="endDate" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
               </el-date-picker>
             </div>
 
-            <div class="field" v-show="dateStart != null">
+            <div class="field" v-show="startDate != null">
               <i class="large circle remove link grey icon"></i>
             </div>
 
             <!-- <div class="field">
-              <div class="ui vertical teal button" @click="calcularSalario(dateStart, dateEnd)">
+              <div class="ui vertical teal button" @click="calcularSalario(startDate, endDate)">
                 Generar Salario
               </div>
             </div>
@@ -59,7 +59,7 @@
             </a>
 
             <a class="icon item">
-              <i class="save icon"></i>
+              <i class="save icon" @click="saveSalaryResume(id)"></i>
             </a>
 
             <a class="icon item">
@@ -99,20 +99,20 @@
 
           <tbody>
 
-            <tr v-for="resultado in resultadoTotal" :key="resultado.funcionarioId">
-              <td>{{resultado.nombre}}</td>
-              <td>{{resultado.totalExtras }} Min</td>
-              <td>{{resultado.retrasos}} Min</td>
-              <td>{{resultado.ausencias}} dias</td>
-              <td>{{resultado.salario}} {{resultado.moneda}}</td>
-              <td>{{returnNegative(resultado.ips, resultado.moneda)}} </td>
-              <td>{{returnNegative(resultado.adelanto, resultado.moneda)}} </td>
-              <td>{{returnNegative(resultado.prestamos, resultado.moneda)}}</td>
-              <td>{{formatRetrasos(resultado.descuentos)}} {{resultado.moneda}}</td>
-              <td>{{formatHoraExtra(resultado.valorHoraExtra)}} {{resultado.moneda}}</td>
-              <td>{{calcularSalarioNeto(resultado.salario, resultado.ips, resultado.adelanto, resultado.prestamos, resultado.descuentos)}} {{resultado.moneda}}</td>
+            <tr v-for="(resultado, index) in resultadoTotal" :key="resultado.employee">
+              <td>{{resultado.name}}</td>
+              <td>{{resultado.extraHourMinutes }} Min</td>
+              <td>{{resultado.delay}} Min</td>
+              <td>{{resultado.abscence}} dias</td>
+              <td>{{resultado.salary}} {{resultado.coin}}</td>
+              <td>{{returnNegative(resultado.ips, resultado.coin)}} </td>
+              <td>{{returnNegative(resultado.salaryAdvance, resultado.coin)}} </td>
+              <td>{{returnNegative(resultado.lending, resultado.coin)}}</td>
+              <td>{{formatRetrasos(resultado.discount)}} {{resultado.coin}}</td>
+              <td>{{formatHoraExtra(resultado.extraHourValue)}} {{resultado.coin}}</td>
+              <td>{{calcularSalarioNeto(resultado.salary, resultado.ips, resultado.salaryAdvance, resultado.lending, resultado.discount, resultado.extraHourValue, index)}} {{resultado.coin}}</td>
               <td>
-                <i class="history link icon" @click="goToResumenHora(resultado.funcionarioId, resultado.nombre)"></i>
+                <i class="history link icon" @click="goToResumenHora(resultado.employee, resultado.name)"></i>
                 <i class="icons" @click="goToResumenSalarial()">
                   <i class="file outline link icon"></i>
                   <i class="bottom left corner dollar sign icon"></i>
@@ -143,14 +143,20 @@ import { url } from "./../.././config/backend";
 
 export default {
   props: {
+    id: {
+      type: String
+    },
     enableView: {
       type: Boolean
     },
-    dateStart: {
+    startDate: {
       type: String
     },
-    dateEnd: {
+    endDate: {
       type: String
+    },
+    detail: {
+      type: Boolean
     }
   },
   data() {
@@ -214,18 +220,18 @@ export default {
       }
       return null;
     },
-    goToResumenHora(funcionario, nombre) {
+    goToResumenHora(funcionario, name) {
       this.$router.push({
         name: "resumenBancoHora",
         params: {
           funcionario: funcionario,
-          nombre: nombre,
-          dateStart: this.dateStart,
-          dateEnd: this.dateEnd
+          nombre: name,
+          startDate: this.startDate,
+          endDate: this.endDate
         }
       });
     },
-    goToResumenSalarial(funcionario, nombre) {
+    goToResumenSalarial(funcionario, name) {
       this.$router.push({
         name: "resumenSalarial"
       });
@@ -234,35 +240,49 @@ export default {
       return Math.round(value).toLocaleString();
     },
     limpiarCampos() {
-      this.dateStart = null;
-      this.dateEnd = null;
+      this.startDate = null;
+      this.endDate = null;
       marcacionesEmpleado.length = 0;
     },
-    calcularSalarioNeto(salario, ips, adelanto, prestamo, descuentos) {
-      console.log(salario, ips, adelanto, prestamo, descuentos);
+    calcularSalarioNeto(
+      salary,
+      ips,
+      salaryAdvance,
+      prestamo,
+      discount,
+      extraHourValue,
+      index
+    ) {
+      console.log(salary, ips, salaryAdvance, prestamo, discount);
       console.log(
-        typeof salario,
+        typeof salary,
         typeof ips,
-        typeof adelanto,
+        typeof salaryAdvance,
         typeof prestamo,
-        typeof descuentos
+        typeof discount
       );
-      var salarioNeto = parseInt(salario.split(".").join(""));
+      var salarioNeto = parseInt(salary.split(".").join(""));
       if (ips) {
         salarioNeto = salarioNeto - ips;
       }
 
-      if (adelanto) {
-        salarioNeto = salarioNeto - adelanto;
+      if (salaryAdvance) {
+        salarioNeto = salarioNeto - salaryAdvance;
       }
 
       if (prestamo) {
         salarioNeto = salarioNeto - prestamo;
       }
 
-      if (descuentos) {
-        salarioNeto = salarioNeto - Math.round(descuentos);
+      if (discount) {
+        salarioNeto = salarioNeto - Math.round(discount);
       }
+
+      if (extraHourValue) {
+        salarioNeto = salarioNeto + Math.round(extraHourValue);
+      }
+
+      this.resultadoTotal[index].salaryBalance = salarioNeto;
 
       return Math.round(salarioNeto).toLocaleString();
     },
@@ -285,7 +305,7 @@ export default {
     getAttendance() {
       this.$http
         .get(
-          `/asistencias/full-list?inicio=${this.dateStart}&fin=${this.dateEnd}`
+          `/asistencias/full-list?inicio=${this.startDate}&fin=${this.endDate}`
         )
         .then(response => {
           this.marcaciones = response.data;
@@ -293,15 +313,15 @@ export default {
     },
     async getResumen() {
       const advancePromise = this.$http.get(
-        `/adelantos/monthly-advance?inicio=${this.dateStart}&fin=${
-          this.dateEnd
+        `/adelantos/monthly-advance?inicio=${this.startDate}&fin=${
+          this.endDate
         }`
       );
       const loanPromise = this.$http.get(
-        `/prestamos/loan-period?inicio=${this.dateStart}&fin=${this.dateEnd}`
+        `/prestamos/loan-period?inicio=${this.startDate}&fin=${this.endDate}`
       );
       const attendacePromise = this.$http.get(
-        `/asistencias/full-list?inicio=${this.dateStart}&fin=${this.dateEnd}`
+        `/asistencias/full-list?inicio=${this.startDate}&fin=${this.endDate}`
       );
 
       const [advance, loan, attendance] = await Promise.all([
@@ -322,7 +342,7 @@ export default {
         if (this.resultadoTotal.length > 0) {
           index = this.resultadoTotal.findIndex(element => {
             // debugger;
-            if (element.funcionarioId === marcacion.funcionario._id) {
+            if (element.employee === marcacion.funcionario._id) {
               return true;
             }
             return false;
@@ -334,23 +354,23 @@ export default {
 
         if (funcionarioExists) {
           if (marcacion.estilo.ausente) {
-            this.resultadoTotal[index].ausencias += 1;
+            this.resultadoTotal[index].abscence += 1;
             console.log(
               "Desde Array antes de la suma",
-              this.resultadoTotal[index].descuentos
+              this.resultadoTotal[index].discount
             );
-            this.resultadoTotal[index].descuentos += Math.round(
+            this.resultadoTotal[index].discount += Math.round(
               parseInt(marcacion.funcionario.salario.split(".").join("")) / 26
             );
             console.log(
               "Pos Array pos suma",
-              this.resultadoTotal[index].descuentos
+              this.resultadoTotal[index].discount
             );
           }
 
-          if (marcacion.estilo.incompleto) {
-            this.resultadoTotal[index].incompleto += 1;
-          }
+          // if (marcacion.estilo.incompleto) {
+          //   this.resultadoTotal[index].incompleto += 1;
+          // }
 
           if (marcacion.estilo.vacaciones) {
             this.resultadoTotal[index].totalVacaciones += 1;
@@ -358,31 +378,31 @@ export default {
 
           if (marcacion.horasExtras) {
             console.log("HORA EXTRA", marcacion.horasExtras);
-            this.resultadoTotal[index].totalExtras += moment
+            this.resultadoTotal[index].extraHourMinutes += moment
               .duration(marcacion.horasExtras, "HH:mm")
               .asMinutes();
           }
           if (marcacion.pagoHoraExtra) {
             var horaExtra = marcacion.funcionario.salarioMinuto * 1.5;
-            this.resultadoTotal[index].valorHoraExtra +=
+            this.resultadoTotal[index].extraHourValue +=
               moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
               horaExtra;
           }
           console.log("Horas Faltantes", marcacion.horasFaltantes);
           if (marcacion.horasFaltantes) {
-            this.resultadoTotal[index].retrasos += moment
+            this.resultadoTotal[index].delay += moment
               .duration(marcacion.horasFaltantes, "HH:mm")
               .asMinutes();
             console.log(
               "Descuentos pre horas faltantes",
-              this.resultadoTotal[index].descuentos
+              this.resultadoTotal[index].discount
             );
-            this.resultadoTotal[index].descuentos -=
+            this.resultadoTotal[index].discount -=
               moment.duration(marcacion.horasFaltantes, "HH:mm").asMinutes() *
               marcacion.funcionario.salarioMinuto;
             console.log(
               "Descuentos pos horas Faltantes",
-              this.resultadoTotal[index].descuentos
+              this.resultadoTotal[index].discount
             );
           }
 
@@ -397,25 +417,26 @@ export default {
           }
         } else {
           var totalMes = {};
-          totalMes.descuentos = 0;
-          totalMes.valorHoraExtra = 0;
-          totalMes.funcionarioId = marcacion.funcionario._id;
+          totalMes.discount = 0;
+          totalMes.extraHourValue = 0;
+          totalMes.employee = marcacion.funcionario._id;
+          totalMes.salaryBalance = 0;
 
           if (marcacion.estilo.ausente) {
-            totalMes.ausencias = 1;
+            totalMes.abscence = 1;
 
-            totalMes.descuentos += Math.round(
+            totalMes.discount += Math.round(
               parseInt(marcacion.funcionario.salario.split(".").join("")) / 26
             );
           } else {
-            totalMes.ausencias = 0;
+            totalMes.abscence = 0;
           }
 
-          if (marcacion.estilo.incompleto) {
-            totalMes.totalIncompleto = 1;
-          } else {
-            totalMes.totalIncompleto = 0;
-          }
+          // if (marcacion.estilo.incompleto) {
+          //   totalMes.totalIncompleto = 1;
+          // } else {
+          //   totalMes.totalIncompleto = 0;
+          // }
 
           if (marcacion.estilo.vacaciones) {
             totalMes.totalVacaciones = 1;
@@ -424,28 +445,28 @@ export default {
           }
 
           if (marcacion.horasExtras) {
-            totalMes.totalExtras = moment
+            totalMes.extraHourMinutes = moment
               .duration(marcacion.horasExtras, "HH:mm")
               .asMinutes();
           } else {
-            totalMes.totalExtras = 0;
+            totalMes.extraHourMinutes = 0;
           }
 
           if (marcacion.pagoHoraExtra) {
             var horaExtra = marcacion.funcionario.salarioMinuto * 1.5;
-            totalMes.valorHoraExtra =
+            totalMes.extraHourValue =
               moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
               horaExtra;
           }
 
           if (marcacion.horasFaltantes) {
-            totalMes.retrasos = moment
+            totalMes.delay = moment
               .duration(marcacion.horasFaltantes, "HH:mm")
               .asMinutes();
-            totalMes.descuentos -=
-              totalMes.retrasos * marcacion.funcionario.salarioMinuto;
+            totalMes.discount -=
+              totalMes.delay * marcacion.funcionario.salarioMinuto;
           } else {
-            totalMes.retrasos = 0;
+            totalMes.delay = 0;
           }
 
           if (
@@ -462,10 +483,10 @@ export default {
             totalMes.totalTrabajado = 0;
           }
 
-          totalMes.nombre = marcacion.funcionario.nombre;
-          totalMes.salario = marcacion.funcionario.salario;
+          totalMes.name = marcacion.funcionario.nombre;
+          totalMes.salary = marcacion.funcionario.salario;
           totalMes.salarioMinuto = marcacion.funcionario.salarioMinuto;
-          totalMes.moneda = marcacion.funcionario.moneda;
+          totalMes.coin = marcacion.funcionario.moneda;
 
           if (marcacion.funcionario.ips === "salario") {
             totalMes.ips = Math.round(
@@ -478,11 +499,15 @@ export default {
           );
 
           if (adelantoFunc.length > 0) {
-            totalMes.adelanto = adelantoFunc.reduce(function(valor, adelanto) {
+            totalMes.salaryAdvance = adelantoFunc.reduce(function(
+              valor,
+              adelanto
+            ) {
               return valor + parseInt(adelanto.monto.split(".").join(""));
-            }, 0);
+            },
+            0);
           } else {
-            totalMes.adelanto = null;
+            totalMes.salaryAdvance = null;
           }
           // debugger;
           this.prestamos.find(prestamo => {
@@ -490,17 +515,15 @@ export default {
               prestamo.cuotas.forEach(cuota => {
                 if (
                   moment(cuota.vencimiento).isBetween(
-                    this.dateStart,
-                    this.dateEnd,
+                    this.startDate,
+                    this.endDate,
                     null,
                     []
                   ) &&
                   cuota.estado === "pendiente"
                 ) {
                   console.log("Valor prestamo", cuota.monto);
-                  totalMes.prestamos = parseInt(
-                    cuota.monto.split(".").join("")
-                  );
+                  totalMes.lending = parseInt(cuota.monto.split(".").join(""));
                 }
               });
             }
@@ -511,6 +534,37 @@ export default {
           //   this.getDiasMes() - this.getFeriados() - totalMes.totalVacaciones;
         }
       });
+      this.resultadoTotal.sort((a, b) => {
+        if (a.name < b.name) return -1;
+        if (a.name > b.name) return 1;
+        return 0;
+      });
+    },
+    saveSalaryResume(idSalaryResume) {
+      this.$confirm("Esta seguro que desea guardar los datos", "Alerta", {
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http
+            .put(
+              `/salarios/update/salary-detail/${idSalaryResume}`,
+              this.resultadoTotal
+            )
+            .then(() => {
+              this.$message({
+                type: "success",
+                message: "Resumen de Salario Guardado"
+              });
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "Proceso cancelado"
+          });
+        });
     },
     getEmployees() {
       this.$http.get(`/funcionarios/full-list`).then(response => {
@@ -519,7 +573,7 @@ export default {
     },
     getEvents() {
       this.$http
-        .get(`/eventos/full-list?inicio=${this.dateStart}&fin=${this.dateEnd}`)
+        .get(`/eventos/full-list?inicio=${this.startDate}&fin=${this.endDate}`)
         .then(response => {
           this.eventos = response.data;
         });
@@ -527,25 +581,25 @@ export default {
     //Hacer un arrayfilter funcionario donde sera un array de los datos de un solo funcionario
     //del array resultante sumar horas trabajadas, sumar horas extras, calcular descuento u hora extra
     //calcular horas mes segun idsucursal
-    calcularSalario(dateStart, dateEnd, horasMes) {
-      horasMes = this.getDiasMes(dateStart);
+    calcularSalario(startDate, endDate, horasMes) {
+      horasMes = this.getDiasMes(startDate);
       console.log(" Dias MES" + horasMes);
-      dateStart = moment(dateStart, "DD/MM/YYYY").format("L");
-      dateEnd = moment(dateEnd, "DD/MM/YYYY").format("L");
-      console.log("FECHAS" + dateStart, dateEnd);
+      startDate = moment(startDate, "DD/MM/YYYY").format("L");
+      endDate = moment(endDate, "DD/MM/YYYY").format("L");
+      console.log("FECHAS" + startDate, endDate);
       console.log("DIAS " + horasMes);
-      this.getData(dateStart, dateEnd, horasMes);
+      this.getData(startDate, endDate, horasMes);
     },
 
-    async getData(dateStart, dateEnd, horasMes) {
+    async getData(startDate, endDate, horasMes) {
       this.loading = true;
       try {
         const getMarcaciones = await axios.get(
           url +
             "/marcaciones?fecha_gte=" +
-            dateStart +
+            startDate +
             "&fecha_lte=" +
-            dateEnd +
+            endDate +
             "&_expand=empleado"
         );
 
@@ -842,7 +896,20 @@ export default {
   created() {
     this.loading = true;
     //this.formatDate(this.monthPayment, this.yearPayment);
-    this.getResumen().then(response => (this.loading = false));
+    if (this.detail) {
+      this.$http.get(`/salarios/salary-detail/${this.id}`).then(response => {
+        this.resultadoTotal = response.data.salaryDetail;
+        this.loading = false;
+      });
+    } else {
+      this.getResumen().then(() => {
+        this.loading = false;
+      });
+    }
+
+    // this.$http.get(`/salarios/salary-detail/${id}`).then(response => {
+    //   this.resultadoTotal = response.data.salaryDetail;
+    // });
   },
   mounted() {
     // axios.get(url + "/feriados").then(response => {

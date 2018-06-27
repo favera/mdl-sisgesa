@@ -1,114 +1,114 @@
 <template>
-    <div class="ui twelve wide column">
-        <div class="ui form">
-            <div class="field">
-                <div class="ui breadcrumb">
-                    <a class="section" @click="returnList">Listado de Planillas de Salario</a>
-                    <i class="right angle icon divider"></i>
-                    <a class="section" @click="returnDetail">Detalle de Planilla</a>
-                    <i class="right angle icon divider"></i>
-                    <div class=" active section">Resumen de Banco de Horas</div>
+  <div class="ui twelve wide column">
+    <div class="ui form">
+      <div class="field">
+        <div class="ui breadcrumb">
+          <a class="section" @click="returnList">Listado de Planillas de Salario</a>
+          <i class="right angle icon divider"></i>
+          <a class="section" @click="returnDetail">Detalle de Planilla</a>
+          <i class="right angle icon divider"></i>
+          <div class=" active section">Resumen de Banco de Horas</div>
 
-                </div>
-            </div>
-            <h3 class="ui dividing header">
-                Resumen Banco de Horas
-            </h3>
-
-            <div class="ui basic segment">
-                <div class="ui items">
-                    <div class="item">
-
-                        <div class="middle aligned content">
-                            <div class="header">
-                                <!-- <i class="olive circle outlined user icon"></i> -->
-                                {{this.nombre}}
-                            </div>
-                            <div class="meta">Funcionario</div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="ui two cards">
-                <div class="teal card">
-                    <div class="middle aligned content">
-                        <div class="header">Total de Horas Acumuladas:</div>
-                        <div class="ui basic segment">
-                            <div class="ui horizontal statistic">
-                                <div class="value">
-                                    {{getHours(this.totalBancoHoras.totalMinutes) || "00"}}
-                                </div>
-                                <div class="label">
-                                    horas
-                                </div>
-                                <div class="value">
-                                    {{getMinutes(this.totalBancoHoras.totalMinutes) || "00"}}
-                                </div>
-                                <div class="label">
-                                    minutos
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="blue card">
-                    <div class="middle aligned content">
-                        <div class="header">Banco de Horas acumuladas del mes:</div>
-                        <div class="ui basic segment">
-                            <div class="ui horizontal statistic">
-                                <div class="value">
-                                    {{ moment(this.resumenHoras.horaExtraHora, "HH").format("HH")}}
-                                </div>
-                                <div class="label">
-                                    horas
-                                </div>
-
-                                <div class="value">
-                                    {{moment(this.resumenHoras.horaExtraMinutos, "mm").format("mm")}}
-                                </div>
-                                <div class="label">
-                                    Minutos
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <table class="ui striped table" style="margin-top: 50px;">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th class="center aligned">Motivo</th>
-                        <th class="center aligned">Horas Acumuladas</th>
-                        <th class="center aligned">Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(dato, index) in historico" v-bind:key="dato._id" v-if="!dato.pagoHoraExtra">
-                        <td>{{moment(dato.fecha).format("DD/MM/YYYY")}}</td>
-                        <td class="center aligned">{{getObservacion(dato.observacion, dato.horasFaltantes)}}</td>
-                        <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}}</td>
-                        <td class="center aligned">
-                            <span v-if="dato.bancoHora">
-                                <!-- <i class="undo link icon"></i> -->
-                            </span>
-                            <span v-else-if="dato.horasExtras">
-                                <i class="checkmark box link icon" @click="saveBankHours(dato.horasExtras, dato.funcionario._id, dato._id, index)"></i>
-                                <i class="remove link icon" @click="undoBankHour(dato._id, dato.horasExtras, index)"></i>
-                                <i class="money bill alternate outline link icon" @click="payOverTime(dato._id, index)"></i>
-                            </span>
-
-                            <i class="clock outline link icon" v-if="dato.horasFaltantes" @click="amendDelay(dato._id, dato.funcionario._id, dato.horasFaltantes, index)"></i>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
+      </div>
+      <h3 class="ui dividing header">
+        Resumen Banco de Horas
+      </h3>
+
+      <div class="ui basic segment">
+        <div class="ui items">
+          <div class="item">
+
+            <div class="middle aligned content">
+              <div class="header">
+                <!-- <i class="olive circle outlined user icon"></i> -->
+                {{this.nombre}}
+              </div>
+              <div class="meta">Funcionario</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ui two cards">
+        <div class="teal card">
+          <div class="middle aligned content">
+            <div class="header">Total de Horas Acumuladas:</div>
+            <div class="ui basic segment">
+              <div class="ui horizontal statistic">
+                <div class="value">
+                  {{getHours(this.totalBancoHoras.totalMinutes) || "00"}}
+                </div>
+                <div class="label">
+                  horas
+                </div>
+                <div class="value">
+                  {{getMinutes(this.totalBancoHoras.totalMinutes) || "00"}}
+                </div>
+                <div class="label">
+                  minutos
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="blue card">
+          <div class="middle aligned content">
+            <div class="header">Banco de Horas acumuladas del mes:</div>
+            <div class="ui basic segment">
+              <div class="ui horizontal statistic">
+                <div class="value">
+                  {{ moment(this.resumenHoras.horaExtraHora, "HH").format("HH")}}
+                </div>
+                <div class="label">
+                  horas
+                </div>
+
+                <div class="value">
+                  {{moment(this.resumenHoras.horaExtraMinutos, "mm").format("mm")}}
+                </div>
+                <div class="label">
+                  Minutos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table class="ui striped table" style="margin-top: 50px;">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th class="center aligned">Motivo</th>
+            <th class="center aligned">Horas Acumuladas</th>
+            <th class="center aligned">Opciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(dato, index) in historico" v-bind:key="dato._id" v-if="!dato.pagoHoraExtra">
+            <td>{{moment(dato.fecha).format("DD/MM/YYYY")}}</td>
+            <td class="center aligned">{{getObservacion(dato.observacion, dato.horasFaltantes)}}</td>
+            <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}}</td>
+            <td class="center aligned">
+              <span v-if="dato.bancoHora">
+                <!-- <i class="undo link icon"></i> -->
+              </span>
+              <span v-else-if="dato.horasExtras">
+                <i class="checkmark box link icon" @click="saveBankHours(dato.horasExtras, dato.funcionario._id, dato._id, index)"></i>
+                <i class="remove link icon" @click="undoBankHour(dato._id, dato.horasExtras, index)"></i>
+                <i class="money bill alternate outline link icon" @click="payOverTime(dato._id, index)"></i>
+              </span>
+
+              <i class="clock outline link icon" v-if="dato.horasFaltantes" @click="amendDelay(dato._id, dato.funcionario._id, dato.horasFaltantes, index)"></i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </div>
 </template>
 
 <script>
@@ -121,10 +121,10 @@ export default {
     nombre: {
       type: String
     },
-    dateStart: {
+    startDate: {
       type: String
     },
-    dateEnd: {
+    endDate: {
       type: String
     }
   },
@@ -149,8 +149,8 @@ export default {
       );
       var attendanceHistoricPromise = this.$http.get(
         `/salarios/attendance-historic/${this.funcionario}?inicio=${
-          this.dateStart
-        }&fin=${this.dateEnd}`
+          this.startDate
+        }&fin=${this.endDate}`
       );
 
       const [totalHours, attendanceHistoric] = await Promise.all([
@@ -191,7 +191,7 @@ export default {
     amendDelay(attendanceId, funcionarioId, horasFaltantes, index) {
       this.$confirm(
         "Est accion reducira el descuento del banco de horas acumulado por el funcionario",
-        "Alert",
+        "Alerta",
         {
           confirmButtonText: "Aceptar",
           cancelButtonText: "Cancelar",
@@ -356,8 +356,8 @@ export default {
         name: "detallePlanilla",
         params: {
           enableView: true,
-          dateStart: this.dateStart,
-          dateEnd: this.dateEnd
+          startDate: this.startDate,
+          endDate: this.endDate
         }
       });
     },
