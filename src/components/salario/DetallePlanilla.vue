@@ -14,59 +14,40 @@
       <h4 class="ui dividing header">
         Detalle de la Planilla de Salarios
       </h4>
-      <div class="two fields" v-show="enableView">
+      <div class="two fields">
         <div class="ui twelve wide field">
-          <label for="salaryQuery">Introducir rango de fechas:</label>
-          <div class="inline fields">
-
-            <div class="field">
-              <el-date-picker v-model="startDate" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-              </el-date-picker>
-            </div>
-
-            <div class="field">
-              <el-date-picker v-model="endDate" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
-              </el-date-picker>
-            </div>
-
-            <div class="field" v-show="startDate != null">
-              <i class="large circle remove link grey icon"></i>
-            </div>
-
-            <!-- <div class="field">
-              <div class="ui vertical teal button" @click="calcularSalario(startDate, endDate)">
-                Generar Salario
+          <div class="ui mini steps">
+            <div class="step">
+              <i class="calendar alternate outline icon"></i>
+              <div class="content">
+                <div class="title">{{moment(this.startDate).format("DD/MM/YYYY")}}</div>
               </div>
             </div>
-            <div class="field">
-              <button class="ui button" @click="limpiarCampos()">Limpiar</button>
-
-            </div> -->
-
+            <div class="step">
+              <i class="calendar alternate outline icon"></i>
+              <div class="content">
+                <div class="title">{{moment(this.endDate).format("DD/MM/YYYY")}}</div>
+              </div>
+            </div>
           </div>
-
         </div>
 
-        <div class="ui four wide field">
+        <div class="ui four wide field" v-show="enableView">
 
           <div class="ui right floated main menu">
             <a class="icon item">
-              <i class="icons">
-                <i class="file icon" @click="getResumen"></i>
-                <i class="bottom left corner inverted refresh icon"></i>
-              </i>
-              <!-- <i class="file outline icon"></i> -->
+              <i class="user plus icon"></i>
             </a>
 
             <a class="icon item">
               <i class="save icon" @click="saveSalaryResume(id)"></i>
             </a>
 
-            <a class="icon item">
+            <a class="icon item" @click="this.updatePaymentDetail">
               <i class="refresh icon"></i>
             </a>
 
-            <a class="icon item" v-show="true">
+            <a class="icon item">
               <i class="print icon"></i>
             </a>
 
@@ -82,7 +63,7 @@
           <thead>
             <tr>
               <th>Funcionario</th>
-              <th>Banco de Hs</th>
+              <th>Hs. Extras</th>
               <th>Retrasos</th>
               <th>Ausencias</th>
               <th>Salario Base</th>
@@ -113,7 +94,7 @@
               <td>{{calcularSalarioNeto(resultado.salary, resultado.ips, resultado.salaryAdvance, resultado.lending, resultado.discount, resultado.extraHourValue, index)}} {{resultado.coin}}</td>
               <td>
                 <i class="history link icon" @click="goToResumenHora(resultado.employee, resultado.name)"></i>
-                <i class="icons" @click="goToResumenSalarial()">
+                <i class="icons" @click="goToResumenSalarial(resultado)">
                   <i class="file outline link icon"></i>
                   <i class="bottom left corner dollar sign icon"></i>
                 </i>
@@ -202,6 +183,13 @@ export default {
     formatRetrasos(valor) {
       return Math.round(valor * -1).toLocaleString();
     },
+    updatePaymentDetail() {
+      this.loading = true;
+      this.resultadoTotal.length = 0;
+      this.getResumen().then(() => {
+        this.loading = false;
+      });
+    },
     formatDate(month, year) {
       var date = moment()
         .set({ year: year, month: month })
@@ -224,16 +212,21 @@ export default {
       this.$router.push({
         name: "resumenBancoHora",
         params: {
+          id: this.id,
           funcionario: funcionario,
           nombre: name,
           startDate: this.startDate,
-          endDate: this.endDate
+          endDate: this.endDate,
+          detail: this.detail
         }
       });
     },
-    goToResumenSalarial(funcionario, name) {
+    goToResumenSalarial(resultado) {
       this.$router.push({
-        name: "resumenSalarial"
+        name: "resumenSalarial",
+        params: {
+          resumenSalarial: resultado
+        }
       });
     },
     formatHoraExtra(value) {

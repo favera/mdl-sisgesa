@@ -177,7 +177,7 @@
           </thead>
 
           <tbody>
-            <tr v-for="marcacion in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
+            <tr v-for="(marcacion, index) in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
               <td>{{marcacion.nombreFuncionario}}</td>
               <td>{{moment(marcacion.fecha).format("L")}}</td>
               <td>{{(marcacion.entrada || "--") + " hs"}}</td>
@@ -189,7 +189,7 @@
 
               <td class="center aligned">
                 <i @click="guardarPaginacion(marcacion._id)" class="edit row link icon"></i>
-                <i @click="confirm(marcacion._id)" class="trash link icon"></i>
+                <i @click="deleteAttendance(marcacion._id, index)" class="trash link icon"></i>
 
               </td>
             </tr>
@@ -660,8 +660,7 @@ export default {
         (this.funcionarios = response.data), console.log("entro en axios");
       });
     },
-    confirm(id) {
-      console.log("ID desde confirm", id);
+    deleteAttendance(attendanceId, index) {
       this.$confirm(
         "Este registro sera eliminado permanentemente. Continuar?",
         "Alerta",
@@ -672,11 +671,17 @@ export default {
         }
       )
         .then(() => {
-          this.eliminarAsistencia(id);
-          this.$message({
-            type: "success",
-            message: "Registro Eliminado exitosamente"
-          });
+          this.$http
+            .delete(`/asistencias/delete/${attendanceId}`)
+            .then(response => {
+              if (response.status === 200) {
+                this.marcaciones.splice(index, 1);
+                this.$message({
+                  type: "success",
+                  message: "Registro Eliminado exitosamente"
+                });
+              }
+            });
         })
         .catch(() => {
           this.$message({
@@ -684,13 +689,6 @@ export default {
             message: "Proceso cancelado"
           });
         });
-    },
-    eliminarAsistencia(id) {
-      var index = this.marcaciones.findIndex(i => i.id === id);
-      this.marcaciones.splice(index, 1);
-      this.$http
-        .delete(`/asistencias/delete/${id}`)
-        .then(response => console.log(response));
     },
     obtenerFeriados() {
       var firstDayYear = moment()

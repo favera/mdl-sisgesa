@@ -150,7 +150,8 @@ export const routes = [
       {
         path: "/resumen-salarial",
         component: ResumenSalario,
-        name: "resumenSalarial"
+        name: "resumenSalarial",
+        props: true
       },
       {
         path: "/resumen-banco-hora",

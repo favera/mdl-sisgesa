@@ -69,7 +69,7 @@
           </tr>
         </thead>
         <tbody>
-          <template v-for="prestamo in prestamos">
+          <template v-for="(prestamo, index) in prestamos">
             <tr :key="prestamo._id">
 
               <td>{{moment(prestamo.fecha).format("L")}}</td>
@@ -80,7 +80,7 @@
               </td>
               <td class="center aligned">
                 <i class="edit row link icon " @click="editarPrestamo(prestamo._id)"></i>
-                <i class="trash link icon " @click="confirm(prestamo._id)"></i>
+                <i class="trash link icon " @click="deleteLending(prestamo._id, index)"></i>
               </td>
 
             </tr>
@@ -230,8 +230,7 @@ export default {
           this.pageOne.totalItems = response.data.total;
         });
     },
-    confirm(id) {
-      console.log(id);
+    deleteLending(lendingId, index) {
       this.$confirm(
         "El registro sera eliminado permanentemente. Desea Continuar?",
         "Atencion!",
@@ -242,10 +241,14 @@ export default {
         }
       )
         .then(() => {
-          this.eliminarPrestamo(id);
-          this.$message({
-            type: "success",
-            message: "Registro Eliminado"
+          this.$http.delete(`/prestamos/delete/${lendingId}`).then(response => {
+            if (response.status === 200) {
+              this.prestamos.splice(index, 1);
+              this.$message({
+                type: "success",
+                message: "Registro Eliminado"
+              });
+            }
           });
         })
         .catch(e => {
@@ -256,14 +259,7 @@ export default {
           });
         });
     },
-    eliminarPrestamo(id) {
-      console.log("Id recibido", id);
-      var index = this.prestamos.findIndex(i => i.id === id);
-      this.$http.delete(`/prestamos/delete/${id}`).then(response => {
-        console.log(response);
-        this.prestamos.splice(index, 1);
-      });
-    },
+
     abrirModal() {
       this.modal.modal("show");
     }

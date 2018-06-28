@@ -45,14 +45,14 @@
         </thead>
 
         <tbody>
-          <tr v-for="sucursal in filteredList" :key="sucursal._id">
+          <tr v-for="(sucursal, index) in filteredList" :key="sucursal._id">
             <td>{{sucursal.nombre }}</td>
             <td>{{sucursal.horaEntrada + " hs"}}</td>
             <td>{{sucursal.horaSalida + " hs"}}</td>
             <td>{{sucursal.telefono}}</td>
             <td class="center aligned">
               <i class="edit row link icon" @click="editarSucursal(sucursal._id)"></i>
-              <i class="trash link icon" @click="confirm(sucursal._id)"></i>
+              <i class="trash link icon" @click="deleteSubsidiary(sucursal._id, index)"></i>
             </td>
           </tr>
         </tbody>
@@ -96,7 +96,7 @@ export default {
     editarSucursal(sucursalId) {
       this.$router.push({ name: "editarSucursal", params: { id: sucursalId } });
     },
-    confirm(id) {
+    deleteSubsidiary(subsidiaryId, index) {
       this.$confirm(
         "El registro sera eliminado permanentemente. Desea Continuar?",
         "Atencion!",
@@ -107,16 +107,16 @@ export default {
         }
       )
         .then(() => {
-          var index = this.sucursales.findIndex(i => i.id === id);
           this.$http
-            .delete(`/sucursales/delete/${id}`)
+            .delete(`/sucursales/delete/${subsidiaryId}`)
             .then(response => {
-              console.log("response from then", response);
-              this.sucursales.splice(index, 1);
-              this.$message({
-                type: "success",
-                message: "Registro Eliminado"
-              });
+              if (response.status === 200) {
+                this.sucursales.splice(index, 1);
+                this.$message({
+                  type: "success",
+                  message: "Registro Eliminado"
+                });
+              }
             })
             .catch(e => {
               console.log("Response error", e.response);

@@ -84,7 +84,7 @@
             <th>Fecha</th>
             <th class="center aligned">Motivo</th>
             <th class="center aligned">Horas Acumuladas</th>
-            <th class="center aligned">Opciones</th>
+            <th class="center aligned" v-show="this.showOptions">Opciones</th>
           </tr>
         </thead>
         <tbody>
@@ -92,7 +92,7 @@
             <td>{{moment(dato.fecha).format("DD/MM/YYYY")}}</td>
             <td class="center aligned">{{getObservacion(dato.observacion, dato.horasFaltantes)}}</td>
             <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}}</td>
-            <td class="center aligned">
+            <td class="center aligned" v-show="this.showOptions">
               <span v-if="dato.bancoHora">
                 <!-- <i class="undo link icon"></i> -->
               </span>
@@ -115,6 +115,9 @@
 import moment from "moment";
 export default {
   props: {
+    id: {
+      type: String
+    },
     funcionario: {
       type: String
     },
@@ -126,6 +129,9 @@ export default {
     },
     endDate: {
       type: String
+    },
+    detail: {
+      type: Boolean
     }
   },
   data() {
@@ -139,7 +145,8 @@ export default {
         totalHoraExtra: 0,
         horaExtraMinutos: null,
         horaExtraHora: null
-      }
+      },
+      showOptions: !this.detail
     };
   },
   methods: {
@@ -352,14 +359,28 @@ export default {
       this.$router.push({ name: "listadoSalarios" });
     },
     returnDetail() {
-      this.$router.push({
-        name: "detallePlanilla",
-        params: {
-          enableView: true,
-          startDate: this.startDate,
-          endDate: this.endDate
-        }
-      });
+      if (this.detail) {
+        this.$router.push({
+          name: "detallePlanilla",
+          params: {
+            id: this.id,
+            enableView: false,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            detail: this.detail
+          }
+        });
+      } else {
+        this.$router.push({
+          name: "detallePlanilla",
+          params: {
+            enableView: true,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            detail: this.detail
+          }
+        });
+      }
     },
     getObservacion(observacion, horasFaltantes) {
       if (!observacion && horasFaltantes) {

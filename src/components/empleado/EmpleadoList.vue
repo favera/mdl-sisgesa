@@ -50,14 +50,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="empleado in empleados" :key="empleado._id">
+          <tr v-for="(empleado, index) in empleados" :key="empleado._id">
             <td> {{empleado.nombre}}</td>
             <td> {{empleado.sucursal.nombre}}</td>
             <td> {{empleado.cargaLaboral}}</td>
             <td> {{empleado.salario}}{{empleado.moneda}}</td>
             <td class="center aligned">
               <i class="edit row link icon" @click="guardarPaginacion(empleado._id)"></i>
-              <i class="trash link icon" @click="confirm(empleado._id)"></i>
+              <i class="trash link icon" @click="deleteEmployee(empleado._id, index)"></i>
             </td>
           </tr>
 
@@ -131,18 +131,24 @@ export default {
     nuevoEmpleado() {
       this.$router.push({ name: "incluirEmpleado" });
     },
-    confirm(id) {
+    deleteEmployee(employeeId, index) {
       this.$confirm("Este registro sera desactivado. Continuar?", "Atencion!", {
         confirmButtonText: "OK",
         cancelButtonText: "Cancel",
         type: "warning"
       })
         .then(() => {
-          this.eliminarEmpleado(id);
-          this.$message({
-            type: "success",
-            message: "Registro Eliminado"
-          });
+          this.$http
+            .put(`/funcionarios/deactivate/${employeeId}`, { activo: false })
+            .then(response => {
+              if (response.status === 200) {
+                this.empleados.splice(index, 1);
+                this.$message({
+                  type: "success",
+                  message: "Registro Eliminado"
+                });
+              }
+            });
         })
         .catch(() => {
           this.$message({
@@ -150,13 +156,6 @@ export default {
             message: "Proceso cancelado"
           });
         });
-    },
-    eliminarEmpleado(id) {
-      console.log("DESACTIVAR EMPLEADO", id);
-      var index = this.empleados.findIndex(i => i.id === id);
-      this.empleados.splice(index, 1);
-
-      this.$http.put(`/funcionarios/deactivate/${id}`, { activo: false });
     },
     obtenerListadoEmpleado(pageReset) {
       if (pageReset) {

@@ -77,7 +77,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="adelanto in adelantos" :key="adelanto._id">
+          <tr v-for="(adelanto, index) in adelantos" :key="adelanto._id">
             <td class="collapsing">
               <div class="ui fitted checkbox">
                 <input type="checkbox" :value="adelanto._id" v-model="seleccionados">
@@ -89,7 +89,7 @@
             <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
             <td class="center aligned">
               <i class="edit row link icon" @click="editarAdelanto(adelanto._id)"></i>
-              <i class="trash link icon" @click="confirm(adelanto._id)"></i>
+              <i class="trash link icon" @click="deleteAdvanceSalary(adelanto._id, index)"></i>
               <i class="print link icon" @click="exportRecibo(adelanto._id)"></i>
             </td>
             <div class="print">
@@ -294,7 +294,7 @@ export default {
           this.pageOne.totalItems = response.data.total;
         });
     },
-    confirm(id) {
+    deleteAdvanceSalary(advanceId, index) {
       this.$confirm(
         "El registro sera eliminado permanentemente. Desea Continuar?",
         "Atencion!",
@@ -305,10 +305,14 @@ export default {
         }
       )
         .then(() => {
-          this.eliminarAdelanto(id);
-          this.$message({
-            type: "success",
-            message: "Registro Eliminado"
+          this.$http.delete(`/adelantos/delete/${advanceId}`).then(response => {
+            if (response.status === 200) {
+              this.adelantos.splice(index, 1);
+              this.$message({
+                type: "success",
+                message: "Registro Eliminado"
+              });
+            }
           });
         })
         .catch(() => {
@@ -317,12 +321,6 @@ export default {
             message: "Proceso Cancelado"
           });
         });
-    },
-    eliminarAdelanto(id) {
-      var index = this.adelantos.findIndex(i => i.id === id);
-      this.adelantos.splice(index, 1);
-
-      this.$http.delete(`/adelantos/delete/${id}`);
     }
   },
   components: {

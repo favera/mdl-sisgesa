@@ -86,19 +86,22 @@
 
           <tbody>
 
-            <tr v-for="payment in payroll" :key="payment._id">
+            <tr v-for="(payment, index) in payroll" :key="payment._id">
               <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
               <td>{{payment.status}}</td>
               <td class="center aligned">
-                <span v-if="!payment.detail">
-                  <i class="plus link icon" @click="editarPlanilla(payment._id, payment.month, payment.year)"></i>
-                </span>
+                <span v-show="payment.status === 'Pendiente'">
+                  <span v-if="!payment.detail">
+                    <i class="plus link icon" @click="addPaymentDetail(payment._id, payment.month, payment.year)"></i>
+                  </span>
 
-                <span v-else>
-                  <i class="zoom link icon" @click="paymentDetail(payment._id)"></i>
-                  <i class="edit link icon" @click="detallePlanilla(payment._id, payment.month, payment.year)"></i>
-                  <i class="checkmark box link icon"></i>
-                  <i class="trash link icon"></i>
+                  <span v-else>
+                    <i class="zoom link icon" @click="paymentDetail(payment._id, payment.month, payment.year)"></i>
+                    <i class="edit link icon" @click="editPaymentDetail(payment._id, payment.month, payment.year)"></i>
+                    <i class="checkmark box link icon" @click="approvePayroll(payment._id, index)"></i>
+
+                  </span>
+                  <i class="trash link icon" @click="deletePayroll(payment._id, index)"></i>
                 </span>
 
               </td>
@@ -157,6 +160,61 @@ export default {
   },
   methods: {
     pageOneChanged() {},
+    approvePayroll(paymentId, index) {
+      this.$confirm(
+        "Al aprobar la planilla de pago ya no podra ser editado. Continuar?",
+        "Alerta",
+        {
+          confirmButtonText: "Aceptar",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      )
+        .then(() => {
+          this.$http
+            .put(`/salarios/update-status/${paymentId}`)
+            .then(response => {
+              if (response.status === 200) {
+                this.$set(this.payroll, index, response.data);
+              }
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "Proceso cancelado"
+          });
+        });
+    },
+    deletePayroll(paymentId, index) {
+      this.$confirm(
+        "Este registro sera eliminado permanentemente. Continuar?",
+        "Alerta",
+        {
+          confirmButtonText: "Aceptar",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      )
+        .then(() => {
+          this.$http.delete(`/salarios/delete/${paymentId}`).then(response => {
+            console.log(response);
+            if (response.status === 200) {
+              this.payroll.splice(index, 1);
+              this.$message({
+                type: "success",
+                message: "Registro eliminado exitosamente"
+              });
+            }
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "Proceso cancelado"
+          });
+        });
+    },
     paymentDetail(paymentId, month, year) {
       this.getDates(month, year);
       this.$router.push({
@@ -185,21 +243,22 @@ export default {
         .endOf("month")
         .format();
     },
-    detallePlanilla(paymentId, month, year) {
+    editPaymentDetail(paymentId, month, year) {
       this.getDates(month, year);
 
       this.$router.push({
         name: "detallePlanilla",
         params: {
           id: paymentId,
-          enableView: false,
+          enableView: true,
+          detail: true,
           startDate: this.startDate,
           endDate: this.endDate
         }
       });
     },
 
-    editarPlanilla(paymentId, month, year) {
+    addPaymentDetail(paymentId, month, year) {
       this.getDates(month, year);
 
       this.$router.push({
@@ -236,7 +295,17 @@ export default {
         .then(response => {
           console.log(response);
         })
-        .catch(err => console.log(err));
+        .catch(e => {
+          console.log(e.response);
+          if (e.response.data.code === 11000) {
+            this.$notify.error({
+              title: "Error",
+              message:
+                "Ya existe el periodo que desea agregar. Por favor modifique el registro si es necesario actualizar",
+              duration: 9000
+            });
+          }
+        });
     },
     abrirModal() {
       this.modal
