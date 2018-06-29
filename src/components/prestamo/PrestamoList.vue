@@ -79,8 +79,11 @@
                 <i class="browser link icon " @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
               </td>
               <td class="center aligned">
-                <i class="edit row link icon " @click="editarPrestamo(prestamo._id)"></i>
-                <i class="trash link icon " @click="deleteLending(prestamo._id, index)"></i>
+                <span>
+                  <i class="edit row link icon " @click="editarPrestamo(prestamo._id)"></i>
+                  <i class="trash link icon " @click="deleteLending(prestamo._id, index)"></i>
+                </span>
+
               </td>
 
             </tr>
@@ -103,7 +106,7 @@
                           </div>
                         </div>
 
-                        <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
+                        <div class="item" :key="cuota._id" v-for="cuota in prestamo.cuotas">
                           <div class="middle aligned content">
                             <p>{{moment(cuota.vencimiento).format("L")}}</p>
                           </div>
@@ -112,7 +115,9 @@
                           </div>
 
                           <div class="middle aligned content">
-                            <div class="ui orange horizontal label">{{cuota.estado}}</div>
+                            <div class="ui orange horizontal label" v-if="cuota.estado ===  'pendiente'">{{cuota.estado}}</div>
+                            <div class="ui blue horizontal label" v-if="cuota.estado ===  'procesado'">{{cuota.estado}}</div>
+                            <div class="ui olive horizontal label" v-if="cuota.estado ===  'pagado'">{{cuota.estado}}</div>
                           </div>
                         </div>
 

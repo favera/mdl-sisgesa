@@ -169,22 +169,31 @@ export default {
           cancelButtonText: "Cancelar",
           type: "warning"
         }
-      )
-        .then(() => {
-          this.$http
-            .put(`/salarios/update-status/${paymentId}`)
-            .then(response => {
-              if (response.status === 200) {
-                this.$set(this.payroll, index, response.data);
-              }
+      ).then(() => {
+        this.$http
+          .put(`/prestamos/update/lending/paid`)
+          .then(response => {
+            console.log(response);
+            this.$http
+              .put(`/salarios/update-status/${paymentId}`)
+              .then(response => {
+                if (response.status === 200) {
+                  this.$set(this.payroll, index, response.data);
+                  this.$notify({
+                    title: "Exito!",
+                    type: "success",
+                    message: "Planilla de pago de Salarios Aprobada"
+                  });
+                }
+              });
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "Proceso cancelado"
             });
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "Proceso cancelado"
           });
-        });
+      });
     },
     deletePayroll(paymentId, index) {
       this.$confirm(

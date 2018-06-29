@@ -146,6 +146,7 @@ export default {
       // fechaFin: null,
       feriados: [],
       marcaciones: [],
+      lendingIdentifiers: [],
       empleados: [],
       prestamos: [],
       resultadoTotal: [],
@@ -517,6 +518,7 @@ export default {
                 ) {
                   console.log("Valor prestamo", cuota.monto);
                   totalMes.lending = parseInt(cuota.monto.split(".").join(""));
+                  this.lendingIdentifiers.push(cuota._id);
                 }
               });
             }
@@ -538,26 +540,30 @@ export default {
         confirmButtonText: "Aceptar",
         cancelButtonText: "Cancelar",
         type: "warning"
-      })
-        .then(() => {
-          this.$http
-            .put(
-              `/salarios/update/salary-detail/${idSalaryResume}`,
-              this.resultadoTotal
-            )
-            .then(() => {
-              this.$message({
-                type: "success",
-                message: "Resumen de Salario Guardado"
+      }).then(() => {
+        this.$http
+          .put(`/prestamos/update/lending/processed`, this.lendingIdentifiers)
+          .then(response => {
+            console.log(response);
+            this.$http
+              .put(
+                `/salarios/update/salary-detail/${idSalaryResume}`,
+                this.resultadoTotal
+              )
+              .then(() => {
+                this.$message({
+                  type: "success",
+                  message: "Resumen de Salario Guardado"
+                });
               });
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "Proceso cancelado"
             });
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "Proceso cancelado"
           });
-        });
+      });
     },
     getEmployees() {
       this.$http.get(`/funcionarios/full-list`).then(response => {

@@ -57,7 +57,7 @@
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
                 <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="{required: true, validar_mes: {prestamo}}">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="{required: true}">
                   </el-date-picker>
                 </div>
                 <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
@@ -320,7 +320,7 @@ export default {
         if (prestamo[0].prestamo.id) {
           return true;
         }
-        return moment(value).isAfter(new Date(), "month");
+        return moment(value).isAfter(prestamo[0].fecha, "month");
       }
     });
   },
@@ -335,7 +335,6 @@ export default {
 </script>
 
 <style>
-
 </style>
 
 
