@@ -1,6 +1,18 @@
 <template>
     <div class="ui twelve wide column">
+
         <div class="ui form">
+            <div class="field">
+                <div class="ui breadcrumb">
+                    <a class="section" @click="returnList">Listado de Planillas de Salario</a>
+                    <i class="right angle icon divider"></i>
+                    <a class="section" @click="returnDetail">Detalle de Planilla</a>
+                    <i class="right angle icon divider"></i>
+                    <div class=" active section">Resumen de Banco de Horas</div>
+
+                </div>
+            </div>
+
             <h3 class="ui dividing header">
                 Resumen Salarial
             </h3>
@@ -28,7 +40,7 @@
                         <div class="ui basic segment">
                             <div class="ui horizontal statistic">
                                 <div class="value">
-                                    {{this.resumenSalarial.salary}}
+                                    {{this.resumenSalarial.salary.toLocaleString()}}
                                 </div>
                                 <div class="label">
                                     {{this.resumenSalarial.coin}}
@@ -44,7 +56,7 @@
                         <div class="ui basic segment">
                             <div class="ui horizontal statistic">
                                 <div class="value">
-                                    {{this.resumenSalarial.salaryBalance}}
+                                    {{this.resumenSalarial.salaryBalance.toLocaleString()}}
                                 </div>
                                 <div class="label">
                                     {{this.resumenSalarial.coin}}
@@ -65,11 +77,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="item in resumenSalarial" :key="item._id">
-                        <td>ips {{resumenSalarial.ips}}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                    <tr v-for="item in resumenSalarial.salarySummary" :key="item._id">
+                        <td>{{moment(item.date).format("L")}}</td>
+                        <td>{{returnDescription(item.description, item.amount)}}</td>
+                        <td>{{Math.round(item.amount).toLocaleString()}} {{ item.coin}}</td>
                     </tr>
 
                 </tbody>
@@ -81,27 +92,66 @@
 <script>
 export default {
   props: {
+    id: {
+      type: String
+    },
     resumenSalarial: {
       type: Object
+    },
+    startDate: {
+      type: String
+    },
+    endDate: {
+      type: String
+    },
+    detail: {
+      type: Boolean
     }
   },
   data() {
     return {
-      details: []
+      details: [],
+      attendance: [],
+      advance: [],
+      lending: []
     };
   },
   methods: {
-    compoundDetails() {
-      for (const key in this.resumenSalarial) {
-        if (this.resumenSalarial.hasOwnProperty("ips")) {
-          this.details = this.resumenSalarial[key];
-        }
+    returnList() {
+      this.$router.push({ name: "listadoSalarios" });
+    },
+    returnDescription(description, amount) {
+      if (!description && amount < 0) {
+        return "Retraso";
+      }
+      return description;
+    },
+    returnDetail() {
+      if (this.detail) {
+        this.$router.push({
+          name: "detallePlanilla",
+          params: {
+            id: this.id,
+            enableView: false,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            detail: this.detail
+          }
+        });
+      } else {
+        this.$router.push({
+          name: "detallePlanilla",
+          params: {
+            enableView: true,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            detail: this.detail
+          }
+        });
       }
     }
   },
-  created() {
-    this.compoundDetails();
-  }
+  created() {}
 };
 </script>
 

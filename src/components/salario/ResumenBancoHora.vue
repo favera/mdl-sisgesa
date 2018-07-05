@@ -91,10 +91,10 @@
           <tr v-for="(dato, index) in historico" v-bind:key="dato._id" v-if="!dato.pagoHoraExtra">
             <td>{{moment(dato.fecha).format("DD/MM/YYYY")}}</td>
             <td class="center aligned">{{getObservacion(dato.observacion, dato.horasFaltantes)}}</td>
-            <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}}</td>
-            <td class="center aligned" v-show="this.showOptions">
+            <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}} Hs.</td>
+            <td class="center aligned" v-show="!this.showOptions">
               <span v-if="dato.bancoHora">
-                <!-- <i class="undo link icon"></i> -->
+                <i class="undo link icon"></i>
               </span>
               <span v-else-if="dato.horasExtras">
                 <i class="checkmark box link icon" @click="saveBankHours(dato.horasExtras, dato.funcionario._id, dato._id, index)"></i>

@@ -74,7 +74,7 @@
 
               <td>{{moment(prestamo.fecha).format("L")}}</td>
               <td>{{prestamo.nombreFuncionario}}</td>
-              <td>{{prestamo.monto}} - {{prestamo.moneda}}</td>
+              <td>{{prestamo.monto.toLocaleString()}} - {{prestamo.moneda}}</td>
               <td class="center aligned">
                 <i class="browser link icon " @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
               </td>
@@ -111,7 +111,7 @@
                             <p>{{moment(cuota.vencimiento).format("L")}}</p>
                           </div>
                           <div class="middle aligned content">
-                            <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+                            <p>{{cuota.monto.toLocaleString()}}-{{cuota.moneda}}</p>
                           </div>
 
                           <div class="middle aligned content">

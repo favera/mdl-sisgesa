@@ -153,6 +153,7 @@ export default {
         this.adelanto.nombreFuncionario = this.getNombreFuncionario(
           this.funcionarioSeleccionado
         );
+        this.adelanto.monto = parseInt(this.adelanto.monto.split(".").join(""));
         this.$http
           .put(`/adelantos/update/${this.$route.params.id}`, this.adelanto)
           .then(response => {
@@ -169,6 +170,7 @@ export default {
         this.adelanto.nombreFuncionario = this.getNombreFuncionario(
           this.funcionarioSeleccionado
         );
+        this.adelanto.monto = parseInt(this.adelanto.monto.split(".").join(""));
         this.$http
           .post(`/adelantos/add`, this.adelanto)
           .then(response => {
@@ -226,7 +228,7 @@ export default {
             this.totalSalario = funcionario.salario;
             console.log(this.totalSalario);
             this.adelanto.monto = Math.floor(
-              funcionario.salario.split(".").join("") / 2
+              funcionario.salario / 2
             ).toLocaleString();
             $(this.$el)
               .find("#monedaSelector")

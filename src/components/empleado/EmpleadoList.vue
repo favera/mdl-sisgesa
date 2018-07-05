@@ -54,7 +54,7 @@
             <td> {{empleado.nombre}}</td>
             <td> {{empleado.sucursal.nombre}}</td>
             <td> {{empleado.cargaLaboral}}</td>
-            <td> {{empleado.salario}}{{empleado.moneda}}</td>
+            <td> {{formatSalary(empleado.salario)}}{{empleado.moneda}}</td>
             <td class="center aligned">
               <i class="edit row link icon" @click="guardarPaginacion(empleado._id)"></i>
               <i class="trash link icon" @click="deleteEmployee(empleado._id, index)"></i>
@@ -107,6 +107,9 @@ export default {
     cleanField() {
       this.search = null;
       this.obtenerListadoEmpleado();
+    },
+    formatSalary(value) {
+      return value.toLocaleString();
     },
     consultarEmpleado(e) {
       if (e && e.keyCode === 13) {

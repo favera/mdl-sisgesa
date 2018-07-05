@@ -90,19 +90,17 @@
               <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
               <td>{{payment.status}}</td>
               <td class="center aligned">
-                <span v-show="payment.status === 'Pendiente'">
-                  <span v-if="!payment.detail">
-                    <i class="plus link icon" @click="addPaymentDetail(payment._id, payment.month, payment.year)"></i>
-                  </span>
-
-                  <span v-else>
-                    <i class="zoom link icon" @click="paymentDetail(payment._id, payment.month, payment.year)"></i>
-                    <i class="edit link icon" @click="editPaymentDetail(payment._id, payment.month, payment.year)"></i>
-                    <i class="checkmark box link icon" @click="approvePayroll(payment._id, index)"></i>
-
-                  </span>
-                  <i class="trash link icon" @click="deletePayroll(payment._id, index)"></i>
+                <span v-if="!payment.detail">
+                  <i class="plus link icon" @click="addPaymentDetail(payment._id, payment.month, payment.year)"></i>
                 </span>
+
+                <span v-else-if="payment.status === 'Pendiente'">
+                  <i class="zoom link icon" @click="paymentDetail(payment._id, payment.month, payment.year)"></i>
+                  <i class="edit link icon" @click="editPaymentDetail(payment._id, payment.month, payment.year)"></i>
+                  <i class="checkmark box link icon" @click="approvePayroll(payment._id, index)"></i>
+
+                </span>
+                <!-- <i class="trash link icon" @click="deletePayroll(payment._id, index)"></i> -->
 
               </td>
             </tr>
