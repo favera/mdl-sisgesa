@@ -3,7 +3,7 @@
 
     <div class="ui four column grid">
       <div class="column">
-        <div class="ui orange inverted segment">
+        <div class="ui secondary orange inverted segment">
           <div class="ui two column grid">
             <div class="eigth wide column">
               <i class="big users inverted icon"></i>
@@ -11,7 +11,7 @@
             <div class="column">
               <div class="ui inverted statistic">
                 <div class="value">
-                  5
+                  {{this.queryResults.absence.length}}
                 </div>
                 <div class="label">
                   Ausencias
@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="column">
-        <div class="ui yellow inverted segment">
+        <div class="ui secondary yellow inverted segment">
           <div class="ui two column grid">
             <div class="eigth wide column">
               <i class="big clock inverted icon"></i>
@@ -30,7 +30,7 @@
             <div class="column">
               <div class="ui inverted statistic">
                 <div class="value">
-                  15
+                  {{this.queryResults.delay.length}}
                 </div>
                 <div class="label">
                   Retrasos
@@ -41,7 +41,7 @@
         </div>
       </div>
       <div class="column">
-        <div class="ui violet inverted segment">
+        <div class="ui secondary violet inverted segment">
           <div class="ui two column grid">
             <div class="eigth wide column">
               <i class="big plane inverted icon"></i>
@@ -60,7 +60,7 @@
         </div>
       </div>
       <div class="column">
-        <div class="ui purple inverted segment">
+        <div class="ui secondary purple inverted segment">
           <div class="ui two column grid">
             <div class="eigth wide column">
               <i class="big puzzle piece inverted icon"></i>
@@ -68,7 +68,7 @@
             <div class="column">
               <div class="ui inverted statistic">
                 <div class="value">
-                  20
+                  {{this.queryResults.incomplete.length}}
                 </div>
                 <div class="label">
                   Incompletos
@@ -155,10 +155,51 @@ import moment from "moment";
 export default {
   name: "dashboard",
   data() {
-    return {};
+    return {
+      dateStart: moment(new Date())
+        .startOf("month")
+        .format(),
+      dateEnd: moment(new Date())
+        .endOf("month")
+        .format(),
+      queryResults: {
+        absence: null,
+        incomplete: null,
+        delay: null
+      }
+    };
   },
-  methods: {},
-  created() {}
+  methods: {
+    async getDataDashboard() {
+      let absencePromise = this.$http.get(
+        `/asistencias/query-data?page=1&limit=10&inicio=${this.dateStart}&fin=${
+          this.dateEnd
+        }&estado=ausentes&busqueda=null`
+      );
+      let incompletePromise = this.$http.get(
+        `/asistencias/query-data?page=1&limit=10&inicio=${this.dateStart}&fin=${
+          this.dateEnd
+        }&estado=incompletos&busqueda=null`
+      );
+
+      let delayPromise = this.$http.get(
+        `/asistencias/all-delays?inicio=${this.dateStart}&fin=${this.dateEnd}`
+      );
+
+      const [absence, incomplete, delay] = await Promise.all([
+        absencePromise,
+        incompletePromise,
+        delayPromise
+      ]);
+
+      this.queryResults.absence = absence.data;
+      this.queryResults.incomplete = incomplete.data;
+      this.queryResults.delay = delay.data;
+    }
+  },
+  created() {
+    this.getDataDashboard();
+  }
 };
 </script>
 
