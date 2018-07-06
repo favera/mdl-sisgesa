@@ -85,7 +85,7 @@
               <td>{{resultado.extraHourMinutes }} Min</td>
               <td>{{resultado.delay}} Min</td>
               <td>{{resultado.abscence}} dias</td>
-              <td>{{resultado.salary}} {{resultado.coin}}</td>
+              <td>{{resultado.salary.toLocaleString()}} {{resultado.coin}}</td>
               <td>{{returnNegative(resultado.ips, resultado.coin)}} </td>
               <td>{{returnNegative(resultado.salaryAdvance, resultado.coin)}} </td>
               <td>{{returnNegative(resultado.lending, resultado.coin)}}</td>
@@ -226,7 +226,11 @@ export default {
       this.$router.push({
         name: "resumenSalarial",
         params: {
-          resumenSalarial: resultado
+          id: this.id,
+          resumenSalarial: resultado,
+          startDate: this.startDate,
+          endDate: this.endDate,
+          detail: this.detail
         }
       });
     },
@@ -255,7 +259,7 @@ export default {
         typeof prestamo,
         typeof discount
       );
-      var salarioNeto = parseInt(salary.split(".").join(""));
+      var salarioNeto = salary;
       if (ips) {
         salarioNeto = salarioNeto - ips;
       }
@@ -345,21 +349,20 @@ export default {
 
         console.log("Indice", index);
         funcionarioExists = index != -1;
+        var summary = {};
 
         if (funcionarioExists) {
           if (marcacion.estilo.ausente) {
             this.resultadoTotal[index].abscence += 1;
-            console.log(
-              "Desde Array antes de la suma",
-              this.resultadoTotal[index].discount
-            );
+
             this.resultadoTotal[index].discount += Math.round(
-              parseInt(marcacion.funcionario.salario.split(".").join("")) / 26
+              marcacion.funcionario.salario / 26
             );
-            console.log(
-              "Pos Array pos suma",
-              this.resultadoTotal[index].discount
-            );
+            summary.date = marcacion.fecha;
+            summary.description = marcacion.observacion;
+            summary.amount = Math.round(marcacion.funcionario.salario / 26);
+            summary.coin = marcacion.funcionario.moneda;
+            this.resultadoTotal[index].salarySummary.push(summary);
           }
 
           // if (marcacion.estilo.incompleto) {
@@ -381,23 +384,33 @@ export default {
             this.resultadoTotal[index].extraHourValue +=
               moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
               horaExtra;
+            summary.date = marcacion.fecha;
+            summary.description = marcacion.observacion;
+            summary.amount =
+              moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
+              horaExtra;
+            summary.coin = marcacion.funcionario.moneda;
+            this.resultadoTotal[index].salarySummary.push(summary);
           }
           console.log("Horas Faltantes", marcacion.horasFaltantes);
           if (marcacion.horasFaltantes) {
             this.resultadoTotal[index].delay += moment
               .duration(marcacion.horasFaltantes, "HH:mm")
               .asMinutes();
-            console.log(
-              "Descuentos pre horas faltantes",
-              this.resultadoTotal[index].discount
-            );
-            this.resultadoTotal[index].discount -=
+
+            this.resultadoTotal[index].discount -= Math.round(
               moment.duration(marcacion.horasFaltantes, "HH:mm").asMinutes() *
-              marcacion.funcionario.salarioMinuto;
-            console.log(
-              "Descuentos pos horas Faltantes",
-              this.resultadoTotal[index].discount
+                marcacion.funcionario.salarioMinuto
             );
+
+            summary.date = marcacion.fecha;
+            summary.description = marcacion.observacion;
+            summary.amount = Math.round(
+              moment.duration(marcacion.horasFaltantes, "HH:mm").asMinutes() *
+                marcacion.funcionario.salarioMinuto
+            );
+            summary.coin = marcacion.funcionario.moneda;
+            this.resultadoTotal[index].salarySummary.push(summary);
           }
 
           if (
@@ -415,13 +428,23 @@ export default {
           totalMes.extraHourValue = 0;
           totalMes.employee = marcacion.funcionario._id;
           totalMes.salaryBalance = 0;
+          totalMes.salarySummary = [];
+          totalMes.name = marcacion.funcionario.nombre;
+          totalMes.salary = marcacion.funcionario.salario;
+          totalMes.salarioMinuto = marcacion.funcionario.salarioMinuto;
+          totalMes.coin = marcacion.funcionario.moneda;
 
           if (marcacion.estilo.ausente) {
             totalMes.abscence = 1;
 
-            totalMes.discount += Math.round(
-              parseInt(marcacion.funcionario.salario.split(".").join("")) / 26
-            );
+            totalMes.discount += Math.round(marcacion.funcionario.salario / 26);
+            summary.date = marcacion.fecha;
+            summary.description = marcacion.observacion;
+            summary.amount =
+              Math.round(marcacion.funcionario.salario / 26) * -1;
+            summary.coin = marcacion.funcionario.moneda;
+            totalMes.salarySummary.push(summary);
+            summary = {};
           } else {
             totalMes.abscence = 0;
           }
@@ -451,6 +474,14 @@ export default {
             totalMes.extraHourValue =
               moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
               horaExtra;
+            summary.date = marcacion.fecha;
+            summary.description = marcacion.observacion;
+            summary.amount =
+              moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
+              horaExtra;
+            summary.coin = marcacion.funcionario.moneda;
+            totalMes.salarySummary.push(summary);
+            summary = {};
           }
 
           if (marcacion.horasFaltantes) {
@@ -459,6 +490,14 @@ export default {
               .asMinutes();
             totalMes.discount -=
               totalMes.delay * marcacion.funcionario.salarioMinuto;
+            summary.date = marcacion.fecha;
+            summary.description = marcacion.observacion;
+            summary.amount =
+              moment.duration(marcacion.horasExtras, "HH:mm").asMinutes() *
+              horaExtra;
+            summary.coin = marcacion.funcionario.moneda;
+            totalMes.salarySummary.push(summary);
+            summary = {};
           } else {
             totalMes.delay = 0;
           }
@@ -477,27 +516,37 @@ export default {
             totalMes.totalTrabajado = 0;
           }
 
-          totalMes.name = marcacion.funcionario.nombre;
-          totalMes.salary = marcacion.funcionario.salario;
-          totalMes.salarioMinuto = marcacion.funcionario.salarioMinuto;
-          totalMes.coin = marcacion.funcionario.moneda;
-
           if (marcacion.funcionario.ips === "salario") {
-            totalMes.ips = Math.round(
-              parseInt(marcacion.funcionario.salario.split(".").join("")) * 0.09
-            );
+            totalMes.ips = Math.round(marcacion.funcionario.salario * 0.09);
+            summary.date = new Date();
+            summary.description = "IPS";
+            summary.amount =
+              Math.round(marcacion.funcionario.salario * 0.09) * -1;
+            summary.coin = marcacion.funcionario.moneda;
+            totalMes.salarySummary.push(summary);
+            summary = {};
           }
-
+          // agrupa los adelantos de un funcionario
           var adelantoFunc = this.adelantos.filter(
             adelanto => adelanto.funcionario === marcacion.funcionario._id
           );
+
+          //agrega a resumen salarial los adelantos del funcionario
+          adelantoFunc.forEach(adelanto => {
+            summary.date = adelanto.fecha;
+            summary.description = "adelanto de salario";
+            summary.amount = adelanto.monto * -1;
+            summary.coin = marcacion.funcionario.moneda;
+            totalMes.salarySummary.push(summary);
+            summary = {};
+          });
 
           if (adelantoFunc.length > 0) {
             totalMes.salaryAdvance = adelantoFunc.reduce(function(
               valor,
               adelanto
             ) {
-              return valor + parseInt(adelanto.monto.split(".").join(""));
+              return valor + adelanto.monto;
             },
             0);
           } else {
@@ -516,8 +565,14 @@ export default {
                   ) &&
                   cuota.estado === "pendiente"
                 ) {
+                  summary.date = cuota.vencimiento;
+                  summary.description = "prestamo";
+                  summary.amount = cuota.monto * -1;
+                  summary.coin = marcacion.funcionario.moneda;
+                  totalMes.salarySummary.push(summary);
+                  summary = {};
                   console.log("Valor prestamo", cuota.monto);
-                  totalMes.lending = parseInt(cuota.monto.split(".").join(""));
+                  totalMes.lending = cuota.monto;
                   this.lendingIdentifiers.push(cuota._id);
                 }
               });
@@ -576,320 +631,6 @@ export default {
         .then(response => {
           this.eventos = response.data;
         });
-    },
-    //Hacer un arrayfilter funcionario donde sera un array de los datos de un solo funcionario
-    //del array resultante sumar horas trabajadas, sumar horas extras, calcular descuento u hora extra
-    //calcular horas mes segun idsucursal
-    calcularSalario(startDate, endDate, horasMes) {
-      horasMes = this.getDiasMes(startDate);
-      console.log(" Dias MES" + horasMes);
-      startDate = moment(startDate, "DD/MM/YYYY").format("L");
-      endDate = moment(endDate, "DD/MM/YYYY").format("L");
-      console.log("FECHAS" + startDate, endDate);
-      console.log("DIAS " + horasMes);
-      this.getData(startDate, endDate, horasMes);
-    },
-
-    async getData(startDate, endDate, horasMes) {
-      this.loading = true;
-      try {
-        const getMarcaciones = await axios.get(
-          url +
-            "/marcaciones?fecha_gte=" +
-            startDate +
-            "&fecha_lte=" +
-            endDate +
-            "&_expand=empleado"
-        );
-
-        const getEmpleados = await axios.get(url + "/empleados");
-
-        console.log("getMarcaciones" + getMarcaciones.data);
-
-        const [marcaciones, empleados] = await Promise.all([
-          getMarcaciones,
-          getEmpleados
-        ]);
-
-        for (let item of empleados.data) {
-          console.log("Entro HIHI" + item.id);
-          this.empleados.push(item.id);
-        }
-
-        //this.empleados = empleados.data;
-        this.marcaciones = marcaciones.data;
-
-        //console.log("Empleados" + JSON.stringify(this.empleados));
-        //console.log("Marcaciones" + JSON.stringify(this.marcaciones));
-      } catch (error) {}
-
-      var resultado = [];
-      for (let id of this.empleados) {
-        console.log("Entro en el for");
-        var empleado = this.marcaciones.filter(function(element) {
-          if (element.empleadoId === id) {
-            console.log("ENTRO en el filter " + element);
-            return element;
-          }
-        });
-
-        resultado.push(empleado);
-      }
-
-      console.log("ARRAY RESULTADO" + JSON.stringify(resultado));
-
-      if (resultado.length > 0) {
-        for (var i = 0; i < resultado.length; i++) {
-          var value = resultado[i];
-          var diasTrabajados = value.length;
-          console.log("Dias Trabajados" + diasTrabajados);
-          console.log("Value" + JSON.stringify(resultado[i]));
-
-          var marcacionEmpleado = {
-            nombre: null,
-            horasMes: null,
-            hmformat: null,
-            horasTrabajadas: null,
-            htformat: null,
-            horasExtras: null,
-            heformat: null,
-            horasExtraAlternativa: null,
-            salarioBase: null,
-            moneda: null,
-            valorHoraExtra: null,
-            salarioNeto: null,
-            salarioNetoAlternativo: null,
-            valorHoraExtraAlternativa: null,
-            horasExtrasNocturnas: null,
-            valorAusencias: null
-          };
-          if (value.length > 0) {
-            for (let element of value) {
-              marcacionEmpleado.horasTrabajadas =
-                marcacionEmpleado.horasTrabajadas +
-                moment.duration(element.horasTrabajadas, "HH:mm").asMinutes();
-              marcacionEmpleado.horasExtras =
-                marcacionEmpleado.horasExtras +
-                moment.duration(element.horasExtras, "HH:mm").asMinutes();
-
-              if (moment.duration(element.salida, "HH:mm").asMinutes() > 1200) {
-                marcacionEmpleado.horasExtrasNocturnas =
-                  moment.duration(
-                    moment.duration(element.salida, "HH:mm").asMinutes()
-                  ) - 1200;
-
-                console.log(
-                  "Hora Extra Noctura" + marcacionEmpleado.horasExtrasNocturnas
-                );
-              }
-            }
-            //copiar hanlde para minutos para mostrar en el informe,
-            //caclcular total laboral mes
-            marcacionEmpleado.nombre = value[0].empleado.nombre;
-            console.log("Nombre:" + marcacionEmpleado.nombre);
-            marcacionEmpleado.salarioBase = value[0].empleado.salario;
-            marcacionEmpleado.moneda = value[0].empleado.moneda;
-            marcacionEmpleado.horasMes = horasMes * 570;
-
-            marcacionEmpleado.horasExtraAlternativa =
-              marcacionEmpleado.horasTrabajadas - marcacionEmpleado.horasMes;
-            console.log(
-              "HORA EXTRA ALTERNATIVA" + marcacionEmpleado.horasExtraAlternativa
-            );
-            marcacionEmpleado.valorHoraExtraAlternativa =
-              marcacionEmpleado.horasExtraAlternativa *
-              value[0].empleado.salarioMinuto;
-
-            if (marcacionEmpleado.valorHoraExtraAlternativa < 0) {
-              marcacionEmpleado.valorHoraExtraAlternativa =
-                marcacionEmpleado.valorHoraExtraAlternativa * 2;
-            }
-
-            marcacionEmpleado.salarioNetoAlternativo = Math.round(
-              parseInt(marcacionEmpleado.salarioBase.split(".").join("")) +
-                marcacionEmpleado.valorHoraExtraAlternativa
-            ).toLocaleString();
-
-            // var minutosHA = Math.floor(
-            //   (moment
-            //     .duration(marcacionEmpleado.horasExtraAlternativa, "minutes")
-            //     .asHours() %
-            //     1) *
-            //     60
-            // );
-
-            // var horasHA =
-            //   moment
-            //     .duration(marcacionEmpleado.horasExtraAlternativa, "minutes")
-            //     .asHours() -
-            //   moment
-            //     .duration(marcacionEmpleado.horasExtraAlternativa, "minutes")
-            //     .asHours() %
-            //     1;
-
-            // if (minutosHA > 0 && horasHA > 0) {
-            //   marcacionEmpleado.heformat =
-            //     horasHA + " Horas " + minutosHA + " Minutos";
-            // } else {
-            //   if (minutos < 0 && horas < 0) {
-            //     minutosHA = minutosHA * -1;
-            //     marcacionEmpleado.heformat =
-            //       horasHA + " Horas " + minutosHA + " Minutos";
-            //   } else {
-            //     if (horasHA !== 0 && minutosHA === 0) {
-            //       marcacionEmpleado.heformat = horasHA + " Horas";
-            //     } else {
-            //       marcacionEmpleado.heformat = minutosHA + " Minutos";
-            //     }
-            //   }
-            // }
-
-            marcacionEmpleado.valorHoraExtraAlternativa = Math.floor(
-              marcacionEmpleado.valorHoraExtraAlternativa
-            ).toLocaleString();
-
-            //##############################
-
-            marcacionEmpleado.valorHoraExtra =
-              marcacionEmpleado.horasExtras * value[0].empleado.salarioMinuto;
-
-            if (marcacionEmpleado.valorHoraExtra < 0) {
-              marcacionEmpleado.valorHoraExtra =
-                marcacionEmpleado.valorHoraExtra * 1;
-            } else {
-              marcacionEmpleado.valorHoraExtra =
-                marcacionEmpleado.valorHoraExtra +
-                marcacionEmpleado.valorHoraExtra / 2;
-            }
-
-            marcacionEmpleado.valorAusencias = Math.floor(
-              (diasTrabajados - horasMes) *
-                480 *
-                value[0].empleado.salarioMinuto
-            );
-
-            var compensacion = Math.floor(
-              value[0].empleado.salarioMinuto * 60 * 8 * (30 - horasMes)
-            );
-
-            if (marcacionEmpleado.valorAusencias < 0) {
-              console.log(
-                "SALARIO BASE" +
-                  parseInt(marcacionEmpleado.salarioBase.split(".").join(""))
-              );
-              console.log(
-                "VALOR HORA EXTRA" + marcacionEmpleado.valorHoraExtra
-              );
-              console.log(
-                "VALOR AUSENCIAS " + marcacionEmpleado.valorAusencias
-              );
-
-              console.log("VALOR COMPENSACION" + compensacion);
-
-              marcacionEmpleado.salarioNeto = Math.floor(
-                parseInt(marcacionEmpleado.salarioBase.split(".").join("")) +
-                  marcacionEmpleado.valorHoraExtra +
-                  marcacionEmpleado.valorAusencias -
-                  compensacion
-              ).toLocaleString();
-            } else {
-              marcacionEmpleado.valorAusencias = 0;
-              marcacionEmpleado.salarioNeto = Math.floor(
-                parseInt(marcacionEmpleado.salarioBase.split(".").join("")) +
-                  marcacionEmpleado.valorHoraExtra
-              ).toLocaleString();
-            }
-
-            marcacionEmpleado.valorHoraExtra = Math.floor(
-              marcacionEmpleado.valorHoraExtra
-            ).toLocaleString();
-
-            var minutos = Math.floor(
-              (moment
-                .duration(marcacionEmpleado.horasExtras, "minutes")
-                .asHours() %
-                1) *
-                60
-            );
-
-            var horas =
-              moment
-                .duration(marcacionEmpleado.horasExtras, "minutes")
-                .asHours() -
-              moment
-                .duration(marcacionEmpleado.horasExtras, "minutes")
-                .asHours() %
-                1;
-
-            if (minutos > 0 && horas > 0) {
-              marcacionEmpleado.heformat =
-                horas + " Horas " + minutos + " Minutos";
-            } else {
-              if (minutos < 0 && horas < 0) {
-                minutos = minutos * -1;
-                marcacionEmpleado.heformat =
-                  horas + " Horas " + minutos + " Minutos";
-              } else {
-                if (horas !== 0 && minutos === 0) {
-                  marcacionEmpleado.heformat = horas + " Horas";
-                } else {
-                  marcacionEmpleado.heformat = minutos + " Minutos";
-                }
-              }
-            }
-
-            var minuto = Math.ceil(
-              (moment
-                .duration(marcacionEmpleado.horasTrabajadas, "minutes")
-                .asHours() %
-                1) *
-                60
-            );
-
-            var hora =
-              moment
-                .duration(marcacionEmpleado.horasTrabajadas, "minutes")
-                .asHours() -
-              moment
-                .duration(marcacionEmpleado.horasTrabajadas, "minutes")
-                .asHours() %
-                1;
-
-            marcacionEmpleado.htformat = hora + " Horas " + minuto + " minutos";
-
-            var minuto1 = Math.floor(
-              (moment
-                .duration(marcacionEmpleado.horasMes, "minutes")
-                .asHours() %
-                1) *
-                60
-            );
-
-            var hora1 =
-              moment.duration(marcacionEmpleado.horasMes, "minutes").asHours() -
-              moment.duration(marcacionEmpleado.horasMes, "minutes").asHours() %
-                1;
-
-            if (minuto1 > 0) {
-              marcacionEmpleado.hmformat =
-                hora1 + " Horas " + minuto1 + " Minutos ";
-            } else {
-              marcacionEmpleado.hmformat = hora1 + " Horas ";
-            }
-
-            console.log(
-              "RESULTADO POR EMPLEADO" + JSON.stringify(marcacionEmpleado)
-            );
-            this.marcacionesEmpleado.push(marcacionEmpleado);
-            this.json_data.push(marcacionEmpleado);
-          }
-        }
-        this.loading = false;
-      }
-
-      console.log(
-        JSON.stringify("RESULTADO FINAL" + JSON.stringify(marcacionEmpleado))
-      );
     }
   },
   created() {
@@ -908,23 +649,6 @@ export default {
 
     // this.$http.get(`/salarios/salary-detail/${id}`).then(response => {
     //   this.resultadoTotal = response.data.salaryDetail;
-    // });
-  },
-  mounted() {
-    // axios.get(url + "/feriados").then(response => {
-    //   var feriados = response.data;
-    //   console.log(feriados);
-    //   this.feriados = response.data;
-    // });
-    // axios.get(url + "/marcaciones?_expand=empleado").then(response => {
-    //   var marcaciones = response.data;
-    //   console.log(marcaciones);
-    //   this.marcaciones = response.data;
-    // });
-    // axios.get(url + "/sucursals").then(response => {
-    //   var sucursals = response.data;
-    //   console.log(sucursals);
-    //   this.sucursales = response.data;
     // });
   }
 };

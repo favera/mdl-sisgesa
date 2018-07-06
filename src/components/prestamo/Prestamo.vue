@@ -68,7 +68,7 @@
                 <div class="inline fields">
                   <div class="field">
                     <div class="field" :class="{error: errors.has('nroCuotas')}">
-                      <el-input-number name="nroCuotas" v-model="prestamo.nroCuotas" @change="handleChange" :min="1" :max="this.maxPrestamo" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
+                      <el-input-number name="nroCuotas" v-model="prestamo.nroCuotas" @change="handleChange" :min="1" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
                     </div>
                     <span class="info-error" v-show="errors.has('nroCuotas')">{{errors.first('nroCuotas')}}</span>
                   </div>
@@ -107,7 +107,7 @@
                       <p>{{moment(cuota.vencimiento).format("L")}}</p>
                     </div>
                     <div class="middle aligned content">
-                      <p>{{cuota.monto}}-{{cuota.moneda}}</p>
+                      <p>{{cuota.monto.toLocaleString()}}-{{cuota.moneda}}</p>
                     </div>
 
                     <div class="middle aligned content">
@@ -194,7 +194,7 @@ export default {
 
           cuota.monto = Math.floor(
             parseInt(this.prestamo.monto.split(".").join("")) / value
-          ).toLocaleString();
+          );
           cuota.moneda = this.prestamo.moneda;
           cuota.estado = "pendiente";
           cuota.vencimiento = moment(this.prestamo.inicioPago)
@@ -325,10 +325,13 @@ export default {
     });
   },
   watch: {
-    $route: "obtenerPrestamo",
-    "prestamo.monto": function(valor) {
-      return (this.maxPrestamo = parseInt(valor.split(".").join("")));
-    }
+    $route: "obtenerPrestamo"
+    // "prestamo.monto": function(valor) {
+    //   console.log(typeof valor);
+    //   var test = parseInt(valor.split(".").join(""));
+    //   console.log(test);
+    //   return (this.maxPrestamo = 10);
+    // }
   },
   directives: { money: VMoney }
 };

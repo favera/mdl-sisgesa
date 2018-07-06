@@ -86,7 +86,7 @@
             </td>
             <td>{{moment(adelanto.fecha).format("L")}}</td>
             <td>{{adelanto.nombreFuncionario}}</td>
-            <td>{{adelanto.monto}} {{adelanto.moneda}}</td>
+            <td>{{adelanto.monto.toLocaleString()}} {{adelanto.moneda}}</td>
             <td class="center aligned">
               <i class="edit row link icon" @click="editarAdelanto(adelanto._id)"></i>
               <i class="trash link icon" @click="deleteAdvanceSalary(adelanto._id, index)"></i>
