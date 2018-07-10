@@ -20,7 +20,7 @@
         <div class="field">
 
           <div class="ui right floated main menu">
-            <a class="icon item" @click="nuevoEmpleado">
+            <a class="icon item" @click="newEmployee">
               <i class="plus icon"></i>
             </a>
             <a class="icon item">
@@ -50,14 +50,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(empleado, index) in empleados" :key="empleado._id">
-            <td> {{empleado.nombre}}</td>
-            <td> {{empleado.sucursal.nombre}}</td>
-            <td> {{empleado.cargaLaboral}}</td>
-            <td> {{formatSalary(empleado.salario)}}{{empleado.moneda}}</td>
+          <tr v-for="(employee, index) in employees" :key="employee._id">
+            <td> {{employee.name}}</td>
+            <td> {{employee.subsidiary.name}}</td>
+            <td> {{employee.workingHours}}</td>
+            <td> {{formatSalary(employee.salary)}}{{employee.coin}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" @click="guardarPaginacion(empleado._id)"></i>
-              <i class="trash link icon" @click="deleteEmployee(empleado._id, index)"></i>
+              <i class="edit row link icon" @click="savePage(employee._id)"></i>
+              <i class="trash link icon" @click="deleteEmployee(employee._id, index)"></i>
             </td>
           </tr>
 
@@ -80,16 +80,13 @@
 <script>
 import Pagination from ".././shared/Pagination.vue";
 export default {
-  name: "empleadoList",
+  name: "employeeList",
   props: ["page"],
   data() {
     return {
-      parametro: "",
       search: null,
       sortNameParam: 1,
-      empleados: [],
-      empleadosFirebase: [],
-      keyPagination: [],
+      employees: [],
       pageOne: {
         currentPage: 1,
         totalItems: 0,
@@ -106,22 +103,22 @@ export default {
     },
     cleanField() {
       this.search = null;
-      this.obtenerListadoEmpleado();
+      this.getEmployees();
     },
     formatSalary(value) {
       return value.toLocaleString();
     },
     consultarEmpleado(e) {
       if (e && e.keyCode === 13) {
-        this.obtenerListadoEmpleado(true);
+        this.getEmployees(true);
 
         return;
       } else {
-        this.obtenerListadoEmpleado(true);
+        this.getEmployees(true);
       }
     },
-    guardarPaginacion(empleadoId) {
-      console.log("IDDD", empleadoId);
+    savePage(employeeId) {
+      console.log("IDDD", employeeId);
       var page = {};
       page.currentPage = this.pageOne.currentPage;
       page.totalItems = this.pageOne.totalItems;
@@ -129,9 +126,9 @@ export default {
 
       localStorage.setItem("page", JSON.stringify(page));
 
-      this.$router.push({ name: "editarEmpleado", params: { id: empleadoId } });
+      this.$router.push({ name: "editarEmpleado", params: { id: employeeId } });
     },
-    nuevoEmpleado() {
+    newEmployee() {
       this.$router.push({ name: "incluirEmpleado" });
     },
     deleteEmployee(employeeId, index) {
@@ -145,7 +142,7 @@ export default {
             .put(`/funcionarios/deactivate/${employeeId}`, { activo: false })
             .then(response => {
               if (response.status === 200) {
-                this.empleados.splice(index, 1);
+                this.employees.splice(index, 1);
                 this.$message({
                   type: "success",
                   message: "Registro Eliminado"
@@ -160,7 +157,7 @@ export default {
           });
         });
     },
-    obtenerListadoEmpleado(pageReset) {
+    getEmployees(pageReset) {
       if (pageReset) {
         this.pageOne.currentPage = 1;
       }
@@ -172,7 +169,7 @@ export default {
         )
         .then(response => {
           console.log("respnose mongo", response);
-          this.empleados = response.data.docs.slice(
+          this.employees = response.data.docs.slice(
             0,
             this.pageOne.itemsPerPage - 1
           );
@@ -184,19 +181,15 @@ export default {
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      this.obtenerListadoEmpleado();
+      this.getEmployees();
     }
   },
   created() {
-    this.obtenerListadoEmpleado();
+    this.getEmployees();
   },
-  computed: {
-    filteredList() {
-      return this.empleados;
-    }
-  },
+
   watch: {
-    $route: "obtenerListadoEmpleado"
+    $route: "getEmployees"
   }
 };
 </script>

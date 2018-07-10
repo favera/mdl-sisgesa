@@ -1,13 +1,13 @@
 <template>
   <div class="ui twelve wide column">
 
-    <form class="ui form" @submit.prevent="guardarEmpleado()">
+    <form class="ui form" @submit.prevent="saveEmployee()">
       <div class="ui dividing header">Registrar empleado</div>
 
       <div class="ten wide required field">
         <label for="">Nombre del empleado</label>
         <div class="field" :class="{error: errors.has('nombreEmpleado')}">
-          <input type="text" name="nombreEmpleado" v-model="empleado.nombre" data-vv-as="nombre del empleado" v-validate="'required'">
+          <input type="text" name="nombreEmpleado" v-model="employee.name" data-vv-as="nombre del empleado" v-validate="'required'">
           <span class="info-error" v-show="errors.has('nombreEmpleado')">{{errors.first('nombreEmpleado')}}</span>
         </div>
       </div>
@@ -16,7 +16,7 @@
         <label for="">AC - No (Numero Identificador)</label>
         <div class="field" :class="{error: errors.has('acnro')}">
 
-          <input type="text" name="acnro" v-model="empleado.acnro" data-vv-as="numero identificador" v-validate="'required'">
+          <input type="text" name="acnro" v-model="employee.acnro" data-vv-as="numero identificador" v-validate="'required'">
           <span class="info-error" v-show="errors.has('acnro')">{{errors.first('acnro')}}</span>
 
         </div>
@@ -25,7 +25,7 @@
       <div class="ten wide required field">
         <label for="">Numero de Cedula</label>
         <div class="field" :class="{error: errors.has('nroCedula')}">
-          <input type="text" name="nroCedula" v-model="empleado.nroCedula" data-vv-as="numero de cedula" v-validate="'required'">
+          <input type="text" name="nroCedula" v-model="employee.identityNumber" data-vv-as="numero de cedula" v-validate="'required'">
           <span class="info-error" v-show="errors.has('nroCedula')">{{errors.first('nroCedula')}}</span>
 
         </div>
@@ -34,7 +34,7 @@
       <div class="ten wide required field">
         <label for="">Fecha de Ingreso</label>
         <div class="field" :class="{error: errors.has('fechaIngreso')}">
-          <el-date-picker name="fechaIngreso" data-vv-as="fecha de ingreso" v-model="empleado.fechaIngreso" v-validate="'required'" placeholder="Seleccionar fecha" format="dd/MM/yyyy" value-format="dd/MM/yyyy">
+          <el-date-picker name="fechaIngreso" data-vv-as="fecha de ingreso" v-model="employee.admissionDate" v-validate="'required'" placeholder="Seleccionar fecha" format="dd/MM/yyyy" value-format="dd/MM/yyyy">
           </el-date-picker>
           <div class="info-error" v-show="errors.has('fechaIngreso')">{{errors.first('fechaIngreso')}}</div>
         </div>
@@ -44,9 +44,9 @@
       <div class="ten wide required field">
         <label for="">Sucursal:</label>
         <div class="field" :class="{error: errors.has('funcionario')}">
-          <select name="funcionario" v-model="sucursalSeleccionada" class="ui dropdown" v-validate="'required'">
+          <select name="funcionario" v-model="subsidiarySelected" class="ui dropdown" v-validate="'required'">
             <option disabled value="">Seleccionar Sucursal..</option>
-            <option v-for="sucursal in sucursales" :key="sucursal._id" v-bind:value="sucursal._id">{{sucursal.nombre}}</option>
+            <option v-for="subsidiary in subsidiaries" :key="subsidiary._id" v-bind:value="subsidiary._id">{{subsidiary.name}}</option>
           </select>
           <span class="info-error" v-show="errors.has('funcionario')">{{errors.first('funcionario')}}</span>
         </div>
@@ -57,7 +57,7 @@
           <div class="required field">
             <label>Carga laboral</label>
             <div class="field" :class="{error: errors.has('cargaLaboral')}">
-              <el-time-select name="cargaLaboral" data-vv-as="carga laboral" v-validate="'required'" v-model="empleado.cargaLaboral" :picker-options="{start: '08:30',step: '00:30',end: '10:30'}" placeholder="Selecccionar Horario"></el-time-select>
+              <el-time-select name="cargaLaboral" data-vv-as="carga laboral" v-validate="'required'" v-model="employee.workingHours" :picker-options="{start: '08:30',step: '00:30',end: '10:30'}" placeholder="Selecccionar Horario"></el-time-select>
               <div class="info-error" v-show="errors.has('cargaLaboral')">{{errors.first('cargaLaboral')}}</div>
             </div>
           </div>
@@ -66,39 +66,39 @@
             <div class="fields">
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" value=true v-model="empleado.medioTiempo">
+                  <input type="radio" value=true v-model="employee.halfTime">
                   <label>Si</label>
                 </div>
               </div>
 
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" value=false v-model="empleado.medioTiempo">
+                  <input type="radio" value=false v-model="employee.halfTime">
                   <label>No</label>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="required field">
+          <!-- <div class="required field">
             <label for="">Pago de Hora Extra</label>
             <div class="fields">
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" value="bancoHora" v-model="empleado.tipoHoraExtra">
+                  <input type="radio" value="bancoHora" v-model="employee.tipoHoraExtra">
                   <label for="">Banco de Hora</label>
                 </div>
               </div>
 
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" value="efectivo" v-model="empleado.tipoHoraExtra">
+                  <input type="radio" value="efectivo" v-model="employee.tipoHoraExtra">
                   <label for="">Efectivo</label>
                 </div>
               </div>
             </div>
 
-          </div>
+          </div> -->
 
         </div>
       </div>
@@ -107,14 +107,14 @@
         <div class="five wide required field">
           <label for="">Salario Base</label>
           <div class="field" :class="{error: errors.has('salario')}">
-            <input name="salario" v-validate="'validar_monto'" v-model.lazy="empleado.salario" v-money="money">
+            <input name="salary" v-validate="'validar_monto'" v-model.lazy="employee.salary" v-money="money">
             <span class="info-error" v-show="errors.has('salario')">{{errors.first('salario')}}</span>
           </div>
         </div>
         <div class="five wide required field">
           <label for="">Moneda</label>
           <div class="field" :class="{error: errors.has('moneda')}">
-            <select v-model="empleado.moneda" name="moneda" v-validate="'required'" class="ui fluid dropdown monedaSelector">
+            <select v-model="employee.coin" name="moneda" v-validate="'required'" class="ui fluid dropdown monedaSelector">
               <option disbled value="">Seleccionar Moneda..</option>
               <option value="Gs">Guaranies - Gs.</option>
               <option value="Us">Dolares - Us.</option>
@@ -137,21 +137,21 @@
 
           <div class="field">
             <div class="ui radio checkbox">
-              <input type="radio" value="salario" v-model="empleado.ips">
+              <input type="radio" value="salario" v-model="employee.ips">
               <label>Salario</label>
             </div>
           </div>
 
           <div class="field">
             <div class="ui radio checkbox">
-              <input type="radio" value="salarioMinimo" v-model="empleado.ips">
+              <input type="radio" value="salarioMinimo" v-model="employee.ips">
               <label>Salario Minimo</label>
             </div>
           </div>
 
           <div class="field">
             <div class="ui radio checkbox">
-              <input type="radio" value="noAplica" v-model="empleado.ips">
+              <input type="radio" value="noAplica" v-model="employee.ips">
               <label>No aplica</label>
             </div>
           </div>
@@ -161,7 +161,7 @@
       </div>
 
       <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
-      <div class="ui button" @click="cancelar">Cancelar</div>
+      <div class="ui button" @click="cancel">Cancelar</div>
     </form>
   </div>
 </template>
@@ -170,21 +170,20 @@ import { VMoney } from "v-money";
 import moment from "moment";
 
 export default {
-  name: "empleado",
+  name: "employee",
   data() {
     return {
-      empleado: {
-        nombre: "",
+      employee: {
+        name: "",
         acnro: "",
-        nroCedula: null,
-        fechaIngreso: null,
-        medioTiempo: false,
-        tipoHoraExtra: "bancoHora",
-        cargaLaboral: "",
-        salario: "",
-        moneda: "",
+        identityNumber: null,
+        admissionDate: null,
+        halfTime: false,
+        workingHours: "",
+        salary: "",
+        coin: "",
         ips: "salario",
-        sucursal: null
+        subsidiary: null
       },
       money: {
         decimal: ",",
@@ -194,40 +193,40 @@ export default {
         precision: 0,
         masked: false /* doesn't work with directive */
       },
-      sucursalSeleccionada: null,
-      sucursalkey: "",
-      sucursales: []
+      subsidiarySelected: null,
+      subsidiaries: []
     };
   },
   methods: {
-    calcularSalarioMinuto(valor) {
+    calculateSalaryPerMinute(valor) {
       var checkValor = valor.split(".").join("");
       checkValor = parseInt(checkValor, 10);
       return checkValor / 30 / 8 / 60;
     },
-    guardarEmpleado() {
+    saveEmployee() {
       this.$validator.validateAll().then(() => {
         if (this.$route.params.id) {
           this.$http
             .put(`/funcionarios/update/${this.$route.params.id}`, {
-              nombre: this.empleado.nombre,
-              acnro: this.empleado.acnro,
-              nroCedula: this.empleado.nroCedula,
-              fechaIngreso: this.empleado.fechaIngreso,
-              medioTiempo: this.empleado.medioTiempo,
-              tipoHoraExtra: this.empleado.tipoHoraExtra,
-              cargaLaboral: this.empleado.cargaLaboral,
-              salario: parseInt(this.empleado.salario.split(".").join("")),
-              salarioMinuto: this.calcularSalarioMinuto(this.empleado.salario),
-              moneda: this.empleado.moneda,
-              ips: this.empleado.ips,
-              sucursal: this.sucursalSeleccionada,
-              activo: true
+              name: this.employee.name,
+              acnro: this.employee.acnro,
+              identityNumber: this.employee.identityNumber,
+              admissionDate: this.employee.admissionDate,
+              halfTime: this.employee.halfTime,
+              workingHours: this.employee.workingHours,
+              salary: parseInt(this.employee.salary.split(".").join("")),
+              salaryPerMinute: this.calculateSalaryPerMinute(
+                this.employee.salary
+              ),
+              coin: this.employee.coin,
+              ips: this.employee.ips,
+              subsidiary: this.subsidiarySelected,
+              active: true
             })
             .then(response => {
               console.log(response);
               this.success();
-              this.cancelar();
+              this.cancel();
             })
             .catch(e => {
               console.log(e);
@@ -242,24 +241,26 @@ export default {
         } else {
           this.$http
             .post(`/funcionarios/add`, {
-              nombre: this.empleado.nombre,
-              acnro: this.empleado.acnro,
-              nroCedula: this.empleado.nroCedula,
-              fechaIngreso: this.empleado.fechaIngreso,
-              medioTiempo: this.empleado.medioTiempo,
-              tipoHoraExtra: this.empleado.tipoHoraExtra,
-              cargaLaboral: this.empleado.cargaLaboral,
-              salario: parseInt(this.empleado.salario.split(".").join("")),
-              salarioMinuto: this.calcularSalarioMinuto(this.empleado.salario),
-              moneda: this.empleado.moneda,
-              ips: this.empleado.ips,
-              sucursal: this.sucursalSeleccionada,
-              activo: true
+              name: this.employee.name,
+              acnro: this.employee.acnro,
+              identityNumber: this.employee.identityNumber,
+              admissionDate: this.employee.admissionDate,
+              halfTime: this.employee.halfTime,
+              tipoHoraExtra: this.employee.tipoHoraExtra,
+              workingHours: this.employee.workingHours,
+              salary: parseInt(this.employee.salary.split(".").join("")),
+              salaryPerMinute: this.calculateSalaryPerMinute(
+                this.employee.salary
+              ),
+              coin: this.employee.coin,
+              ips: this.employee.ips,
+              subsidiary: this.subsidiarySelected,
+              active: true
             })
             .then(response => {
               console.log(response);
               this.success();
-              this.cancelar();
+              this.cancel();
             })
             .catch(e => {
               console.log(e);
@@ -274,35 +275,35 @@ export default {
         }
       });
     },
-    obtenerEmpleado() {
+    getEmployee() {
       if (this.$route.params.id) {
         this.$http
           .get(`/funcionarios/edit/${this.$route.params.id}`)
           .then(response => {
-            this.empleado.nombre = response.data.nombre;
-            this.empleado.acnro = response.data.acnro;
-            this.empleado.nroCedula = response.data.nroCedula;
-            this.empleado.fechaIngreso = response.data.fechaIngreso;
-            this.empleado.medioTiempo = response.data.medioTiempo;
-            this.empleado.tipoHoraExtra = response.data.tipoHoraExtra;
-            this.empleado.cargaLaboral = response.data.cargaLaboral;
-            this.empleado.salario = response.data.salario;
-            this.empleado.moneda = response.data.moneda;
-            this.empleado.ips = response.data.ips;
-            this.empleado.sucursal = response.data.sucursal;
-            this.sucursalSeleccionada = response.data.sucursal;
+            this.employee.name = response.data.name;
+            this.employee.acnro = response.data.acnro;
+            this.employee.identityNumber = response.data.identityNumber;
+            this.employee.admissionDate = response.data.admissionDate;
+            this.employee.halfTime = response.data.halfTime;
+            this.employee.tipoHoraExtra = response.data.tipoHoraExtra;
+            this.employee.workingHours = response.data.workingHours;
+            this.employee.salary = response.data.salary;
+            this.employee.coin = response.data.coin;
+            this.employee.ips = response.data.ips;
+            this.employee.subsidiary = response.data.subsidiary;
+            this.subsidiarySelected = response.data.subsidiary;
             $(this.$el)
               .find(".monedaSelector")
               .dropdown("refresh")
-              .dropdown("set selected", response.data.moneda);
+              .dropdown("set selected", response.data.coin);
           });
       }
     },
-    obtenerSucursales() {
+    getSubsidiaries() {
       this.$http
         .get(`/sucursales/`)
         .then(response => {
-          this.sucursales = response.data;
+          this.subsidiaries = response.data;
         })
         .catch(e => {
           console.log(e);
@@ -312,7 +313,7 @@ export default {
     returnList() {
       this.$router.push({ name: "listadoEmpleado" });
     },
-    cancelar() {
+    cancel() {
       this.$router.push({ name: "listadoEmpleado" });
     },
     editSuccess() {
@@ -342,18 +343,18 @@ export default {
       .dropdown();
   },
   created() {
-    this.obtenerSucursales();
-    this.obtenerEmpleado();
+    this.getSubsidiaries();
+    this.getEmployee();
   },
   watch: {
-    $route: "obtenerEmpleado",
-    sucursalSeleccionada: function() {
+    $route: "getEmployee",
+    subsidiarySelected: function() {
       $(this.$el)
         .find(".ui.dropdown")
         .dropdown("refresh")
-        .dropdown("set selected", this.sucursalSeleccionada);
+        .dropdown("set selected", this.subsidiarySelected);
     },
-    "empleado.nroCedula": function(value) {
+    "employee.identityNumber": function(value) {
       return value.toLocaleString();
     }
   },

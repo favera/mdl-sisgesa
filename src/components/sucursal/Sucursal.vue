@@ -5,7 +5,7 @@
 
       <div class="ten wide field">
         <label for="">Nombre Sucursal:</label>
-        <input type="text" v-model="sucursal.nombre">
+        <input type="text" v-model="subsidiary.name">
       </div>
 
       <div class="ten wide field">
@@ -19,14 +19,14 @@
         </div>
         <div class="inline fields">
           <div class="eight wide field">
-            <el-time-picker v-model="sucursal.horaEntrada" format="HH:mm" value-format="HH:mm" :picker-options="{
+            <el-time-picker v-model="subsidiary.startingTime" format="HH:mm" value-format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Asignar Horario Entrada">
             </el-time-picker>
           </div>
 
           <div class="eight wide field">
-            <el-time-picker v-model="sucursal.horaSalida" format="HH:mm" value-format="HH:mm" :picker-options="{
+            <el-time-picker v-model="subsidiary.endTime" format="HH:mm" value-format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Asignar Horario Entrada">
             </el-time-picker>
@@ -36,11 +36,11 @@
 
       <div class="ten wide field">
         <label for="">Telefono:</label>
-        <input type="text" v-model="sucursal.telefono">
+        <input type="text" v-model="subsidiary.phone">
       </div>
 
-      <div class="ui teal button" @click="guardarSucursal">Guardar</div>
-      <div class="ui button" @click="cancelar">Cancelar</div>
+      <div class="ui teal button" @click="saveSubsidiary">Guardar</div>
+      <div class="ui button" @click="cancel">Cancelar</div>
     </div>
   </div>
 </template>
@@ -51,58 +51,58 @@ export default {
   name: "sucursal",
   data() {
     return {
-      sucursal: {
-        nombre: null,
-        horaEntrada: null,
-        horaSalida: null,
-        telefono: null
+      subsidiary: {
+        name: null,
+        startingTime: null,
+        endTime: null,
+        phone: null
       }
     };
   },
   methods: {
-    guardarSucursal() {
+    saveSubsidiary() {
       if (this.$route.params.id) {
         this.$http
           .put("/sucursales/update/" + this.$route.params.id, {
-            nombre: this.sucursal.nombre,
-            horaEntrada: this.sucursal.horaEntrada,
-            horaSalida: this.sucursal.horaSalida,
-            telefono: this.sucursal.telefono
+            name: this.subsidiary.name,
+            startingTime: this.subsidiary.startingTime,
+            endTime: this.subsidiary.endTime,
+            phone: this.subsidiary.phone
           })
           .then(response => {
             this.success();
-            this.cancelar();
+            this.cancel();
             console.log(response);
           });
       } else {
         this.$http
           .post("/sucursales/add", {
-            nombre: this.sucursal.nombre,
-            horaEntrada: this.sucursal.horaEntrada,
-            horaSalida: this.sucursal.horaSalida,
-            telefono: this.sucursal.telefono
+            name: this.subsidiary.name,
+            startingTime: this.subsidiary.startingTime,
+            endTime: this.subsidiary.endTime,
+            phone: this.subsidiary.phone
           })
           .then(response => {
             this.success();
-            this.cancelar();
+            this.cancel();
             console.log(response);
           })
           .catch(e => console.log(e));
       }
     },
-    obtenerSucursal() {
+    getSubsidiary() {
       if (this.$route.params.id) {
         this.$http
           .get("/sucursales/edit/" + this.$route.params.id)
           .then(response => {
-            this.sucursal.nombre = response.data.nombre;
-            this.sucursal.horaEntrada = response.data.horaEntrada;
-            this.sucursal.horaSalida = response.data.horaSalida;
-            this.sucursal.telefono = response.data.telefono;
+            this.subsidiary.name = response.data.name;
+            this.subsidiary.startingTime = response.data.startingTime;
+            this.subsidiary.endTime = response.data.endTime;
+            this.subsidiary.phone = response.data.phone;
           });
       }
     },
-    cancelar() {
+    cancel() {
       this.$router.push({ name: "listadoSucursal" });
     },
     success() {
@@ -120,7 +120,7 @@ export default {
     }
   },
   created() {
-    this.obtenerSucursal();
+    this.getSubsidiary();
   },
   watch: {
     $route: "obtenerSucursal"

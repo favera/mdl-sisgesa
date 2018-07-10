@@ -20,7 +20,7 @@
         <div class="field">
 
           <div class="ui right floated main menu">
-            <a class="icon item" @click="nuevaSucursal">
+            <a class="icon item" @click="newSubsidiary">
               <i class="plus icon"></i>
             </a>
 
@@ -45,14 +45,14 @@
         </thead>
 
         <tbody>
-          <tr v-for="(sucursal, index) in filteredList" :key="sucursal._id">
-            <td>{{sucursal.nombre }}</td>
-            <td>{{sucursal.horaEntrada + " hs"}}</td>
-            <td>{{sucursal.horaSalida + " hs"}}</td>
-            <td>{{sucursal.telefono}}</td>
+          <tr v-for="(subsidiary, index) in filteredList" :key="subsidiary._id">
+            <td>{{subsidiary.name }}</td>
+            <td>{{subsidiary.startingTime + " hs"}}</td>
+            <td>{{subsidiary.endTime + " hs"}}</td>
+            <td>{{subsidiary.phone}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" @click="editarSucursal(sucursal._id)"></i>
-              <i class="trash link icon" @click="deleteSubsidiary(sucursal._id, index)"></i>
+              <i class="edit row link icon" @click="editSubsidiary(subsidiary._id)"></i>
+              <i class="trash link icon" @click="deleteSubsidiary(subsidiary._id, index)"></i>
             </td>
           </tr>
         </tbody>
@@ -77,10 +77,10 @@
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
-  name: "sucursaslList",
+  name: "subsidiaryList",
   data() {
     return {
-      sucursales: [],
+      subsidiaries: [],
       search: "",
       pageOne: {
         currentPage: 1,
@@ -90,11 +90,14 @@ export default {
     };
   },
   methods: {
-    nuevaSucursal() {
+    newSubsidiary() {
       this.$router.push({ name: "incluirSucursal" });
     },
-    editarSucursal(sucursalId) {
-      this.$router.push({ name: "editarSucursal", params: { id: sucursalId } });
+    editSubsidiary(subsidiaryId) {
+      this.$router.push({
+        name: "editarSucursal",
+        params: { id: subsidiaryId }
+      });
     },
     deleteSubsidiary(subsidiaryId, index) {
       this.$confirm(
@@ -111,7 +114,7 @@ export default {
             .delete(`/sucursales/delete/${subsidiaryId}`)
             .then(response => {
               if (response.status === 200) {
-                this.sucursales.splice(index, 1);
+                this.subsidiaries.splice(index, 1);
                 this.$message({
                   type: "success",
                   message: "Registro Eliminado"
@@ -136,43 +139,17 @@ export default {
           });
         });
     },
-    obtenerListadoSucursales(sucursal) {
-      for (let key in sucursal) {
-        this.sucursales.push({
-          horaLaboral: sucursal[key].horaLaboral,
-          horarioEntrada: sucursal[key].horarioEntrada,
-          horarioSalida: sucursal[key].horarioSalida,
-          nombre: sucursal[key].nombre,
-          telefono: sucursal[key].telefono,
-          id: key
-        });
-      }
-
-      this.sucursales.reverse();
-    },
-    eliminarSucursal(id) {
-      var index = this.sucursales.findIndex(i => i.id === id);
-
-      this.$http
-        .get(`/sucursales/delete/${id}`)
-        .then(response => {
-          // this.sucursales.splice(index, 1);
-          console.log("Respuesta", response);
-        })
-        .catch(e => {
-          console.log(e);
-          this.$message({
-            type: "info",
-            message: "Proceso Cancelado"
-          });
-        });
+    getSubsidiariesList() {
+      this.$http.get("/sucursales").then(response => {
+        this.subsidiaries = response.data;
+      });
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.$http
         .get(url + "/sucursals?_page=" + this.pageOne.currentPage)
         .then(response => {
-          this.sucursales = response.data.slice(0, this.pageOne.itemsPerPage);
+          this.subsidiaries = response.data.slice(0, this.pageOne.itemsPerPage);
         })
         .catch(e => {
           console.log("error: from", e);
@@ -188,20 +165,18 @@ export default {
   },
   computed: {
     filteredList() {
-      return this.sucursales.filter(sucursal => {
-        return sucursal.nombre
+      return this.subsidiaries.filter(subsidiary => {
+        return subsidiary.name
           .toLowerCase()
           .includes(this.search.toLowerCase());
       });
     }
   },
   created() {
-    this.$http.get("/sucursales").then(response => {
-      this.sucursales = response.data;
-    });
+    this.getSubsidiariesList();
   },
   watch: {
-    $route: "obtenerListadoSucursales"
+    $route: "getSubsidiariesList"
   }
 };
 </script>
