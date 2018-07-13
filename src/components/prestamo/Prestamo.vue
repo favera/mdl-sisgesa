@@ -1,24 +1,24 @@
 <template>
   <div class="ui twelve wide column">
-    <form class="ui form" @submit.prevent="guardarPrestamo()">
+    <form class="ui form" @submit.prevent="saveLending()">
       <div class="ui dividing header">Incluir Prestamo</div>
 
       <div class="ten wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{error: errors.has('fechaPrestamo')}">
-          <el-date-picker name="fechaPrestamo" v-model="prestamo.fecha" format="dd/MM/yyyy" type="date" v-validate="'required'"></el-date-picker>
+          <el-date-picker name="fechaPrestamo" v-model="lending.date" format="dd/MM/yyyy" type="date" v-validate="'required'"></el-date-picker>
           <span class="info-error" v-show="errors.has('fechaPrestamo')">{{errors.first('fechaPrestamo')}}</span>
         </div>
       </div>
 
       <div class="six wide required field">
         <label for="">Seleccionar Funcionario</label>
-        <div class="field" :class="{error: errors.has('funcionario')}">
-          <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
+        <div class="field" :class="{error: errors.has('employee')}">
+          <select name="employee" v-model="employeeSelected" class="ui dropdown" v-validate="'required'">
             <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+            <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.nombre}}</option>
           </select>
-          <span class="info-error" v-show="errors.has('funcionario')">{{errors.first('funcionario')}}</span>
+          <span class="info-error" v-show="errors.has('employee')">{{errors.first('employee')}}</span>
 
         </div>
 
@@ -33,22 +33,22 @@
 
             <div class="two fields">
 
-              <div class="five wide field" :class="{error: errors.has('monto')}">
+              <div class="five wide field" :class="{error: errors.has('amount')}">
                 <div class="ui input">
-                  <input name="monto" v-model.lazy="prestamo.monto" v-money="money" v-validate="'required|validar_monto'">
+                  <input name="amount" v-model.lazy="lending.amount" v-money="money" v-validate="'required|validar_monto'">
                 </div>
-                <span class="info-error" v-show="errors.has('monto')">{{errors.first('monto')}}</span>
+                <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
               </div>
 
-              <div class="five wide field" :class="{error: errors.has('moneda')}">
+              <div class="five wide field" :class="{error: errors.has('coin')}">
 
-                <select name="moneda" v-model="prestamo.moneda" class="ui dropdown" id="monedaSelector" v-validate="'required'">
+                <select name="coin" v-model="lending.coin" class="ui dropdown" id="coinSelector" v-validate="'required'">
                   <option disbled value="">Seleccionar Moneda..</option>
                   <option value="Gs">Guaranies - Gs.</option>
                   <option value="Us">Dolares - Us.</option>
                   <option value="Rs">Reales - Rs.</option>
                 </select>
-                <span class="info-error" v-show="errors.has('moneda')">{{errors.first('moneda')}}</span>
+                <span class="info-error" v-show="errors.has('coin')">{{errors.first('coin')}}</span>
               </div>
 
             </div>
@@ -57,7 +57,7 @@
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
                 <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="prestamo.inicioPago" type="month" placeholder="Seleccionar mes" v-validate="{required: true}">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="lending.startMonth" type="month" placeholder="Seleccionar mes" v-validate="{required: true}">
                   </el-date-picker>
                 </div>
                 <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
@@ -67,12 +67,12 @@
                 <label for="">Fraccion de Cuotas</label>
                 <div class="inline fields">
                   <div class="field">
-                    <div class="field" :class="{error: errors.has('nroCuotas')}">
-                      <el-input-number name="nroCuotas" v-model="prestamo.nroCuotas" @change="handleChange" :min="1" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
+                    <div class="field" :class="{error: errors.has('installmentNumber')}">
+                      <el-input-number name="installmentNumber" v-model="lending.installmentNumber" @change="handleChange" :min="1" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
                     </div>
-                    <span class="info-error" v-show="errors.has('nroCuotas')">{{errors.first('nroCuotas')}}</span>
+                    <span class="info-error" v-show="errors.has('installmentNumber')">{{errors.first('installmentNumber')}}</span>
                   </div>
-                  <div class="circular ui icon button" @click="generarCuotas(prestamo.nroCuotas)">
+                  <div class="circular ui icon button" @click="generateInstallments(lending.installmentNumber)">
                     <i class="undo icon"></i>
                   </div>
                 </div>
@@ -95,23 +95,23 @@
                       <h5> Vencimiento</h5>
                     </div>
                     <div class="middle aligned content">
-                      <h5>Monto</h5>
+                      <h5>amount</h5>
                     </div>
                     <div class="middle aligned content">
                       <h5>Estado</h5>
                     </div>
                   </div>
 
-                  <div class="item" :key="cuota.vencimiento" v-for="cuota in prestamo.cuotas">
+                  <div class="item" :key="installment.dueDate" v-for="installment in lending.installments">
                     <div class="middle aligned content">
-                      <p>{{moment(cuota.vencimiento).format("L")}}</p>
+                      <p>{{moment(installment.dueDate).format("L")}}</p>
                     </div>
                     <div class="middle aligned content">
-                      <p>{{cuota.monto.toLocaleString()}}-{{cuota.moneda}}</p>
+                      <p>{{installment.amount.toLocaleString()}}-{{installment.coin}}</p>
                     </div>
 
                     <div class="middle aligned content">
-                      <div class="ui orange horizontal label">{{cuota.estado}}</div>
+                      <div class="ui orange horizontal label">{{installment.estado}}</div>
                     </div>
                   </div>
 
@@ -126,7 +126,7 @@
 
       <div class="field">
         <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
-        <div class="ui button" @click="cancelar()">Cancelar</div>
+        <div class="ui button" @click="cancel()">Cancelar</div>
       </div>
 
     </form>
@@ -140,24 +140,23 @@ import { VMoney } from "v-money";
 import { Validator } from "vee-validate";
 
 export default {
-  name: "prestamo",
+  name: "lending",
   data() {
     return {
-      prestamo: {
+      lending: {
         id: null,
-        fecha: new Date(),
-        funcionario: null,
-        nombreFuncionario: null,
-        moneda: null,
-        monto: null,
-        inicioPago: null,
-        cuotas: []
+        date: new Date(),
+        employee: null,
+        employeeName: null,
+        coin: null,
+        amount: null,
+        startMonth: null,
+        installments: []
       },
-      maxPrestamo: null,
+      maxInstallment: null,
       disabledInput: true,
-      funcionarioSeleccionado: null,
-      setDate: new Date(),
-      funcionarios: [],
+      employeeSelected: null,
+      employees: [],
       money: {
         decimal: ",",
         thousands: ".",
@@ -169,11 +168,11 @@ export default {
     };
   },
   methods: {
-    obtenerFuncionarios() {
+    getEmployees() {
       this.$http
         .get(`/funcionarios/full-list`)
         .then(response => {
-          this.funcionarios = response.data;
+          this.employees = response.data;
         })
         .catch(e => {
           console.log(e);
@@ -181,77 +180,72 @@ export default {
         });
     },
     handleChange(value) {
-      this.generarCuotas(value);
+      this.generateInstallments(value);
     },
-    generarCuotas(value) {
-      this.prestamo.cuotas.length = 0;
-      console.log("Al editar", this.prestamo.cuotas);
+    generateInstallments(value) {
+      this.lending.installments.length = 0;
+      console.log("Al editar", this.lending.installments);
 
-      if (this.prestamo.monto && this.prestamo.inicioPago) {
+      if (this.lending.amount && this.lending.startMonth) {
         var i = 0;
         do {
-          var cuota = {};
+          var installment = {};
 
-          cuota.monto = Math.floor(
-            parseInt(this.prestamo.monto.split(".").join("")) / value
+          installment.amount = Math.floor(
+            parseInt(this.lending.amount.split(".").join("")) / value
           );
-          cuota.moneda = this.prestamo.moneda;
-          cuota.estado = "pendiente";
-          cuota.vencimiento = moment(this.prestamo.inicioPago)
+          installment.coin = this.lending.coin;
+          installment.state = "pendiente";
+          installment.dueDate = moment(this.lending.startMonth)
             .add(i, "months")
             .format();
-          console.log(cuota.vencimiento);
-          console.log(JSON.stringify(cuota, undefined, 2));
 
-          this.prestamo.cuotas.push(cuota);
+          this.lending.installments.push(installment);
           i++;
         } while (i < value);
       }
     },
-    findFuncionario(id) {
-      var funcionario = this.funcionarios.find(
+    findEmployee(id) {
+      var employee = this.employees.find(
         item => (item._id === id ? item : null)
       );
-      return funcionario.nombre;
+      return employee.name;
     },
-    obtenerPrestamo() {
+    getLending() {
       if (this.$route.params.id) {
         this.$http
           .get(`/prestamos/edit/${this.$route.params.id}`)
           .then(response => {
-            this.prestamo.id = response.data._id;
-            this.prestamo.fecha = response.data.fecha;
-            this.prestamo.monto = response.data.monto;
-            this.prestamo.moneda = response.data.moneda;
-            this.prestamo.nroCuotas = response.data.nroCuotas;
-            this.prestamo.inicioPago = response.data.inicioPago;
-            this.prestamo.cuotas = response.data.cuotas;
+            this.lending.id = response.data._id;
+            this.lending.date = response.data.date;
+            this.lending.amount = response.data.amount;
+            this.lending.coin = response.data.coin;
+            this.lending.installmentNumber = response.data.installmentNumber;
+            this.lending.startMonth = response.data.startMonth;
+            this.lending.installments = response.data.installments;
             $(this.$el)
               .find(".ui.dropdown")
               .dropdown("refresh")
-              .dropdown("set selected", response.data.funcionario);
+              .dropdown("set selected", response.data.employee);
 
             $(this.$el)
-              .find("#monedaSelector")
+              .find("#coinSelector")
               .dropdown("refresh")
-              .dropdown("set selected", response.data.moneda);
+              .dropdown("set selected", response.data.coin);
           });
       }
     },
-    guardarPrestamo() {
+    saveLending() {
       this.$validator.validateAll().then(() => {
         if (this.$route.params.id) {
-          console.log("entra aca");
-          this.prestamo.funcionario = this.funcionarioSeleccionado;
-          this.prestamo.nombreFuncionario = this.findFuncionario(
-            this.funcionarioSeleccionado
-          );
+          this.lending.employee = this.employeeSelected;
+          this.lending.employeeName = this.findEmployee(this.employeeSelected);
 
           this.$http
-            .put(`/prestamos/update/${this.$route.params.id}`, this.prestamo)
+            .put(`/prestamos/update/${this.$route.params.id}`, this.lending)
             .then(response => {
               this.success();
-              this.cancelar();
+              this.cancel();
               console.log(response);
             })
             .catch(e => {
@@ -259,19 +253,19 @@ export default {
               this.fail();
             });
         } else {
-          this.prestamo.funcionario = this.funcionarioSeleccionado;
+          this.lending.employee = this.employeeSelected;
 
-          if (this.funcionarioSeleccionado) {
-            this.prestamo.nombreFuncionario = this.findFuncionario(
-              this.funcionarioSeleccionado
+          if (this.employeeSelected) {
+            this.lending.employeeName = this.findEmployee(
+              this.employeeSelected
             );
           }
 
           this.$http
-            .post(`/prestamos/add`, this.prestamo)
+            .post(`/prestamos/add`, this.lending)
             .then(response => {
               this.success();
-              this.cancelar();
+              this.cancel();
               console.log(response);
             })
             .catch(e => {
@@ -281,7 +275,7 @@ export default {
         }
       });
     },
-    cancelar() {
+    cancel() {
       this.$router.push({ name: "listadoPrestamo" });
     },
     success() {
@@ -311,26 +305,26 @@ export default {
       .dropdown();
   },
   created() {
-    this.obtenerFuncionarios();
-    this.obtenerPrestamo();
+    this.getEmployees();
+    this.getLending();
     Validator.extend("validar_mes", {
       getMessage: field => `El ${field} deber ser siguiente al mes actual`,
-      validate: function(value, prestamo) {
-        console.log(prestamo);
-        if (prestamo[0].prestamo.id) {
+      validate: function(value, lending) {
+        console.log(lending);
+        if (lending[0].lending.id) {
           return true;
         }
-        return moment(value).isAfter(prestamo[0].fecha, "month");
+        return moment(value).isAfter(lending[0].date, "month");
       }
     });
   },
   watch: {
-    $route: "obtenerPrestamo"
-    // "prestamo.monto": function(valor) {
+    $route: "getLending"
+    // "prestamo.amount": function(valor) {
     //   console.log(typeof valor);
     //   var test = parseInt(valor.split(".").join(""));
     //   console.log(test);
-    //   return (this.maxPrestamo = 10);
+    //   return (this.maxInstallment = 10);
     // }
   },
   directives: { money: VMoney }

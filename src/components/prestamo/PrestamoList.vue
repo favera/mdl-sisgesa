@@ -9,7 +9,7 @@
 
             <div class="ten wide field field">
               <div class="ui icon input">
-                <input type="text" v-model="query.busqueda" @keydown="consultarPrestamos" placeholder="Buscar por nombre del funcionario...">
+                <input type="text" v-model="query.parameter" @keydown="searchLending" placeholder="Buscar por nombre del funcionario...">
               </div>
             </div>
 
@@ -20,17 +20,17 @@
             <div class="four wide field">
 
               <div class="inline fields">
-                <div class="field" :class="{error: error.fechaInicio}">
-                  <el-date-picker v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+                <div class="field" :class="{error: error.startDate}">
+                  <el-date-picker v-model="query.startDate" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
-                <div class="field" :class="{error: error.fechaFin}">
-                  <el-date-picker v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+                <div class="field" :class="{error: error.endDate}">
+                  <el-date-picker v-model="query.endDate" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
-                <button class="ui circular teal icon button" @click="consultarPrestamos">
+                <button class="ui circular teal icon button" @click="searchLending">
                   <i class="search icon"></i>
                 </button>
               </div>
@@ -40,7 +40,7 @@
 
         <div class="field">
           <div class="ui right floated main menu">
-            <a class="icon item" @click="incluirPrestamo">
+            <a class="icon item" @click="addLending">
               <i class="plus icon"></i>
             </a>
           </div>
@@ -69,25 +69,25 @@
           </tr>
         </thead>
         <tbody>
-          <template v-for="(prestamo, index) in prestamos">
-            <tr :key="prestamo._id">
+          <template v-for="(lending, index) in lendings">
+            <tr :key="lending._id">
 
-              <td>{{moment(prestamo.fecha).format("L")}}</td>
-              <td>{{prestamo.nombreFuncionario}}</td>
-              <td>{{prestamo.monto.toLocaleString()}} - {{prestamo.moneda}}</td>
+              <td>{{moment(lending.date).format("L")}}</td>
+              <td>{{lending.employeeName}}</td>
+              <td>{{lending.amount.toLocaleString()}} - {{lending.coin}}</td>
               <td class="center aligned">
-                <i class="browser link icon " @click="prestamo.showCuotas = !prestamo.showCuotas"></i>
+                <i class="browser link icon " @click="lending.showInstallments = !lending.showInstallments"></i>
               </td>
               <td class="center aligned">
                 <span>
-                  <i class="edit row link icon " @click="editarPrestamo(prestamo._id)"></i>
-                  <i class="trash link icon " @click="deleteLending(prestamo._id, index)"></i>
+                  <i class="edit row link icon " @click="editLending(lending._id)"></i>
+                  <i class="trash link icon " @click="deleteLending(lending._id, index)"></i>
                 </span>
 
               </td>
 
             </tr>
-            <tr v-show="prestamo.showCuotas">
+            <tr v-show="lending.showInstallments">
               <td colspan="5">
                 <div class="ui padded segments">
                   <div class="ui segment">
@@ -106,18 +106,18 @@
                           </div>
                         </div>
 
-                        <div class="item" :key="cuota._id" v-for="cuota in prestamo.cuotas">
+                        <div class="item" :key="installment._id" v-for="installment in lending.installments">
                           <div class="middle aligned content">
-                            <p>{{moment(cuota.vencimiento).format("L")}}</p>
+                            <p>{{moment(installment.dueDate).format("L")}}</p>
                           </div>
                           <div class="middle aligned content">
-                            <p>{{cuota.monto.toLocaleString()}}-{{cuota.moneda}}</p>
+                            <p>{{installment.amount.toLocaleString()}}-{{installment.coin}}</p>
                           </div>
 
                           <div class="middle aligned content">
-                            <div class="ui orange horizontal label" v-if="cuota.estado ===  'pendiente'">{{cuota.estado}}</div>
-                            <div class="ui blue horizontal label" v-if="cuota.estado ===  'procesado'">{{cuota.estado}}</div>
-                            <div class="ui olive horizontal label" v-if="cuota.estado ===  'pagado'">{{cuota.estado}}</div>
+                            <div class="ui orange horizontal label" v-if="installment.status ===  'pendiente'">{{installment.status}}</div>
+                            <div class="ui blue horizontal label" v-if="installment.status ===  'procesado'">{{installment.status}}</div>
+                            <div class="ui olive horizontal label" v-if="installment.status ===  'pagado'">{{installment.status}}</div>
                           </div>
                         </div>
 
@@ -166,25 +166,25 @@ import moment from "moment";
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
-  name: "prestamoList",
+  name: "lendingList",
   data() {
     return {
-      prestamos: [],
+      lendings: [],
       modal: null,
       query: {
-        fechaInicio: moment()
+        startDate: moment()
           .startOf("year")
           .format(),
-        fechaFin: moment()
+        endDate: moment()
           .endOf("year")
           .format(),
-        busqueda: null
+        parameter: null
       },
       error: {
         hasError: false,
         message: null,
-        fechaInicio: false,
-        fechaFin: false
+        startDate: false,
+        endDate: false
       },
       pageOne: {
         currentPage: 1,
@@ -199,23 +199,23 @@ export default {
   methods: {
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      this.obtenerPrestamos();
+      this.getLendings();
     },
-    incluirPrestamo() {
+    addLending() {
       this.$router.push({ name: "incluirPrestamo" });
     },
-    editarPrestamo(prestamoId) {
-      this.$router.push({ name: "editarPrestamo", params: { id: prestamoId } });
+    editLending(lendingId) {
+      this.$router.push({ name: "editarPrestamo", params: { id: lendingId } });
     },
-    consultarPrestamos(e) {
+    searchLending(e) {
       if (e && e.keyEvent === 13) {
-        this.obtenerPrestamos(true);
+        this.getLendings(true);
         return;
       } else {
-        this.obtenerPrestamos();
+        this.getLendings();
       }
     },
-    obtenerPrestamos(pageReset) {
+    getLendings(pageReset) {
       if (pageReset) {
         this.currentPage.pageOne = 1;
       }
@@ -223,13 +223,13 @@ export default {
         .get(
           `/prestamos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&inicio=${this.query.fechaInicio}&fin=${
-            this.query.fechaFin
-          }&busqueda=${this.query.busqueda}`
+          }&inicio=${this.query.startDate}&fin=${
+            this.query.endDate
+          }&parameter=${this.query.parameter}`
         )
         .then(response => {
-          this.prestamos = response.data.docs.map(item => {
-            item.showCuotas = false;
+          this.lendings = response.data.docs.map(item => {
+            item.showInstallments = false;
             return item;
           });
           this.pageOne.totalItems = response.data.total;
@@ -248,7 +248,7 @@ export default {
         .then(() => {
           this.$http.delete(`/prestamos/delete/${lendingId}`).then(response => {
             if (response.status === 200) {
-              this.prestamos.splice(index, 1);
+              this.lendings.splice(index, 1);
               this.$message({
                 type: "success",
                 message: "Registro Eliminado"
@@ -263,39 +263,34 @@ export default {
             message: "Proceso Cancelado"
           });
         });
-    },
-
-    abrirModal() {
-      this.modal.modal("show");
     }
   },
   watch: {
-    "query.fechaInicio": function(fecha) {
-      if (moment(fecha).isAfter(this.fechaFin)) {
+    "query.startDate": function(fecha) {
+      if (moment(fecha).isAfter(this.endDate)) {
         this.error.hasError = true;
-        this.error.fechaInicio = true;
+        this.error.startDate = true;
         this.error.message =
           "La fecha inicial debe ser menor o igual a la fecha final";
       } else {
         this.error.hasError = false;
-        this.error.fechaInicio = false;
+        this.error.startDate = false;
       }
     },
-    "query.fechaFin": function(fecha) {
-      if (moment(fecha).isBefore(this.fechaInicio)) {
+    "query.endDate": function(fecha) {
+      if (moment(fecha).isBefore(this.startDate)) {
         this.error.hasError = true;
-        this.error.fechaFin = true;
+        this.error.endDate = true;
         this.error.message =
           "La fecha final debe ser mayor o igual a la fecha inicial";
       } else {
         this.error.hasError = false;
-        this.error.fechaFin = false;
+        this.error.endDate = false;
       }
     }
   },
   created() {
-    this.obtenerPrestamos();
-    // this.$bindAsArray("prestamos", prestamosRef);
+    this.getLendings();
   },
   mounted() {
     this.modal = $(this.$el).find(".ui.longer.modal");

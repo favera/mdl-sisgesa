@@ -9,7 +9,7 @@
 
             <div class="ten wide field">
               <div class="ui icon input">
-                <input type="text" v-model="query.busqueda" @keydown="consultarAdelantos" placeholder="Buscar por nombre del funcionario...">
+                <input type="text" v-model="query.parameter" @keydown="searchAdvanceSalary" placeholder="Buscar por nombre del funcionario...">
               </div>
             </div>
 
@@ -20,17 +20,17 @@
             <div class="four wide field">
 
               <div class="inline fields">
-                <div class="field" :class="{error: error.fechaInicio}">
-                  <el-date-picker name="fechaInicio" v-model="query.fechaInicio" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+                <div class="field" :class="{error: error.startDate}">
+                  <el-date-picker name="startDate" v-model="query.startDate" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
-                <div class="field" :class="{error: error.fechaFin}">
-                  <el-date-picker name="fechaFin" v-model="query.fechaFin" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+                <div class="field" :class="{error: error.endDate}">
+                  <el-date-picker name="endDate" v-model="query.endDate" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
                   </el-date-picker>
                 </div>
 
-                <button :class="{disabled: error.hasError}" class="ui circular teal icon button" @click="consultarAdelantos">
+                <button :class="{disabled: error.hasError}" class="ui circular teal icon button" @click="searchAdvanceSalary">
                   <i class="search icon"></i>
                 </button>
               </div>
@@ -40,11 +40,11 @@
 
         <div class="field">
           <div class="ui right floated main menu">
-            <a class="icon item" @click="incluirAdelanto">
+            <a class="icon item" @click="addAdvance">
               <i class="plus icon"></i>
             </a>
 
-            <a class="icon item" @click="exportRecibo">
+            <a class="icon item" @click="exportReceipt">
               <i class="print icon"></i>
             </a>
           </div>
@@ -77,23 +77,23 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(adelanto, index) in adelantos" :key="adelanto._id">
+          <tr v-for="(advance, index) in advances" :key="advance._id">
             <td class="collapsing">
               <div class="ui fitted checkbox">
-                <input type="checkbox" :value="adelanto._id" v-model="seleccionados">
+                <input type="checkbox" :value="advance._id" v-model="advancesSelected">
                 <label></label>
               </div>
             </td>
-            <td>{{moment(adelanto.fecha).format("L")}}</td>
-            <td>{{adelanto.nombreFuncionario}}</td>
-            <td>{{adelanto.monto.toLocaleString()}} {{adelanto.moneda}}</td>
+            <td>{{moment(advance.fecha).format("L")}}</td>
+            <td>{{advance.employeeName}}</td>
+            <td>{{advance.amount.toLocaleString()}} {{advance.moneda}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" @click="editarAdelanto(adelanto._id)"></i>
-              <i class="trash link icon" @click="deleteAdvanceSalary(adelanto._id, index)"></i>
-              <i class="print link icon" @click="exportRecibo(adelanto._id)"></i>
+              <i class="edit row link icon" @click="editAdvance(advance._id)"></i>
+              <i class="trash link icon" @click="deleteAdvanceSalary(advance._id, index)"></i>
+              <i class="print link icon" @click="exportReceipt(advance._id)"></i>
             </td>
             <div class="print">
-              <div :id="'recibo'+ adelanto._id" class="ui padded segments">
+              <div :id="'recibo'+ advance._id" class="ui padded segments">
                 <div class="ui horizontal segments">
                   <div class="ui segment">
                     <img src="http://mdl.com.py/template/images/logomarca.png" width="60px">
@@ -101,16 +101,16 @@
                   </div>
                   <div class="ui r aligned segment">
                     <p>Fecha: {{moment().format("L")}}</p>
-                    <h4 class="ui header">{{adelanto.monto}} {{adelanto.moneda}}</h4>
+                    <h4 class="ui header">{{advance.amount}} {{advance.coin}}</h4>
                   </div>
 
                 </div>
                 <div class="ui segment">
-                  <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
-                  <span class="ui sub header">CI/RG: {{adelanto.funcionario.nroCedula.toLocaleString()}} </span>
+                  <div class="ui small header">{{advance.employee.name}}</div>
+                  <span class="ui sub header">CI/RG: {{advance.employee.identityNumber.toLocaleString()}} </span>
 
                   <div class="ui basic segment">
-                    <p>Recibi la suma de {{adelanto.monto}} {{adelanto.moneda}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
+                    <p>Recibi la suma de {{advance.amount}} {{advance.coin}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
                   </div>
 
                   <br>
@@ -201,31 +201,29 @@ import moment from "moment";
 import Pagination from ".././shared/Pagination.vue";
 
 export default {
-  name: "adelantoList",
+  name: "advanceList",
   data() {
     return {
-      adelantos: [],
-      adelantosSeleccionados: [],
-      busquedaAvanzada: false,
+      advances: [],
       print: false,
-      tipoAdelanto: "quincena",
+      advanceType: "quincena",
       query: {
-        fechaInicio: moment()
+        startDate: moment()
           .startOf("month")
           .format(),
-        fechaFin: moment()
+        endDate: moment()
           .endOf("month")
           .format(),
-        busqueda: null
+        parameter: null
       },
       checked: false,
       checkedAll: false,
-      seleccionados: [],
+      advancesSelected: [],
       error: {
         hasError: false,
         message: null,
-        fechaInicio: false,
-        fechaFin: false
+        startDate: false,
+        endDate: false
       },
       pageOne: {
         currentPage: 1,
@@ -235,36 +233,35 @@ export default {
     };
   },
   methods: {
-    incluirAdelanto() {
+    addAdvance() {
       this.$router.push({ name: "incluirAdelanto" });
     },
-    editarAdelanto(adelantoId) {
-      this.$router.push({ name: "editarAdelanto", params: { id: adelantoId } });
+    editAdvance(advanceId) {
+      this.$router.push({ name: "editarAdelanto", params: { id: advanceId } });
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      this.getDataAdelantos();
-      // this.obtenerListadoAdelanto();
+      this.getAdvances();
     },
     showPrint() {
       this.print = !this.print;
     },
-    exportRecibo(id) {
+    exportReceipt(id) {
       printJS({
         printable: "recibo" + id,
         type: "html",
         targetStyles: ["*"]
       });
     },
-    consultarAdelantos(e) {
+    searchAdvanceSalary(e) {
       if (e && e.keyCode === 13) {
-        this.getDataAdelantos(true);
+        this.getAdvances(true);
         return;
       } else {
-        this.getDataAdelantos(true);
+        this.getAdvances(true);
       }
     },
-    getDataAdelantos(pageReset) {
+    getAdvances(pageReset) {
       if (pageReset) {
         this.pageOne.currentPage = 1;
       }
@@ -273,27 +270,16 @@ export default {
         .get(
           `/adelantos/?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&inicio=${this.query.fechaInicio}&fin=${
-            this.query.fechaFin
-          }&busqueda=${this.query.busqueda}`
+          }&startDate=${this.query.startDate}&endDate=${
+            this.query.endDate
+          }&parameter=${this.query.parameter}`
         )
         .then(response => {
-          this.adelantos = response.data.docs;
+          this.advances = response.data.docs;
           this.pageOne.totalItems = response.data.total;
         });
     },
-    obtenerListadoAdelanto() {
-      this.$http
-        .get(
-          `/adelantos/?page=${this.pageOne.currentPage}&limit=${
-            this.pageOne.itemsPerPage
-          }`
-        )
-        .then(response => {
-          this.adelantos = response.data.docs;
-          this.pageOne.totalItems = response.data.total;
-        });
-    },
+
     deleteAdvanceSalary(advanceId, index) {
       this.$confirm(
         "El registro sera eliminado permanentemente. Desea Continuar?",
@@ -307,7 +293,7 @@ export default {
         .then(() => {
           this.$http.delete(`/adelantos/delete/${advanceId}`).then(response => {
             if (response.status === 200) {
-              this.adelantos.splice(index, 1);
+              this.advances.splice(index, 1);
               this.$message({
                 type: "success",
                 message: "Registro Eliminado"
@@ -329,51 +315,50 @@ export default {
   computed: {
     selectall: {
       get: function() {
-        return this.adelantos
-          ? this.seleccionados.length == this.adelantos.length
+        return this.advances
+          ? this.advancesSelected.length == this.advances.length
           : false;
       },
       set: function(value) {
-        var seleccionados = [];
+        var advancesSelected = [];
 
         if (value) {
-          this.adelantos.forEach(function(adelanto) {
-            seleccionados.push(adelanto._id);
+          this.advances.forEach(function(advance) {
+            advancesSelected.push(advance._id);
           });
         }
 
-        this.seleccionados = seleccionados;
+        this.advancesSelected = advancesSelected;
       }
     }
   },
   watch: {
-    "query.fechaInicio": function(fecha) {
+    "query.startDate": function(fecha) {
       console.log("Print from watch", fecha);
-      if (moment(fecha).isAfter(this.query.fechaFin)) {
+      if (moment(fecha).isAfter(this.query.endDate)) {
         this.error.hasError = true;
         this.error.message =
           "La fecha inicial debe ser menor o igual a la fecha final";
-        this.error.fechaInicio = true;
+        this.error.startDate = true;
       } else {
         this.error.hasError = false;
-        this.error.fechaInicio = false;
+        this.error.startDate = false;
       }
     },
-    "query.fechaFin": function(fecha) {
-      if (moment(fecha).isBefore(this.query.fechaInicio)) {
+    "query.endDate": function(fecha) {
+      if (moment(fecha).isBefore(this.query.startDate)) {
         this.error.hasError = true;
         this.error.message =
           "La fecha final debe ser mayor o igual a la fecha inicial";
-        this.error.fechaFin = true;
+        this.error.endDate = true;
       } else {
         this.error.hasError = false;
-        this.error.fechaFin = false;
+        this.error.endDate = false;
       }
     }
   },
   created() {
-    // this.obtenerListadoAdelanto();
-    this.getDataAdelantos();
+    this.getAdvances();
   }
 };
 </script>

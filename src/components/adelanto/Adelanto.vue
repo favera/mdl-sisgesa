@@ -1,23 +1,23 @@
 <template>
   <div class="ui twelve wide column">
-    <form class="ui form" @submit.prevent="guardarAdelanto">
+    <form class="ui form" @submit.prevent="saveAdvance">
       <div class="ui dividing header">Incluir Adelanto</div>
 
       <div class="ten wide required field">
         <label for="">Fecha</label>
-        <div class="field" :class="{'error': errors.has('fecha')}">
-          <el-date-picker v-model="adelanto.fecha" format="dd/MM/yyyy" type="date" name="fecha" v-validate="'required'"></el-date-picker>
-          <div v-show="errors.has('fecha')" class="info-error">{{errors.first('fecha')}}</div>
+        <div class="field" :class="{'error': errors.has('date')}">
+          <el-date-picker v-model="advance.date" format="dd/MM/yyyy" type="date" name="date" v-validate="'required'"></el-date-picker>
+          <div v-show="errors.has('date')" class="info-error">{{errors.first('date')}}</div>
         </div>
       </div>
       <div class="ten wide required field">
         <label for="">Seleccionar Funcionario</label>
-        <div class="field" :class="{'error': errors.has('funcionario')}">
-          <select name="funcionario" v-model="funcionarioSeleccionado" class="ui dropdown" v-validate="'required'">
+        <div class="field" :class="{'error': errors.has('employee')}">
+          <select name="employee" v-model="employeeSelected" class="ui dropdown" v-validate="'required'">
             <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+            <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
           </select>
-          <span v-show="errors.has('funcionario')" class="info-error">{{errors.first('funcionario')}}</span>
+          <span v-show="errors.has('employee')" class="info-error">{{errors.first('employee')}}</span>
         </div>
 
       </div>
@@ -29,40 +29,40 @@
         <div class="inline fields">
           <div class="three wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="adelanto.tipoAdelanto" value="quincena" @click="disabledInput = true">
+              <input type="radio" v-model="advance.advanceType" value="quincena" @click="disabledInput = true">
               <label>Quincena</label>
             </div>
           </div>
 
           <div class="four wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="adelanto.tipoAdelanto" value="especificado" @click="disabledInput = false">
-              <label>Especificar Monto</label>
+              <input type="radio" v-model="advance.advanceType" value="especificado" @click="disabledInput = false">
+              <label>Especificar monto</label>
             </div>
           </div>
-          <div class="four wide field" :class="{'error': errors.has('monto')}">
+          <div class="four wide field" :class="{'error': errors.has('amount')}">
             <div class="ui input">
-              <input type="text" v-model.lazy="adelanto.monto" v-money="money" name="monto" v-validate="'validar_monto'" v-bind:class="{'disabled': disabledInput}">
+              <input type="text" v-model.lazy="advance.amount" v-money="money" name="amount" v-validate="'validar_monto'" v-bind:class="{'disabled': disabledInput}">
             </div>
-            <span class="info-error" v-show="errors.has('monto')">{{errors.first('monto')}}</span>
+            <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
 
           </div>
 
-          <div class="four wide field" :class="{'error': errors.has('moneda')}">
-            <select v-model="adelanto.moneda" class="ui dropdown" id="monedaSelector" name="moneda" v-validate="'required'">
+          <div class="four wide field" :class="{'error': errors.has('coin')}">
+            <select v-model="advance.coin" class="ui dropdown" id="coinSelector" name="coin" v-validate="'required'">
               <option disbled value="">Seleccionar Moneda..</option>
               <option value="Gs">Guaranies - Gs.</option>
               <option value="Us">Dolares - Us.</option>
               <option value="Rs">Reales - Rs.</option>
             </select>
-            <span class="info-error" v-show="errors.has('moneda')">{{errors.first('moneda')}}</span>
+            <span class="info-error" v-show="errors.has('coin')">{{errors.first('coin')}}</span>
           </div>
 
         </div>
       </div>
 
       <button class="ui teal button" :class="{disabled: errors.any()}" type="submit">Guardar</button>
-      <div class="ui button" @click="cancelar()">Cancelar</div>
+      <div class="ui button" @click="cancel()">Cancelar</div>
     </form>
 
   </div>
@@ -74,22 +74,22 @@ import { VMoney } from "v-money";
 import { Validator } from "vee-validate";
 
 export default {
-  name: "adelanto",
+  name: "advance",
   data() {
     return {
-      adelanto: {
-        fecha: new Date(),
-        funcionario: null,
-        nombreFuncionario: null,
-        tipoAdelanto: "quincena",
-        moneda: null,
-        monto: null
+      advance: {
+        date: new Date(),
+        employee: null,
+        employeeName: null,
+        advanceType: "quincena",
+        coin: null,
+        amount: null
       },
       disabledInput: true,
-      funcionarioSeleccionado: null,
+      employeeSelected: null,
       setDate: new Date(),
-      funcionarios: [],
-      totalSalario: null,
+      employees: [],
+      salary: null,
       money: {
         decimal: ",",
         thousands: ".",
@@ -101,82 +101,81 @@ export default {
     };
   },
   methods: {
-    obtenerAdelanto() {
+    getAdvance() {
       console.log(this.$route.params.id);
 
       if (this.$route.params.id) {
         this.$http
           .get(`/adelantos/edit/${this.$route.params.id}`)
           .then(response => {
-            this.adelanto.fecha = response.data.fecha;
-            this.adelanto.tipoAdelanto = response.data.tipoAdelanto;
-            this.adelanto.monto = response.data.monto;
-            this.adelanto.moneda = response.data.moneda;
-            this.adelanto.funcionario = response.data.funcionario;
+            this.advance.date = response.data.date;
+            this.advance.advanceType = response.data.advanceType;
+            this.advance.amount = response.data.amount;
+            this.advance.coin = response.data.coin;
+            this.advance.employee = response.data.employee;
             this.disabledInput = true;
             $(this.$el)
               .find(".ui.dropdown")
               .dropdown("refresh")
-              .dropdown("set selected", response.data.funcionario);
+              .dropdown("set selected", response.data.employee);
             $(this.$el)
-              .find("#monedaSelector")
+              .find("#coinSelector")
               .dropdown("refresh")
-              .dropdown("set selected", response.data.moneda);
+              .dropdown("set selected", response.data.coin);
           });
       }
     },
-    obtenerFuncionarios() {
+    getEmployees() {
       this.$http
         .get(`/funcionarios/full-list`)
         .then(response => {
-          this.funcionarios = response.data;
+          this.employees = response.data;
         })
         .catch(e => {
           console.log(e);
           this.fail();
         });
     },
-    getNombreFuncionario(id) {
-      var nombre;
-      this.funcionarios.find(funcionario => {
-        if (funcionario._id === id) {
-          nombre = funcionario.nombre;
+    getEmployeeName(id) {
+      var name;
+      this.employees.find(employee => {
+        if (employee._id === id) {
+          name = employee.name;
         }
       });
-      console.log("Nombre", nombre);
-      return nombre;
+      return name;
     },
-    guardarAdelanto() {
+    saveAdvance() {
       this.$validator.validateAll();
       if (this.$route.params.id) {
-        this.adelanto.funcionario = this.funcionarioSeleccionado;
-        this.adelanto.nombreFuncionario = this.getNombreFuncionario(
-          this.funcionarioSeleccionado
+        this.advance.employee = this.employeeSelected;
+        this.advance.employeeName = this.getEmployeeName(
+          this.employeeSelected
         );
-        this.adelanto.monto = parseInt(this.adelanto.monto.split(".").join(""));
+        this.advance.amount = parseInt(this.advance.amount.split(".").join(""));
         this.$http
-          .put(`/adelantos/update/${this.$route.params.id}`, this.adelanto)
+          .put(`/adelantos/update/${this.$route.params.id}`, this.advance)
           .then(response => {
             console.log(response);
             this.editSuccess();
-            this.cancelar();
+            this.cancel();
           })
           .catch(e => {
             console.log(e);
             this.fail();
           });
       } else {
-        this.adelanto.funcionario = this.funcionarioSeleccionado;
-        this.adelanto.nombreFuncionario = this.getNombreFuncionario(
-          this.funcionarioSeleccionado
+        this.advance.employee = this.employeeSelected;
+        this.advance.employeeName = this.getEmployeeName(
+          this.employeeSelected
         );
-        this.adelanto.monto = parseInt(this.adelanto.monto.split(".").join(""));
+        this.advance.amount = parseInt(this.advance.amount.split(".").join(""));
         this.$http
-          .post(`/adelantos/add`, this.adelanto)
+          .post(`/adelantos/add`, this.advance)
           .then(response => {
             console.log(response);
             this.success();
-            this.cancelar();
+            this.cancel();
           })
           .catch(e => {
             console.log(e);
@@ -184,7 +183,7 @@ export default {
           });
       }
     },
-    cancelar() {
+    cancel() {
       this.$router.push({ name: "listadoAdelanto" });
     },
     success() {
@@ -214,34 +213,33 @@ export default {
       .dropdown();
   },
   created() {
-    this.obtenerFuncionarios();
-    this.obtenerAdelanto();
+    this.getEmployees();
+    this.getAdvance();
   },
   directives: { money: VMoney },
   watch: {
-    $route: "obtenerAdelanto",
-    funcionarioSeleccionado: function() {
-      var quincena;
-      var funcionario = this.funcionarios.find(funcionario => {
-        if (funcionario._id === this.funcionarioSeleccionado) {
-          if (this.adelanto.tipoAdelanto === "quincena") {
-            this.totalSalario = funcionario.salario;
-            console.log(this.totalSalario);
-            this.adelanto.monto = Math.floor(
-              funcionario.salario / 2
+    $route: "getAdvance",
+    employeeSelected: function() {
+      var employee = this.employees.find(employee => {
+        if (employee._id === this.employeeSelected) {
+          if (this.advance.advanceType === "quincena") {
+            this.salary = employee.salary;
+            console.log(this.salary);
+            this.advance.amount = Math.floor(
+              employee.salary / 2
             ).toLocaleString();
             $(this.$el)
-              .find("#monedaSelector")
+              .find("#coinSelector")
               .dropdown("refresh")
-              .dropdown("set selected", funcionario.moneda);
+              .dropdown("set selected", employee.coin);
           }
         }
       });
 
       $(this.$el)
-        .find("#monedaSelector")
+        .find("#coinSelector")
         .dropdown("refresh")
-        .dropdown("set selected", this.adelanto.moneda);
+        .dropdown("set selected", this.advance.coin);
     }
   }
 };
