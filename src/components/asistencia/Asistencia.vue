@@ -1,11 +1,11 @@
 <template>
   <div class="ui twelve wide column">
-    <form class="ui form" @submit.prevent="guardarMarcacion">
+    <form class="ui form" @submit.prevent="saveAttendance">
       <div class="ui dividing header">Registrar Asistencia</div>
       <div class="five wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{error:errors.has('attDate')}">
-          <el-date-picker name="attDate" data-vv-as="fecha" v-validate="'required'" v-model="marcacion.fecha" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+          <el-date-picker name="attDate" data-vv-as="fecha" v-validate="'required'" v-model="attendance.date" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
           </el-date-picker>
           <div class="info-error" v-show="errors.has('attDate')">{{errors.first('attDate')}}</div>
         </div>
@@ -15,9 +15,9 @@
         <div class="six wide required field">
           <label for="">Funcionario</label>
           <div class="field" :class="{error: errors.has('attEmployee')}">
-            <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="funcionarioSeleccionado" class="ui dropdown" id="funcionarioSelector">
+            <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="employeeSelected" class="ui dropdown" id="funcionarioSelector">
               <option disabled value="">Seleccionar Funcionario..</option>
-              <option v-for="funcionario in funcionarios" :key="funcionario._id" v-bind:value="funcionario._id">{{funcionario.nombre}}</option>
+              <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.nombre}}</option>
             </select>
             <span class="info-error" v-show="errors.has('attEmployee')">{{errors.first('attEmployee')}}</span>
           </div>
@@ -28,7 +28,7 @@
         <div class="required field">
           <label for="">Marcacion Entrada</label>
           <div class="field" :class="{error: errors.has('attEntry')}">
-            <el-time-picker name="attEntry" data-vv-as="marcación entrada" v-validate="'required'" v-model="marcacion.entrada" value-format="HH:mm" format="HH:mm" :picker-options="{
+            <el-time-picker name="attEntry" data-vv-as="marcación entrada" v-validate="'required'" v-model="attendance.attEntry" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Seleccionar hora">
             </el-time-picker>
@@ -39,7 +39,7 @@
         <div class="required field">
           <label for="">Marcacion Salida</label>
           <div class="field" :class="{error: errors.has('attExit')}">
-            <el-time-picker name="attExit" data-vv-as="marcación salida" v-validate="'required'" v-model="marcacion.salida" value-format="HH:mm" format="HH:mm" :picker-options="{
+            <el-time-picker name="attExit" data-vv-as="marcación salida" v-validate="'required'" v-model="attendance.attExit" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Seleccionar hora">
             </el-time-picker>
@@ -50,115 +50,114 @@
 
       <div class="ten wide field">
         <label for="">Observacion</label>
-        <textarea name="" id="" rows="2" v-model="marcacion.observacion"></textarea>
+        <textarea name="" id="" rows="2" v-model="attendance.remark"></textarea>
       </div>
       <button class="ui teal button">Guardar</button>
-      <div class="ui button" @click="cancelar">Cancelar</div>
+      <div class="ui button" @click="cancel">Cancelar</div>
     </form>
   </div>
 </template>
 <script>
 import moment from "moment";
 export default {
-  name: "asistencia",
+  name: "attendance",
   data() {
     return {
-      marcacion: {
-        fecha: null,
-        funcionario: null,
-        nombreFuncionario: null,
-        entrada: null,
-        salida: null,
-        horasTrabajadas: null,
-        horasExtras: null,
-        horasFaltantes: null,
-        estilo: {},
-        observacion: null
+      attendance: {
+        date: null,
+        employee: null,
+        employeeName: null,
+        attEntry: null,
+        attExit: null,
+        workedHours: null,
+        extraHours: null,
+        delay: null,
+        status: {},
+        remark: null
       },
-      funcionarioSeleccionado: null,
-      feriadosAnuales: [],
-      funcionarios: [],
-      selPay: ""
+      employeeSelected: null,
+      holidaysPerYear: [],
+      employees: []
     };
   },
   methods: {
-    guardarMarcacion() {
+    saveAttendance() {
       this.$validator
         .validateAll()
         .then(() => {
           if (this.$route.params.id) {
-            this.marcacion.funcionario = this.funcionarioSeleccionado;
-            this.marcacion.nombreFuncionario = this.getNombreFuncionario(
-              this.funcionarioSeleccionado
+            this.attendance.employee = this.employeeSelected;
+            this.attendance.employeeName = this.getEmployeeName(
+              this.employeeSelected
             );
-            this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
-              this.marcacion.entrada,
-              this.marcacion.salida
+            this.attendance.workedHours = this.getWorkedHours(
+              this.attendance.attEntry,
+              this.attendance.attExit
             );
-            this.marcacion.horasFaltantes = this.getHorasFaltantes(
-              this.marcacion.funcionario,
-              this.marcacion.entrada,
-              this.marcacion.salida,
-              this.marcacion.fecha
+            this.attendance.delay = this.getDelay(
+              this.attendance.employee,
+              this.attendance.attEntry,
+              this.attendance.attExit,
+              this.attendance.date
             );
-            this.marcacion.horasExtras = this.getHorasExtras(
-              this.marcacion.funcionario,
-              this.marcacion.entrada,
-              this.marcacion.salida,
-              this.marcacion.fecha
+            this.attendance.extraHours = this.getExtraHours(
+              this.attendance.employee,
+              this.attendance.attEntry,
+              this.attendance.attExit,
+              this.attendance.date
             );
-            this.marcacion.estilo.ausente = false;
-            this.marcacion.estilo.vacaciones = false;
-            this.marcacion.estilo.incompleto = false;
+            this.attendance.status.absent = false;
+            this.attendance.status.vacation = false;
+            this.attendance.status.incomplete = false;
 
-            console.log(JSON.stringify(this.marcacion));
+            console.log(JSON.stringify(this.attendance));
 
             this.$http
               .put(
                 `/asistencias/update/${this.$route.params.id}`,
-                this.marcacion
+                this.attendance
               )
               .then(response => {
                 console.log(response);
                 this.success();
-                this.cancelar();
+                this.cancel();
               })
               .catch(e => console.log(e));
           } else {
-            console.log(this.marcacion.fecha);
-            this.marcacion.funcionario = this.funcionarioSeleccionado;
-            this.marcacion.nombreFuncionario = this.getNombreFuncionario(
-              this.funcionarioSeleccionado
+            console.log(this.attendance.date);
+            this.attendance.employee = this.employeeSelected;
+            this.attendance.employeeName = this.getEmployeeName(
+              this.employeeSelected
             );
-            this.marcacion.horasTrabajadas = this.getHorasTrabajadas(
-              this.marcacion.entrada,
-              this.marcacion.salida
+            this.attendance.workedHours = this.getWorkedHours(
+              this.attendance.attEntry,
+              this.attendance.attExit
             );
-            this.marcacion.horasFaltantes = this.getHorasFaltantes(
-              this.marcacion.funcionario,
-              this.marcacion.entrada,
-              this.marcacion.salida,
-              this.marcacion.fecha
+            this.attendance.delay = this.getDelay(
+              this.attendance.employee,
+              this.attendance.attEntry,
+              this.attendance.attExit,
+              this.attendance.date
             );
-            this.marcacion.horasExtras = this.getHorasExtras(
-              this.marcacion.funcionario,
-              this.marcacion.entrada,
-              this.marcacion.salida,
-              this.marcacion.fecha
+            this.attendance.extraHours = this.getExtraHours(
+              this.attendance.employee,
+              this.attendance.attEntry,
+              this.attendance.attExit,
+              this.attendance.date
             );
 
-            this.marcacion.estilo.ausente = false;
-            this.marcacion.estilo.vacaciones = false;
-            this.marcacion.estilo.incompleto = false;
+            this.attendance.status.absent = false;
+            this.attendance.status.vacation = false;
+            this.attendance.status.incomplete = false;
 
-            console.log(JSON.stringify(this.marcacion));
+            console.log(JSON.stringify(this.attendance));
 
             this.$http
-              .post(`/asistencias/add`, this.marcacion)
+              .post(`/asistencias/add`, this.attendance)
               .then(response => {
                 console.log(response);
                 this.success();
-                this.cancelar();
+                this.cancel();
               })
               .catch(e => console.log(e));
           }
@@ -167,224 +166,107 @@ export default {
           this.fail();
         });
     },
-    getNombreFuncionario(id) {
+    //retorna el nombre del empleado.
+    getEmployeeName(id) {
       var nombre;
-      this.funcionarios.find(funcionario => {
-        if (funcionario._id === id) {
-          nombre = funcionario.nombre;
+      this.employees.find(employee => {
+        if (employee._id === id) {
+          nombre = employee.nombre;
         }
       });
       console.log("Nombre", nombre);
       return nombre;
     },
-    obtenerSabados() {
-      var d = new Date(),
-        month = d.getMonth(),
-        mondays = [];
 
-      d.setDate(1);
-
-      // Get the first Monday in the month
-      while (d.getDay() !== 1) {
-        d.setDate(d.getDate() + 1);
-      }
-
-      // Get all the other Mondays in the month
-      while (d.getMonth() === month) {
-        mondays.push(new Date(d.getTime()));
-        d.setDate(d.getDate() + 7);
-      }
-
-      return mondays;
-    },
-    calcularRetraso(empleadoId, entrada) {
-      var horaEntrada;
-      var horaSalida;
-      this.funcionarios.filter(element => {
-        if (element.id === empleadoId) {
-          horaEntrada = moment
-            .duration(element.sucursal.horarioEntrada, "HH:mm")
-            .asMinutes();
-          console.log("HORARIO ENTRADA FUNCIONARIO", horaEntrada);
-          horaSalida = moment
-            .duration(element.sucursal.horarioSalida)
-            .asMinutes();
-          console.log("HORARIO SALIDA FUNCIONARIO", horaSalida);
-        }
-      });
-      var entrada = moment
-        .utc(entradautc)
-        .local()
-        .format("HH:mm");
-      console.log("Entrada", entrada);
-      var bancoHoraEntrada =
-        horaEntrada - moment.duration(entrada, "HH:mm").asMinutes();
-
-      var salida = moment
-        .utc(salidautc)
-        .local()
-        .format("HH:mm");
-
-      var bancoHoraSalida =
-        moment.duration(salida, "HH:mm").asMinutes() - horaSalida;
-
-      var total = 0;
-
-      if (bancoHoraEntrada > 0) {
-        total = total + bancoHoraEntrada;
-      }
-
-      if (bancoHoraSalida > 0) {
-        total = total + bancoHoraSalida;
-      }
-
-      if (total === 0) {
-        return null;
-      } else {
-        return this.handleNegative(total);
-      }
-    },
-    handleNegative(mins) {
-      var h, m;
-      if (mins >= 24 * 60) {
-        throw new RangeError(
-          "Valid input should be greater than or equal to 0 and less than 1440."
-        );
-      }
-      if (mins < 0) {
-        mins = mins * -1;
-        h = Math.floor(mins / 60);
-        m = mins % 60;
-        return (
-          "-" +
-          moment
-            .utc()
-            .hours(h)
-            .minutes(m)
-            .format("HH:mm")
-        );
-      } else {
-        h = Math.floor(mins / 60);
-        m = mins % 60;
-        return moment
-          .utc()
-          .hours(h)
-          .minutes(m)
-          .format("HH:mm");
-      }
-    },
     //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
-    retornarDiaFeriado(fecha) {
-      return this.feriadosAnuales.findIndex(feriado => {
-        return moment(feriado.fechaFeriado).isSame(fecha);
+    returnHoliday(date) {
+      return this.holidaysPerYear.findIndex(feriado => {
+        return moment(feriado.fechaFeriado).isSame(date);
       });
     },
-    aplicarEstilo(entrada, salida) {
-      var estilo = {};
-      estilo.ausente = false;
-      estilo.incompleto = false;
-      if (entrada == null && salida == null) {
-        console.log("DESDE ESTILO " + entrada, salida);
-        estilo.ausente = true;
-        estilo.incompleto = false;
-        return estilo;
-      } else {
-        if (entrada == null || salida == null) {
-          console.log("DESDE ESTILO " + entrada, salida);
-          estilo.ausente = false;
-          estilo.incompleto = true;
-          return estilo;
-        }
+    //calcula el retraso del funcionario en caso de que haya uno.
+    getDelay(employeeId, attEntry, attExit, date) {
+      var workingHours, workedHours, result, entryTime, exitTime, holiday;
+
+      if (typeof date === "string") {
+        date = new Date(date);
       }
-      return estilo;
-    },
-    getHorasFaltantes(funcionarioId, entrada, salida, fecha) {
-      var cargaLaboral,
-        horasTrabajadas,
-        resultado,
-        horaEntrada,
-        horaSalida,
-        diaFeriado;
-
-      if (typeof fecha === "string") {
-        fecha = new Date(fecha);
-      }
-
-      diaFeriado = this.retornarDiaFeriado(fecha);
-      horaEntrada = moment(entrada, "HH:mm").format();
-      horaSalida = moment(salida, "HH:mm").format();
-
-      this.funcionarios.filter(funcionario => {
-        if (funcionario._id === funcionarioId) {
-          return (cargaLaboral = funcionario.cargaLaboral);
+      //verifica que la fecha sea feriado
+      holiday = this.returnHoliday(date);
+      entryTime = moment(attEntry, "HH:mm").format();
+      exitTime = moment(attExit, "HH:mm").format();
+      //retorna la carga horaria del funcionario
+      this.employees.filter(employee => {
+        if (employee._id === employeeId) {
+          return (workingHours = employee.workingHours);
         }
       });
-      console.log(fecha);
-      console.log("Verificando si es Domingo", fecha.getDay === 0);
-      if (fecha.getDay() === 0 || diaFeriado !== -1) {
-        resultado = "00:00";
-        return resultado;
+      console.log(date);
+      console.log("Verificando si es Domingo", date.getDay === 0);
+      //verifica si la fecha pasada es domingo
+      if (date.getDay() === 0 || holiday !== -1) {
+        result = "00:00";
+        return result;
       } else {
-        horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
-        resultado =
-          horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
-        if (resultado < 0) {
-          return this.convertToHours(resultado);
+        workedHours = moment(exitTime).diff(entryTime, "minutes");
+        result =
+          workedHours - moment.duration(workingHours, "HH:mm").asMinutes();
+        if (result < 0) {
+          return this.convertToHours(result);
         } else {
           return null;
         }
       }
     },
-    getHorasTrabajadas(entrada, salida) {
-      var horaEntrada, horaSalida;
-      horaEntrada = moment(entrada, "HH:mm").format();
-      horaSalida = moment(salida, "HH:mm").format();
+    //calcula las horas trabajadas del funcionario
+    getWorkedHours(attEntry, attExit) {
+      var entryTime, exitTime;
+      entryTime = moment(attEntry, "HH:mm").format();
+      exitTime = moment(attExit, "HH:mm").format();
 
-      var horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
-      console.log("Horas Trabajadas", horasTrabajadas);
-      console.log(this.convertToHours(horasTrabajadas));
-      return this.convertToHours(horasTrabajadas);
+      var workedHours = moment(exitTime).diff(entryTime, "minutes");
+      console.log("Horas Trabajadas", workedHours);
+      console.log(this.convertToHours(workedHours));
+      //convierte a formato HH:mm
+      return this.convertToHours(workedHours);
     },
-    getHorasExtras(funcionarioId, entrada, salida, fecha) {
-      var cargaLaboral,
-        horasTrabajadas,
-        resultado,
-        horaEntrada,
-        horaSalida,
-        diaFeriado;
+    //calcula las horas extras en caso de que cumpla los requisitos
+    getExtraHours(employeeId, attEntry, attExit, date) {
+      var workingHours, workedHours, result, entryTime, exitTime, holiday;
 
-      if (typeof fecha === "string") {
-        fecha = new Date(fecha);
+      if (typeof date === "string") {
+        date = new Date(date);
       }
 
-      diaFeriado = this.retornarDiaFeriado(fecha);
+      holiday = this.returnHoliday(date);
 
-      this.funcionarios.find(funcionario => {
-        if (funcionario._id === funcionarioId) {
-          return (cargaLaboral = funcionario.cargaLaboral);
+      this.employees.find(employee => {
+        if (employee._id === employeeId) {
+          return (workingHours = employee.workingHours);
         }
       });
 
-      horaEntrada = moment(entrada, "HH:mm").format();
-      horaSalida = moment(salida, "HH:mm").format();
-      console.log("Verificando si es Domingo", fecha.getDay === 0);
-      if (fecha.getDay() === 0 || diaFeriado !== -1) {
-        horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
-        return this.convertToHours(horasTrabajadas);
+      entryTime = moment(attEntry, "HH:mm").format();
+      exitTime = moment(attExit, "HH:mm").format();
+      console.log("Verificando si es Domingo", date.getDay === 0);
+      if (date.getDay() === 0 || holiday !== -1) {
+        workedHours = moment(exitTime).diff(entryTime, "minutes");
+        return this.convertToHours(workedHours);
       } else {
-        horasTrabajadas = moment(horaSalida).diff(horaEntrada, "minutes");
-        console.log("Horas Trabajadas", horasTrabajadas);
-        resultado =
-          horasTrabajadas - moment.duration(cargaLaboral, "HH:mm").asMinutes();
-        console.log("Resultado", resultado);
-        if (resultado > 0) {
-          console.log(this.convertToHours(resultado));
-          return this.convertToHours(resultado);
+        workedHours = moment(exitTime).diff(entryTime, "minutes");
+        console.log("Horas Trabajadas", workedHours);
+        result =
+          workedHours - moment.duration(workingHours, "HH:mm").asMinutes();
+        console.log("Resultado", result);
+        if (result > 0) {
+          console.log(this.convertToHours(result));
+          return this.convertToHours(result);
         } else {
           return null;
         }
       }
     },
+    //convierte a formato HH:mm los minutos en formato number
     convertToHours(mins) {
       var h, m;
       if (mins >= 24 * 60) {
@@ -414,22 +296,24 @@ export default {
           .format("HH:mm");
       }
     },
-    obtenerMarcacion() {
+    //obtiene la asistencia para la edicion
+    getAttendance() {
       this.$http
         .get(`/asistencias/edit/${this.$route.params.id}`)
         .then(response => {
-          this.marcacion.fecha = response.data.fecha;
-          this.marcacion.entrada = response.data.entrada;
-          this.marcacion.salida = response.data.salida;
-          this.funcionarioSeleccionado = response.data.funcionario;
-          this.marcacion.observacion = response.data.observacion;
+          this.attendance.date = response.data.date;
+          this.attendance.attEntry = response.data.attEntry;
+          this.attendance.attExit = response.data.attExit;
+          this.employeeSelected = response.data.employee;
+          this.attendance.remark = response.data.remark;
           $(this.$el)
             .find(".ui.dropdown")
             .dropdown("refresh")
-            .dropdown("set selected", response.data.funcionario);
+            .dropdown("set selected", response.data.employee);
         });
     },
-    obtenerFeriados() {
+    //obtiene los feriados registrados en el año
+    getHolidays() {
       var firstDayYear = moment()
         .startOf("year")
         .format();
@@ -439,21 +323,22 @@ export default {
       this.$http
         .get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`)
         .then(response => {
-          this.feriadosAnuales = response.data;
+          this.holidaysPerYear = response.data;
         });
     },
-    obtenerFuncionarios() {
+    //obtiene el listado completo de funcionarios
+    getEmployees() {
       this.$http
         .get(`/funcionarios/full-list/`)
         .then(response => {
-          this.funcionarios = response.data;
+          this.employees = response.data;
         })
         .catch(e => {
           console.log(e);
           this.fail();
         });
     },
-    cancelar() {
+    cancel() {
       this.$router.push({ name: "listadoAsistencia" });
     },
     success() {
@@ -463,7 +348,6 @@ export default {
         type: "success"
       });
     },
-
     fail() {
       this.$notify.error({
         title: "Error!",
@@ -477,25 +361,20 @@ export default {
       .dropdown();
   },
   created() {
-    this.obtenerFuncionarios();
-    this.obtenerMarcacion();
-    this.obtenerFeriados();
+    this.getEmployees();
+    this.getAttendance();
+    this.getHolidays();
   },
   watch: {
-    $route: "obtenerMarcacion",
-    funcionarioSeleccionado: function() {
+    $route: "getAttendance",
+    employeeSelected: function() {
       $(this.$el)
         .find(".ui.dropdown")
         .dropdown("refresh")
-        .dropdown("set selected", this.funcionarioSeleccionado);
+        .dropdown("set selected", this.employeeSelected);
     }
   }
 };
 </script>
 <style>
-.test-asis {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
 </style>

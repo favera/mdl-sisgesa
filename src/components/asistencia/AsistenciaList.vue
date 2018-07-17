@@ -54,7 +54,7 @@
 
               <div class="ui icon input">
                 <input type="text" placeholder="Buscar por nombre" @keydown="consultarAsistencia" v-model="query.busqueda">
-                <!-- <i class="search icon" v-if="busquedaAvanzada"></i> -->
+                <!-- <i class="search icon" v-if="parameterAvanzada"></i> -->
                 <!-- <i @click="consultarAsistencia" class="inverted teal circular search link icon" v-else></i> -->
 
               </div>
@@ -88,7 +88,7 @@
               </span>
             </a>
 
-            <a class="icon item" @click="busquedaAvanzada = !busquedaAvanzada">
+            <a class="icon item" @click="advancedSearch = !advancedSearch">
 
               <i class="find icon"></i>
 
@@ -100,17 +100,17 @@
 
       </div>
 
-      <div class="fields" v-show="busquedaAvanzada">
+      <div class="fields" v-show="advancedSearch">
         <div class="field">
           <label for="">Rango de Fechas:</label>
           <div class="inline fields">
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" v-model="query.rangoFecha.inicio">
+              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" v-model="query.startDate">
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy" v-model="query.rangoFecha.fin">
+              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy" v-model="query.endDate">
               </el-date-picker>
             </div>
 
@@ -120,28 +120,28 @@
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="todos" v-model="query.estado">
+                <input type="radio" value="todos" v-model="query.status">
                 <label>Todos</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="ausentes" v-model="query.estado">
+                <input type="radio" value="ausentes" v-model="query.status">
                 <label>Ausentes</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="incompletos" v-model="query.estado">
+                <input type="radio" value="incompletos" v-model="query.status">
                 <label>Incompletos</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="vacaciones" v-model="query.estado">
+                <input type="radio" value="vacaciones" v-model="query.status">
                 <label>Vacaciones</label>
               </div>
             </div>
@@ -234,28 +234,23 @@ export default {
   name: "asistenciaList",
   data() {
     return {
-      busquedaAvanzada: false,
-      feriadosAnuales: [],
+      advancedSearch: false,
+      holidaysPerYear: [],
       showMessage: false,
-      call: null,
       query: {
-        estado: "todos",
-        rangoFecha: {
-          inicio: null,
-          fin: null
-        },
-        busqueda: null
+        status: "todos",
+        startDate: null,
+        endDate: null,
+        parameter: null
       },
       datosMarcaciones: [],
       validarPlanilla: [],
       postMarcaciones: [],
-      keyPagination: [],
-      listado: [],
+
       marcaciones: [],
       eventos: [],
-      preDatos: [],
+      attendanceSheet: [],
       ausente: false,
-      atrasado: false,
       modal: null,
       isSabado: null,
       marcacion: {
@@ -337,35 +332,35 @@ export default {
         this.pageOne.currentPage = 1;
       }
 
-      if (!this.query.rangoFecha.inicio && !this.query.rangoFecha.fin) {
-        this.query.rangoFecha.inicio = moment()
+      if (!this.query.startDate && !this.query.endDate) {
+        this.query.startDate = moment()
           .startOf("month")
           .format();
-        this.query.rangoFecha.fin = moment()
+        this.query.endDate = moment()
           .endOf("month")
           .format();
       }
 
-      if (!this.query.rangoFecha.inicio && this.query.rangoFecha.fin) {
-        this.query.rangoFecha.inicio = moment()
+      if (!this.query.startDate && this.query.endDate) {
+        this.query.startDate = moment()
           .startOf("month")
           .format();
       }
 
-      if (this.query.rangoFecha.inicio && !this.query.rangoFecha.fin) {
-        this.query.rangoFecha.fin = moment()
+      if (this.query.startDate && !this.query.endDate) {
+        this.query.endDate = moment()
           .endOf("month")
           .format();
       }
 
-      if (this.query.estado === "todos") {
+      if (this.query.status === "todos") {
         this.$http
           .get(
             `/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${
               this.pageOne.itemsPerPage
-            }&inicio=${this.query.rangoFecha.inicio}&fin=${
-              this.query.rangoFecha.fin
-            }&busqueda=${this.query.busqueda}&estado=${this.query.estado}`
+            }&startDate=${this.query.startDate}&endDate=${
+              this.query.endDate
+            }&parameter=${this.query.parameter}&status=${this.query.status}`
           )
           .then(response => {
             if (response.data.docs.length === 0) {
@@ -382,9 +377,9 @@ export default {
           .get(
             `/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${
               this.pageOne.itemsPerPage
-            }&inicio=${this.query.rangoFecha.inicio}&fin=${
-              this.query.rangoFecha.fin
-            }&estado=${this.query.estado}&busqueda=${this.query.busqueda}`
+            }&startDate=${this.query.startDate}&endDate=${
+              this.query.endDate
+            }&status=${this.query.status}&parameter=${this.query.parameter}`
           )
           .then(response => {
             if (response.data.docs.length === 0) {
@@ -698,7 +693,9 @@ export default {
         .endOf("year")
         .format();
       this.$http
-        .get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`)
+        .get(
+          `/eventos/feriados?startDate=${firstDayYear}&endDate=${lastDayYear}`
+        )
         .then(response => {
           this.feriadosAnuales = response.data;
         });
@@ -706,9 +703,12 @@ export default {
     handleSelectedFile(convertedData) {
       this.datosMarcaciones.length = 0;
       this.validarPlanilla.length = 0;
-      //Pasamos los datos del archivo excel a preDatos
-      this.preDatos = convertedData.body;
-      var fecha = moment(this.preDatos[0].Horario, "DD/MM/YYYY").format();
+      //Pasamos los datos del archivo excel a attendanceSheet
+      this.attendanceSheet = convertedData.body;
+      var fecha = moment(
+        this.attendanceSheet[0].Horario,
+        "DD/MM/YYYY"
+      ).format();
       console.log("Fecha Format", fecha);
       //Trae las asistencias de la fecha pasada
       this.$http
@@ -719,7 +719,7 @@ export default {
             var asistenciaRetorno = response.data;
             console.log(JSON.stringify(asistenciaRetorno));
 
-            this.preDatos.forEach(asistenciaPlanilla => {
+            this.attendanceSheet.forEach(asistenciaPlanilla => {
               var noExiste = asistenciaRetorno.findIndex(asistenciaBackend => {
                 return (
                   asistenciaBackend.funcionario.acnro ===
@@ -774,8 +774,8 @@ export default {
         horarios: []
       };
 
-      console.log("Predatos", JSON.stringify(this.preDatos));
-      //iteracion sobre el array de objetos de preDatos, preDatos contiene datos del archivo excel
+      console.log("attendanceSheet", JSON.stringify(this.attendanceSheet));
+      //iteracion sobre el array de objetos de attendanceSheet, attendanceSheet contiene datos del archivo excel
       for (let item of this.validarPlanilla) {
         //Compara si el acnro dado por el foreach de funcionario es igual al item del for de los datos del excel
         if (acnro === item["AC-No."]) {
