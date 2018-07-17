@@ -15,11 +15,11 @@
 
           </thead>
           <tbody>
-            <tr v-for="dato in datosMarcaciones" :key="dato.id">
-              <td>{{dato.nombreFuncionario}}</td>
-              <td>{{moment(dato.fecha).format("L")}}</td>
-              <td>{{(dato.entrada || "--") + " hs"}}</td>
-              <td>{{(dato.salida || "--") + " hs"}}</td>
+            <tr v-for="att in attendanceModal" :key="att.id">
+              <td>{{att.employeeName}}</td>
+              <td>{{moment(att.fecha).format("L")}}</td>
+              <td>{{(att.entrada || "--") + " hs"}}</td>
+              <td>{{(att.salida || "--") + " hs"}}</td>
             </tr>
             <tr v-show="warningMessage">
               <td colspan="4">
@@ -178,7 +178,7 @@
 
           <tbody>
             <tr v-for="(marcacion, index) in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
-              <td>{{marcacion.nombreFuncionario}}</td>
+              <td>{{marcacion.employeeName}}</td>
               <td>{{moment(marcacion.fecha).format("L")}}</td>
               <td>{{(marcacion.entrada || "--") + " hs"}}</td>
               <td>{{(marcacion.salida || "--") + " hs"}}</td>
@@ -243,8 +243,8 @@ export default {
         endDate: null,
         parameter: null
       },
-      datosMarcaciones: [],
-      validarPlanilla: [],
+      attendanceModal: [],
+      validateAttendance: [],
       postMarcaciones: [],
 
       marcaciones: [],
@@ -263,7 +263,7 @@ export default {
         observacion: null,
         estilo: {}
       },
-      funcionarios: [],
+      employees: [],
       sabados: [],
       nombreBusqueda: null,
       searchDateStart: "",
@@ -395,7 +395,7 @@ export default {
     },
     obtenerFuncionarios() {
       this.$http.get(`/funcionarios/full-list`).then(response => {
-        this.funcionarios = response.data;
+        this.employees = response.data;
       });
     },
     obtenerAsistencias() {
@@ -422,7 +422,7 @@ export default {
       this.totalRetraso = 0;
     },
     cancelarArchivo() {
-      this.datosMarcaciones.length = 0;
+      this.attendanceModal.length = 0;
     },
     abrirModal() {
       this.modal
@@ -430,7 +430,7 @@ export default {
         .modal("show")
         .modal("refresh");
     },
-    //retorna las horas que trabajo en el dia horaSalida - horaEntrada
+    //retorna las horas que trabajo en el dia (horaSalida - horaEntrada)
     handleHorasTrabajadas(entrada, salida) {
       var result = moment("00:00", "hh:mm").format("00:00");
       if (entrada !== null && salida !== null) {
@@ -455,10 +455,10 @@ export default {
       });
     },
     //retorna el valor en horas de horas extras para el banco de horas
-    calculoBancoH(entrada, salida, funcionarioId, fecha) {
+    calculoBancoH(entrada, salida, employeeId, fecha) {
       var sabadoMedioTiempo,
-        cargaLaboral,
-        funcionario,
+        workingHours,
+        employee,
         horasTrabajadas,
         horasExtras,
         verFecha,
@@ -467,16 +467,16 @@ export default {
       diaFeriado = this.retornarDiaFeriado(fecha);
       console.log("Resultado de retonar dia Feriado", diaFeriado);
       verFecha = new Date(fecha);
-      funcionario = this.funcionarios.find(funcionario => {
-        if (funcionario._id === funcionarioId) {
-          return funcionario;
+      employee = this.employees.find(employee => {
+        if (employee._id === employeeId) {
+          return employee;
         }
         return null;
       });
 
-      if (funcionario) {
-        sabadoMedioTiempo = funcionario.medioTiempo;
-        cargaLaboral = funcionario.cargaLaboral;
+      if (employee) {
+        sabadoMedioTiempo = employee.medioTiempo;
+        workingHours = employee.workingHours;
       }
 
       console.log(verFecha);
@@ -511,12 +511,12 @@ export default {
             return null;
           }
 
-          console.log("Carga Laboral", cargaLaboral);
+          console.log("Carga Laboral", workingHours);
 
           horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-            moment.duration(cargaLaboral, "HH:mm").asMinutes();
-          console.log(moment.duration(cargaLaboral, "HH:mm").asMinutes());
+            moment.duration(workingHours, "HH:mm").asMinutes();
+          console.log(moment.duration(workingHours, "HH:mm").asMinutes());
           console.log("Resultado Horas Extras", horasExtras);
 
           if (horasExtras > 0) {
@@ -541,7 +541,7 @@ export default {
           }
           horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-            moment.duration(cargaLaboral, "HH:mm").asMinutes();
+            moment.duration(workingHours, "HH:mm").asMinutes();
 
           console.log("Resultado Horas Extras", horasExtras);
 
@@ -554,10 +554,10 @@ export default {
       }
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
-    calculoHorasFaltantes(entrada, salida, funcionarioId, fecha) {
+    calculoHorasFaltantes(entrada, salida, employeeId, fecha) {
       var sabadoMedioTiempo,
-        cargaLaboral,
-        funcionario,
+        workingHours,
+        employee,
         horasTrabajadas,
         result,
         horasExtras,
@@ -567,16 +567,16 @@ export default {
       diaFeriado = this.retornarDiaFeriado(fecha);
       verFecha = new Date(fecha);
 
-      funcionario = this.funcionarios.find(funcionario => {
-        if (funcionario._id === funcionarioId) {
-          return funcionario;
+      employee = this.employees.find(employee => {
+        if (employee._id === employeeId) {
+          return employee;
         }
         return null;
       });
 
-      if (funcionario) {
-        sabadoMedioTiempo = funcionario.medioTiempo;
-        cargaLaboral = funcionario.cargaLaboral;
+      if (employee) {
+        sabadoMedioTiempo = employee.medioTiempo;
+        workingHours = employee.workingHours;
       }
 
       if (this.isSabado !== -1) {
@@ -597,11 +597,11 @@ export default {
           horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
           if (!horasTrabajadas.localeCompare("00:00")) {
-            return "-" + cargaLaboral;
+            return "-" + workingHours;
           }
           horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-            moment.duration(cargaLaboral, "HH:mm").asMinutes();
+            moment.duration(workingHours, "HH:mm").asMinutes();
 
           if (horasExtras < 0) {
             return this.handleNegative(horasExtras);
@@ -618,11 +618,11 @@ export default {
           var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
 
           if (!horasTrabajadas.localeCompare("00:00")) {
-            return "-" + cargaLaboral;
+            return "-" + workingHours;
           }
           var horasExtras =
             moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
-            moment.duration(cargaLaboral, "HH:mm").asMinutes();
+            moment.duration(workingHours, "HH:mm").asMinutes();
 
           if (horasExtras < 0) {
             return this.handleNegative(horasExtras);
@@ -649,11 +649,6 @@ export default {
 
     nuevaAsistencia() {
       this.$router.push({ name: "incluirAsistencia" });
-    },
-    llamarFuncionarios() {
-      this.$http.get("/empleados?_expand=sucursal").then(response => {
-        (this.funcionarios = response.data), console.log("entro en axios");
-      });
     },
     deleteAttendance(attendanceId, index) {
       this.$confirm(
@@ -700,74 +695,78 @@ export default {
           this.feriadosAnuales = response.data;
         });
     },
+    //metodo que recibe el archivo excel
     handleSelectedFile(convertedData) {
-      this.datosMarcaciones.length = 0;
-      this.validarPlanilla.length = 0;
-      //Pasamos los datos del archivo excel a attendanceSheet
+      this.attendanceModal.length = 0;
+      this.validateAttendance.length = 0;
+      //Pasamos los datos del archivo excel a attendanceSheet, para verificar luego si dentro de este archivo hay datos que ya fueron cargados
       this.attendanceSheet = convertedData.body;
+      //se asigna la primera fecha del archivo a la variable fecha
       var fecha = moment(
         this.attendanceSheet[0].Horario,
         "DD/MM/YYYY"
       ).format();
       console.log("Fecha Format", fecha);
-      //Trae las asistencias de la fecha pasada
+      //Trae las asistencias del parametro fecha
       this.$http
         .get(`/asistencias/full-list?fechaPlanilla=${fecha}`)
         .then(response => {
           console.log("Response Length", response.data.length);
           if (response.data.length > 0) {
-            var asistenciaRetorno = response.data;
-            console.log(JSON.stringify(asistenciaRetorno));
+            var attendanceOfDate = response.data;
+            // console.log(JSON.stringify(attendanceOfDate));
 
-            this.attendanceSheet.forEach(asistenciaPlanilla => {
-              var noExiste = asistenciaRetorno.findIndex(asistenciaBackend => {
+            this.attendanceSheet.forEach(attSheet => {
+              var attExist = attendanceOfDate.findIndex(attOfDate => {
                 return (
-                  asistenciaBackend.funcionario.acnro ===
-                  asistenciaPlanilla["AC-No."]
+                  attOfDate.employee.acnro ===
+                  attSheet["AC-No."]
                 );
               });
-              console.log("Existe Funcionario", noExiste);
-              if (noExiste === -1) {
-                this.validarPlanilla.push(asistenciaPlanilla);
+              console.log("Existe Funcionario", attExist);
+              //inserta en validar planilla si no existe aun un registro con esa fecha y ese funcionario
+              if (attExist === -1) {
+                this.validateAttendance.push(attSheet);
               }
             });
-            if (!this.validarPlanilla.length) {
+            //si todos los datos de la planilla subida son repetidos muestra mensaje de alerta
+            if (!this.validateAttendance.length) {
               this.warningMessage = true;
             }
           } else {
-            this.validarPlanilla = convertedData.body;
+            this.validateAttendance = convertedData.body;
           }
 
-          this.funcionarios.forEach(value => {
-            console.log("Funcionario", value.acnro);
-            this.orderData(
-              value.acnro,
-              value._id,
-              value.nombre,
-              value.cargaLaboral,
-              value.medioTiempo,
-              value.vacaciones
+          this.employees.forEach(employee => {
+            console.log("Funcionario", employee.acnro);
+            this.validateData(
+              employee.acnro,
+              employee._id,
+              employee.name,
+              employee.workingHours,
+              employee.halfTime,
+              employee.vacation
             );
           });
           this.abrirModal();
-          console.log("Fecha Planilla", this.datosMarcaciones[0].fecha);
-          this.getSabados(this.datosMarcaciones[0].fecha);
-          this.isSabado = this.findSabado(this.datosMarcaciones[0].fecha);
+          console.log("Fecha Planilla", this.attendanceModal[0].fecha);
+          this.getSabados(this.attendanceModal[0].fecha);
+          this.isSabado = this.findSabado(this.attendanceModal[0].fecha);
         });
     },
     //recibe datos de funcionarios desde el foreach de funcionarios
-    orderData(
+    validateData(
       acnro,
-      funcionarioId,
-      nombreFuncionario,
-      cargaLaboral,
+      employeeId,
+      employeeName,
+      workingHours,
       medioTiempo,
       vacaciones
     ) {
       var modelo = {
         fecha: "",
-        funcionarioId: null,
-        nombreFuncionario: "",
+        employeeId: null,
+        employeeName: "",
         horasExtras: "",
         entrada: null,
         salida: null,
@@ -775,24 +774,24 @@ export default {
       };
 
       console.log("attendanceSheet", JSON.stringify(this.attendanceSheet));
-      //iteracion sobre el array de objetos de attendanceSheet, attendanceSheet contiene datos del archivo excel
-      for (let item of this.validarPlanilla) {
+      //iteracion sobre el array de objetos de validateAttendance, attendanceSheet contiene datos del archivo excel
+      for (let item of this.validateAttendance) {
         //Compara si el acnro dado por el foreach de funcionario es igual al item del for de los datos del excel
         if (acnro === item["AC-No."]) {
           console.log(
             "acnro variable: " + acnro + "|" + "ACNRO array: " + item["AC-No."]
           );
-          modelo.funcionarioId = funcionarioId;
-          modelo.nombreFuncionario = nombreFuncionario;
+          modelo.employeeId = employeeId;
+          modelo.employeeName = employeeName;
           modelo.fecha = moment(item.Horario, "DD/MM/YYYY").format();
           modelo.horasExtras = moment
-            .duration(cargaLaboral, "HH:mm")
+            .duration(workingHours, "HH:mm")
             .asMinutes();
           //Se guardan todos los horarios del funcionario encontrados en la planilla en un array
           modelo.horarios.push(
             moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
           );
-          console.log("CARGA LABORAL" + cargaLaboral);
+          console.log("CARGA LABORAL" + workingHours);
           console.log("Horario sin formato " + item.Horario);
           console.log(
             "Horario: " +
@@ -820,11 +819,11 @@ export default {
             );
             modelo.entrada = modelo.horarios[0];
             console.log("###ENTRADA##" + modelo.entrada);
-            this.datosMarcaciones.push(modelo);
+            this.attendanceModal.push(modelo);
           } else {
             modelo.salida = modelo.horarios[0];
             console.log("####Salida####" + modelo.salida);
-            this.datosMarcaciones.push(modelo);
+            this.attendanceModal.push(modelo);
           }
           console.log(
             "Entrada Salida Una SOLA MARCACION" + modelo.entrada,
@@ -835,7 +834,7 @@ export default {
           console.log("ultimo Indice" + last);
           modelo.entrada = modelo.horarios[0];
           modelo.salida = modelo.horarios[last];
-          this.datosMarcaciones.push(modelo);
+          this.attendanceModal.push(modelo);
         }
       }
     },
@@ -922,12 +921,12 @@ export default {
     },
     guardarMarcaciones() {
       this.ausencias.length = 0;
-      this.datosMarcaciones.forEach(dato => {
+      this.attendanceModal.forEach(dato => {
         var marcacion = {};
 
         marcacion.fecha = dato.fecha;
-        marcacion.funcionario = dato.funcionarioId;
-        marcacion.nombreFuncionario = dato.nombreFuncionario;
+        marcacion.employee = dato.employeeId;
+        marcacion.employeeName = dato.employeeName;
         marcacion.entrada = dato.entrada;
         marcacion.salida = dato.salida;
         //calculo de Horas trabajadas
@@ -939,14 +938,14 @@ export default {
         marcacion.horasExtras = this.calculoBancoH(
           dato.entrada,
           dato.salida,
-          dato.funcionarioId,
+          dato.employeeId,
           dato.fecha
         );
 
         marcacion.horasFaltantes = this.calculoHorasFaltantes(
           dato.entrada,
           dato.salida,
-          dato.funcionarioId,
+          dato.employeeId,
           dato.fecha
         );
 
@@ -960,148 +959,37 @@ export default {
       });
 
       this.verificarAusenciasVacaciones();
-      // console.log(this.datosMarcaciones[0].fecha);
-      // var fecha = new Date(this.datosMarcaciones[0].fecha);
-      // var diaFeriado = this.retornarDiaFeriado(fecha);
-      // //si no es domingo verificar si esta de vacaciones o ausente
-      // if (fecha.getDay() !== 0 && diaFeriado === -1) {
-      //   //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
-      //   this.funcionarios.forEach(async funcionario => {
-      //     var ausencia = this.datosMarcaciones.findIndex(item => {
-      //       console.log("comparacion", item.funcionarioId, funcionario._id);
-      //       return funcionario._id === item.funcionarioId;
-      //     });
-      //     console.log("Ausente:", ausencia);
-      //     if (ausencia === -1) {
-      //       console.log(
-      //         "Funcionario Ausente, verificar si esta de vacaciones",
-      //         funcionario._id
-      //       );
-      //       var marcacion = {};
-      //       marcacion.estilo = {};
-
-      //       //Verifica si el funcionario esta de vacaciones
-      //       if (funcionario.vacaciones !== "false") {
-      //         console.log("Esta de vacaciones");
-      //         var fecha, fechaInicio, fechaFin, isFechaVacaciones, respuesta;
-      //         respuesta = await this.$http.get(
-      //           `/eventos/edit/${funcionario.vacaciones}`
-      //         );
-      //         console.log(respuesta);
-
-      //         // debugger;
-      //         // respuesta = await this.returnVacacionesData(
-      //         //   funcionario.vacaciones
-      //         // );
-      //         // debugger;
-
-      //         console.log("Respuesta del async", respuesta);
-      //         fechaInicio = respuesta.data.fechaInicio;
-      //         fechaFin = respuesta.data.fechaFin;
-
-      //         fecha = moment(this.datosMarcaciones[0].fecha).format();
-      //         console.log("Fecha a comparar", fecha, typeof fecha);
-      //         isFechaVacaciones = moment(fecha).isBetween(
-      //           fechaInicio,
-      //           fechaFin,
-      //           null,
-      //           "[]"
-      //         );
-      //         console.log(
-      //           "Resultado de evaluacion fecha vacaciones",
-      //           isFechaVacaciones
-      //         );
-      //         if (isFechaVacaciones) {
-      //           marcacion.fecha = this.datosMarcaciones[0].fecha;
-      //           marcacion.funcionario = funcionario._id;
-      //           marcacion.nombreFuncionario = funcionario.nombre;
-      //           marcacion.entrada = null;
-      //           marcacion.salida = null;
-      //           marcacion.horasTrabajadas = null;
-      //           marcacion.horasExtras = null;
-      //           marcacion.horasFaltantes = null;
-      //           marcacion.observacion = "Vacaciones";
-      //           marcacion.estilo.ausente = false;
-      //           marcacion.estilo.incompleto = false;
-      //           marcacion.estilo.vacaciones = true;
-      //           console.log("Persona de vacaciones", JSON.stringify(marcacion));
-      //           this.ausencias.push(marcacion);
-      //           console.log(JSON.stringify(this.ausencias));
-      //         }
-      //       } else {
-      //         console.log("Entro en el Else");
-      //         //si no cumplio condiciones anteriores, es una ausencia.
-      //         marcacion.fecha = this.datosMarcaciones[0].fecha;
-      //         marcacion.funcionario = funcionario._id;
-      //         marcacion.nombreFuncionario = funcionario.nombre;
-      //         marcacion.entrada = null;
-      //         marcacion.salida = null;
-      //         marcacion.horasTrabajadas = null;
-      //         marcacion.horasExtras = null;
-      //         marcacion.horasFaltantes = null;
-      //         marcacion.observacion = "Ausencia";
-      //         marcacion.estilo.ausente = true;
-      //         marcacion.estilo.incompleto = false;
-      //         marcacion.estilo.vacaciones = false;
-
-      //         this.ausencias.push(marcacion);
-      //       }
-      //     }
-      //   });
-      // }
-      // console.log("Array Ausencias", JSON.stringify(this.ausencias));
-      // console.log("Array Marcaciones", JSON.stringify(this.postMarcaciones));
-      // if (this.ausencias.length > 0) {
-      //   this.postMarcaciones = this.ausencias.concat(this.postMarcaciones);
-      // }
-
-      // console.log(
-      //   "Despues de concatenar",
-      //   JSON.stringify(this.postMarcaciones)
-      // );
-
-      // this.$http
-      //   .post(`/asistencias/test-data`, this.postMarcaciones)
-      //   .then(response => {
-      //     this.$message({
-      //       type: "success",
-      //       message: "Registro insertado exitosamente"
-      //     });
-      //     this.postMarcaciones.length = 0;
-      //     this.queryData();
-      //     // this.obtenerAsistencias();
-      //     console.log(response);
-      //   });
+     
     },
     async verificarAusenciasVacaciones() {
-      console.log(this.datosMarcaciones[0].fecha);
-      var fecha = new Date(this.datosMarcaciones[0].fecha);
+      console.log(this.attendanceModal[0].fecha);
+      var fecha = new Date(this.attendanceModal[0].fecha);
       var diaFeriado = this.retornarDiaFeriado(fecha);
       //si no es domingo verificar si esta de vacaciones o ausente
       if (fecha.getDay() !== 0 && diaFeriado === -1) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
-        for (let funcionario of this.funcionarios) {
-          var ausencia = this.datosMarcaciones.findIndex(item => {
-            console.log("comparacion", item.funcionarioId, funcionario._id);
-            return funcionario._id === item.funcionarioId;
+        for (let employee of this.employees) {
+          var ausencia = this.attendanceModal.findIndex(item => {
+            console.log("comparacion", item.employeeId, employee._id);
+            return employee._id === item.employeeId;
           });
           console.log("Ausente:", ausencia);
           if (ausencia === -1) {
             console.log(
               "Funcionario Ausente, verificar si esta de vacaciones",
-              funcionario._id
+              employee._id
             );
             var marcacion = {};
             marcacion.estilo = {};
             var consultaVacaciones, fecha, isFechaVacaciones;
             // debugger;
             consultaVacaciones = await this.$http.get(
-              `/eventos/vacaciones/${funcionario._id}`
+              `/eventos/vacaciones/${employee._id}`
             );
             console.log("Resultado await", consultaVacaciones);
             // debugger;
             if (consultaVacaciones.data.length > 0) {
-              fecha = moment(this.datosMarcaciones[0].fecha).format();
+              fecha = moment(this.attendanceModal[0].fecha).format();
               isFechaVacaciones = consultaVacaciones.data.find(evento => {
                 return moment(fecha).isBetween(
                   evento.fechaInicio,
@@ -1113,9 +1001,9 @@ export default {
             }
 
             if (isFechaVacaciones) {
-              marcacion.fecha = this.datosMarcaciones[0].fecha;
-              marcacion.funcionario = funcionario._id;
-              marcacion.nombreFuncionario = funcionario.nombre;
+              marcacion.fecha = this.attendanceModal[0].fecha;
+              marcacion.employee = employee._id;
+              marcacion.employeeName = employee.nombre;
               marcacion.entrada = null;
               marcacion.salida = null;
               marcacion.horasTrabajadas = null;
@@ -1131,9 +1019,9 @@ export default {
             } else {
               console.log("Entro en el Else");
               //si no cumplio condiciones anteriores, es una ausencia.
-              marcacion.fecha = this.datosMarcaciones[0].fecha;
-              marcacion.funcionario = funcionario._id;
-              marcacion.nombreFuncionario = funcionario.nombre;
+              marcacion.fecha = this.attendanceModal[0].fecha;
+              marcacion.employee = employee._id;
+              marcacion.employeeName = employee.nombre;
               marcacion.entrada = null;
               marcacion.salida = null;
               marcacion.horasTrabajadas = null;
