@@ -18,8 +18,8 @@
             <tr v-for="att in attendanceModal" :key="att.id">
               <td>{{att.employeeName}}</td>
               <td>{{moment(att.fecha).format("L")}}</td>
-              <td>{{(att.entrada || "--") + " hs"}}</td>
-              <td>{{(att.salida || "--") + " hs"}}</td>
+              <td>{{(att.entryTime || "--") + " hs"}}</td>
+              <td>{{(att.exitTime || "--") + " hs"}}</td>
             </tr>
             <tr v-show="warningMessage">
               <td colspan="4">
@@ -180,11 +180,11 @@
             <tr v-for="(marcacion, index) in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
               <td>{{marcacion.employeeName}}</td>
               <td>{{moment(marcacion.fecha).format("L")}}</td>
-              <td>{{(marcacion.entrada || "--") + " hs"}}</td>
-              <td>{{(marcacion.salida || "--") + " hs"}}</td>
-              <td>{{(marcacion.horasTrabajadas || "--") + " hs"}}</td>
+              <td>{{(marcacion.entryTime || "--") + " hs"}}</td>
+              <td>{{(marcacion.exitTime || "--") + " hs"}}</td>
+              <td>{{(marcacion.workedHours || "--") + " hs"}}</td>
               <td>{{(marcacion.horasFaltantes || "--") + " hs"}}</td>
-              <td>{{(marcacion.horasExtras || "--") + " hs"}}</td>
+              <td>{{(marcacion.extraHours || "--") + " hs"}}</td>
               <td>{{marcacion.observacion || "--"}}</td>
 
               <td class="center aligned">
@@ -245,21 +245,21 @@ export default {
       },
       attendanceModal: [],
       validateAttendance: [],
-      postMarcaciones: [],
+      attendancesToSend: [],
 
       marcaciones: [],
       eventos: [],
       attendanceSheet: [],
       ausente: false,
       modal: null,
-      isSabado: null,
+      isSaturday: null,
       marcacion: {
         fecha: null,
-        entrada: null,
-        salida: null,
-        horasTrabajadas: null,
+        entryTime: null,
+        exitTime: null,
+        workedHours: null,
         horasFaltantes: null,
-        horasExtras: null,
+        extraHours: null,
         observacion: null,
         estilo: {}
       },
@@ -268,7 +268,7 @@ export default {
       nombreBusqueda: null,
       searchDateStart: "",
       searchDateEnd: "",
-      ausencias: [],
+      absences: [],
       totalBancoHora: 0,
       totalRetraso: 0,
       totalHoraExtra: 0,
@@ -281,9 +281,9 @@ export default {
       json_fields: {
         funcionario: "Funcionario",
         fecha: "Fecha",
-        entrada: "Entrada",
-        salida: "Salida",
-        horasTrabajadas: "Horas Trabajadas",
+        entryTime: "Entrada",
+        exitTime: "Salida",
+        workedHours: "Horas Trabajadas",
         bancoHora: "Banco de Horas",
         retraso: "Horas faltantes"
       },
@@ -393,34 +393,34 @@ export default {
           });
       }
     },
-    obtenerFuncionarios() {
+    getEmployees() {
       this.$http.get(`/funcionarios/full-list`).then(response => {
         this.employees = response.data;
       });
     },
-    obtenerAsistencias() {
-      this.$http
-        .get(
-          `/asistencias?page=${this.pageOne.currentPage}&limit=${
-            this.pageOne.itemsPerPage
-          }`,
-          {
-            headers: {
-              "x-auth": localStorage.token
-            }
-          }
-        )
-        .then(response => {
-          this.marcaciones = response.data.docs;
-          this.pageOne.totalItems = response.data.total;
-        });
-    },
-    limpiarDatos() {
-      this.json_data.length = 0;
-      this.nombreBusqueda = null;
-      this.totalBancoHora = 0;
-      this.totalRetraso = 0;
-    },
+    // obtenerAsistencias() {
+    //   this.$http
+    //     .get(
+    //       `/asistencias?page=${this.pageOne.currentPage}&limit=${
+    //         this.pageOne.itemsPerPage
+    //       }`,
+    //       {
+    //         headers: {
+    //           "x-auth": localStorage.token
+    //         }
+    //       }
+    //     )
+    //     .then(response => {
+    //       this.marcaciones = response.data.docs;
+    //       this.pageOne.totalItems = response.data.total;
+    //     });
+    // },
+    // limpiarDatos() {
+    //   this.json_data.length = 0;
+    //   this.nombreBusqueda = null;
+    //   this.totalBancoHora = 0;
+    //   this.totalRetraso = 0;
+    // },
     cancelarArchivo() {
       this.attendanceModal.length = 0;
     },
@@ -431,12 +431,12 @@ export default {
         .modal("refresh");
     },
     //retorna las horas que trabajo en el dia (horaSalida - horaEntrada)
-    handleHorasTrabajadas(entrada, salida) {
+    handleWorkedHours(entryTime, exitTime) {
       var result = moment("00:00", "hh:mm").format("00:00");
-      if (entrada !== null && salida !== null) {
+      if (entryTime !== null && exitTime !== null) {
         result =
-          moment.duration(salida, "HH:mm").asMinutes() -
-          moment.duration(entrada, "HH:mm").asMinutes();
+          moment.duration(exitTime, "HH:mm").asMinutes() -
+          moment.duration(entryTime, "HH:mm").asMinutes();
         console.log("Horas trabajadas " + result);
         return moment.utc(result * 1000 * 60).format("HH:mm");
       }
@@ -445,7 +445,7 @@ export default {
     },
     //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
     retornarDiaFeriado(fecha) {
-      return this.feriadosAnuales.findIndex(feriado => {
+      return this.holidaysPerYear.findIndex(feriado => {
         console.log(
           "Fecha Recibida en retornarDiaferiado",
           fecha,
@@ -455,12 +455,12 @@ export default {
       });
     },
     //retorna el valor en horas de horas extras para el banco de horas
-    calculoBancoH(entrada, salida, employeeId, fecha) {
+    calculoBancoH(entryTime, exitTime, employeeId, fecha) {
       var sabadoMedioTiempo,
         workingHours,
         employee,
-        horasTrabajadas,
-        horasExtras,
+        workedHours,
+        extraHours,
         verFecha,
         diaFeriado;
       //verifica que la fecha pasada es o no un feriado
@@ -481,46 +481,45 @@ export default {
 
       console.log(verFecha);
 
-      //si isSabado es true, si el dia es sabado
-      if (this.isSabado !== -1) {
+      //si la fecha es dia sabado, (verificar que funcione) es true, si el dia es sabado
+      if (verFecha.getDay() === 6) {
         //si el funcionario tiene habilitado sabado medio tiempo
         if (sabadoMedioTiempo) {
-          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          workedHours = this.handleWorkedHours(entryTime, exitTime);
 
-          console.log("Resultado Horas Trabajadas", horasTrabajadas);
+          console.log("Resultado Horas Trabajadas", workedHours);
 
-          if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!workedHours.localeCompare("00:00")) {
             console.log("ENTRO al COMPARE");
             return null;
           }
-          horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
-          console.log("Resultado Horas Extras", horasExtras);
-          if (horasExtras > 0) {
-            return this.handleNegative(horasExtras);
+          extraHours = moment.duration(workedHours, "HH:mm").asMinutes() - 300;
+          console.log("Resultado Horas Extras", extraHours);
+          if (extraHours > 0) {
+            return this.handleNegative(extraHours);
           }
           return null;
 
           //else del no tiene sabado habilitado
         } else {
-          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          workedHours = this.handleWorkedHours(entryTime, exitTime);
 
-          console.log("Resultado Horas Trabajadas", horasTrabajadas);
+          console.log("Resultado Horas Trabajadas", workedHours);
 
-          if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!workedHours.localeCompare("00:00")) {
             return null;
           }
 
           console.log("Carga Laboral", workingHours);
 
-          horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+          extraHours =
+            moment.duration(workedHours, "HH:mm").asMinutes() -
             moment.duration(workingHours, "HH:mm").asMinutes();
           console.log(moment.duration(workingHours, "HH:mm").asMinutes());
-          console.log("Resultado Horas Extras", horasExtras);
+          console.log("Resultado Horas Extras", extraHours);
 
-          if (horasExtras > 0) {
-            return this.handleNegative(horasExtras);
+          if (extraHours > 0) {
+            return this.handleNegative(extraHours);
           }
 
           return null;
@@ -528,25 +527,25 @@ export default {
         //else del verificar si es dia sabado
       } else {
         if (verFecha.getDay() === 0 || diaFeriado !== -1) {
-          horasExtras = this.handleHorasTrabajadas(entrada, salida);
-          console.log(horasExtras);
-          return horasExtras;
+          extraHours = this.handleWorkedHours(entryTime, exitTime);
+          console.log(extraHours);
+          return extraHours;
         } else {
-          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          workedHours = this.handleWorkedHours(entryTime, exitTime);
 
-          console.log("Resultado Horas Trabajadas", horasTrabajadas);
+          console.log("Resultado Horas Trabajadas", workedHours);
 
-          if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!workedHours.localeCompare("00:00")) {
             return null;
           }
-          horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+          extraHours =
+            moment.duration(workedHours, "HH:mm").asMinutes() -
             moment.duration(workingHours, "HH:mm").asMinutes();
 
-          console.log("Resultado Horas Extras", horasExtras);
+          console.log("Resultado Horas Extras", extraHours);
 
-          if (horasExtras > 0) {
-            return this.handleNegative(horasExtras);
+          if (extraHours > 0) {
+            return this.handleNegative(extraHours);
           }
 
           return null;
@@ -554,13 +553,13 @@ export default {
       }
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
-    calculoHorasFaltantes(entrada, salida, employeeId, fecha) {
+    calculoHorasFaltantes(entryTime, exitTime, employeeId, fecha) {
       var sabadoMedioTiempo,
         workingHours,
         employee,
-        horasTrabajadas,
+        workedHours,
         result,
-        horasExtras,
+        extraHours,
         verFecha,
         diaFeriado;
 
@@ -579,53 +578,53 @@ export default {
         workingHours = employee.workingHours;
       }
 
-      if (this.isSabado !== -1) {
+      if (verFecha.getDay() === 6) {
         if (sabadoMedioTiempo) {
-          (horasTrabajadas = this.handleHorasTrabajadas(entrada, salida)),
-            console.log("Horas trabajadas " + horasTrabajadas);
+          (workedHours = this.handleWorkedHours(entryTime, exitTime)),
+            console.log("Horas trabajadas " + workedHours);
 
-          if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!workedHours.localeCompare("00:00")) {
             return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
           }
-          result = moment.duration(horasTrabajadas, "HH:mm").asMinutes() - 300;
+          result = moment.duration(workedHours, "HH:mm").asMinutes() - 300;
 
           if (result < 0) {
             return this.handleNegative(result);
           }
           return null;
         } else {
-          horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          workedHours = this.handleWorkedHours(entryTime, exitTime);
 
-          if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!workedHours.localeCompare("00:00")) {
             return "-" + workingHours;
           }
-          horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+          extraHours =
+            moment.duration(workedHours, "HH:mm").asMinutes() -
             moment.duration(workingHours, "HH:mm").asMinutes();
 
-          if (horasExtras < 0) {
-            return this.handleNegative(horasExtras);
+          if (extraHours < 0) {
+            return this.handleNegative(extraHours);
           }
 
           return null;
         }
       } else {
         if (verFecha.getDay() === 0 || diaFeriado !== -1) {
-          horasExtras = null;
+          extraHours = null;
 
-          return horasExtras;
+          return extraHours;
         } else {
-          var horasTrabajadas = this.handleHorasTrabajadas(entrada, salida);
+          var workedHours = this.handleWorkedHours(entryTime, exitTime);
 
-          if (!horasTrabajadas.localeCompare("00:00")) {
+          if (!workedHours.localeCompare("00:00")) {
             return "-" + workingHours;
           }
-          var horasExtras =
-            moment.duration(horasTrabajadas, "HH:mm").asMinutes() -
+          var extraHours =
+            moment.duration(workedHours, "HH:mm").asMinutes() -
             moment.duration(workingHours, "HH:mm").asMinutes();
 
-          if (horasExtras < 0) {
-            return this.handleNegative(horasExtras);
+          if (extraHours < 0) {
+            return this.handleNegative(extraHours);
           }
 
           return null;
@@ -680,7 +679,8 @@ export default {
           });
         });
     },
-    obtenerFeriados() {
+    //obtiene los feriados del año actual
+    getHolidays() {
       var firstDayYear = moment()
         .startOf("year")
         .format();
@@ -692,7 +692,7 @@ export default {
           `/eventos/feriados?startDate=${firstDayYear}&endDate=${lastDayYear}`
         )
         .then(response => {
-          this.feriadosAnuales = response.data;
+          this.holidaysPerYear = response.data;
         });
     },
     //metodo que recibe el archivo excel
@@ -702,14 +702,14 @@ export default {
       //Pasamos los datos del archivo excel a attendanceSheet, para verificar luego si dentro de este archivo hay datos que ya fueron cargados
       this.attendanceSheet = convertedData.body;
       //se asigna la primera fecha del archivo a la variable fecha
-      var fecha = moment(
+      var firstDate = moment(
         this.attendanceSheet[0].Horario,
         "DD/MM/YYYY"
       ).format();
-      console.log("Fecha Format", fecha);
+      console.log("Fecha Format", firstDate);
       //Trae las asistencias del parametro fecha
       this.$http
-        .get(`/asistencias/full-list?fechaPlanilla=${fecha}`)
+        .get(`/asistencias/full-list?fechaPlanilla=${firstDate}`)
         .then(response => {
           console.log("Response Length", response.data.length);
           if (response.data.length > 0) {
@@ -718,12 +718,9 @@ export default {
 
             this.attendanceSheet.forEach(attSheet => {
               var attExist = attendanceOfDate.findIndex(attOfDate => {
-                return (
-                  attOfDate.employee.acnro ===
-                  attSheet["AC-No."]
-                );
+                return attOfDate.employee.acnro === attSheet["AC-No."];
               });
-              console.log("Existe Funcionario", attExist);
+
               //inserta en validar planilla si no existe aun un registro con esa fecha y ese funcionario
               if (attExist === -1) {
                 this.validateAttendance.push(attSheet);
@@ -743,98 +740,72 @@ export default {
               employee.acnro,
               employee._id,
               employee.name,
-              employee.workingHours,
-              employee.halfTime,
-              employee.vacation
+              employee.workingHours
             );
           });
           this.abrirModal();
-          console.log("Fecha Planilla", this.attendanceModal[0].fecha);
-          this.getSabados(this.attendanceModal[0].fecha);
-          this.isSabado = this.findSabado(this.attendanceModal[0].fecha);
+
+          // this.isSaturday = this.getSaturday(this.attendanceModal[0].date);
         });
     },
     //recibe datos de funcionarios desde el foreach de funcionarios
-    validateData(
-      acnro,
-      employeeId,
-      employeeName,
-      workingHours,
-      medioTiempo,
-      vacaciones
-    ) {
-      var modelo = {
-        fecha: "",
+    validateData(acnro, employeeId, employeeName, workingHours) {
+      var attModal = {
+        date: "",
         employeeId: null,
         employeeName: "",
-        horasExtras: "",
-        entrada: null,
-        salida: null,
-        horarios: []
+        extraHours: "",
+        entryTime: null,
+        exitTime: null,
+        timeRecords: []
       };
 
       console.log("attendanceSheet", JSON.stringify(this.attendanceSheet));
-      //iteracion sobre el array de objetos de validateAttendance, attendanceSheet contiene datos del archivo excel
+      //iteracion sobre el array de objetos de validateAttendance, attendanceSheet contiene datos del archivo excel, en bruto
       for (let item of this.validateAttendance) {
         //Compara si el acnro dado por el foreach de funcionario es igual al item del for de los datos del excel
         if (acnro === item["AC-No."]) {
-          console.log(
-            "acnro variable: " + acnro + "|" + "ACNRO array: " + item["AC-No."]
-          );
-          modelo.employeeId = employeeId;
-          modelo.employeeName = employeeName;
-          modelo.fecha = moment(item.Horario, "DD/MM/YYYY").format();
-          modelo.horasExtras = moment
+          attModal.employeeId = employeeId;
+          attModal.employeeName = employeeName;
+          attModal.date = moment(item.Horario, "DD/MM/YYYY").format();
+          attModal.extraHours = moment
             .duration(workingHours, "HH:mm")
             .asMinutes();
           //Se guardan todos los horarios del funcionario encontrados en la planilla en un array
-          modelo.horarios.push(
+          attModal.timeRecords.push(
             moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
-          );
-          console.log("CARGA LABORAL" + workingHours);
-          console.log("Horario sin formato " + item.Horario);
-          console.log(
-            "Horario: " +
-              moment(item.Horario, "DD/MM/YYYY HH:mm a").format("LT")
           );
         }
       }
-      //despues de recorrer todos los datos de la planilla, se verifica modelo, se tiene que validar los horarios
-      if (modelo.funcionarioId !== null) {
-        console.log("####Marcaciones####" + modelo.horarios);
+      //despues de recorrer todos los datos de la planilla, se verifica attModal, se tiene que validar los timeRecords
+      if (attModal.employeeId !== null) {
+        console.log("####Marcaciones####" + attModal.timeRecords);
         //si tiene solo una marcacion
-        if (modelo.horarios.length == 1) {
-          var fec = modelo.horarios[0];
-          console.log(typeof fec);
-          //Preguntar la hora de marcacion de Paris turno noche
+        if (attModal.timeRecords.length == 1) {
+          //se carga el unico registro de horario en la variable time
+          var time = attModal.timeRecords[0];
+
           //verifica si la unica marcacion que posee es una entrada o salida
           if (
-            moment.duration(fec, "HH:mm").asMinutes() <
+            moment.duration(time, "HH:mm").asMinutes() <
             moment.duration("10:30", "HH:mm").asMinutes()
           ) {
-            console.log(
-              "Funciona la comparacion",
-              modelo.horarios[0],
-              modelo.horarios.length
-            );
-            modelo.entrada = modelo.horarios[0];
-            console.log("###ENTRADA##" + modelo.entrada);
-            this.attendanceModal.push(modelo);
+            attModal.entryTime = attModal.timeRecords[0];
+            //hace push al array del Modal del registro como marcacion entrada
+            this.attendanceModal.push(attModal);
           } else {
-            modelo.salida = modelo.horarios[0];
-            console.log("####Salida####" + modelo.salida);
-            this.attendanceModal.push(modelo);
+            attModal.exitTime = attModal.timeRecords[0];
+            //hace push al array del modal del registro como marcacion salida
+            this.attendanceModal.push(attModal);
           }
-          console.log(
-            "Entrada Salida Una SOLA MARCACION" + modelo.entrada,
-            modelo.salida
-          );
         } else {
-          var last = modelo.horarios.length - 1;
-          console.log("ultimo Indice" + last);
-          modelo.entrada = modelo.horarios[0];
-          modelo.salida = modelo.horarios[last];
-          this.attendanceModal.push(modelo);
+          //Cuando el array attModal.timeRecords tiene mas de un elemento se coloca la primera marcacion como entrada
+          //y la ultima marcacion como salida sin verificar horario.
+          //lastIndex es el ultimo indice del array
+          var lastIndex = attModal.timeRecords.length - 1;
+          attModal.entryTime = attModal.timeRecords[0];
+          attModal.exitTime = attModal.timeRecords[lastIndex];
+          this.attendanceModal.push(attModal);
         }
       }
     },
@@ -869,97 +840,94 @@ export default {
       }
     },
     //Obtenien los sabados del mes
-    getSabados(fec) {
-      console.log("Fecha Recibidad", fec);
-      //var fecha = moment(fec, "DD/MM/YYYY").toDate();
-      var fecha = new Date(fec);
-      console.log(fecha);
-      var month = fecha.getMonth();
+    // getSabados(attDate) {
+    //   //var fecha = moment(fec, "DD/MM/YYYY").toDate();
+    //   var fecha = new Date(attDate);
+    //   console.log(fecha);
+    //   var month = fecha.getMonth();
 
-      fecha.setDate(1);
+    //   fecha.setDate(1);
 
-      // Get the first Saturday in the month
-      while (fecha.getDay() !== 6) {
-        fecha.setDate(fecha.getDate() + 1);
-      }
+    //   // Get the first Saturday in the month
+    //   while (fecha.getDay() !== 6) {
+    //     fecha.setDate(fecha.getDate() + 1);
+    //   }
 
-      // Get all the other Saturday in the month
-      while (fecha.getMonth() === month) {
-        this.sabados.push(new Date(fecha.getTime()));
-        fecha.setDate(fecha.getDate() + 7);
-      }
+    //   // Get all the other Saturday in the month
+    //   while (fecha.getMonth() === month) {
+    //     this.sabados.push(new Date(fecha.getTime()));
+    //     fecha.setDate(fecha.getDate() + 7);
+    //   }
 
-      //return sabados;
-    },
-    findSabado(fecha) {
-      //var findFecha = moment(fecha, "DD/MM/YYYY").toDate();
+    //   //return sabados;
+    // },
+    //cambie de metodo por el getDay()
+    // getSaturday(attDate) {
+    //   var formatAttDate = new Date(attDate);
 
-      var findFecha = new Date(fecha);
-
-      var fechaSabado = this.sabados.findIndex(element => {
-        console.log(findFecha);
-        console.log(fechaSabado);
-        return findFecha.getTime() === element.getTime();
-      });
-      console.log("INDICE SABADO", fechaSabado);
-      return fechaSabado;
-    },
-    aplicarEstiloMarcacion(entrada, salida) {
-      if (entrada == null || salida == null) {
-        return {
-          ausente: false,
-          incompleto: true,
-          vacaciones: false
-        };
-      } else {
-        return {
-          ausente: false,
-          incompleto: false,
-          vacaciones: false
-        };
-      }
-    },
+    //   var formatAttDate = this.sabados.findIndex(element => {
+    //     console.log(findFecha);
+    //     console.log(fechaSabado);
+    //     return findFecha.getTime() === element.getTime();
+    //   });
+    //   console.log("INDICE SABADO", fechaSabado);
+    //   return fechaSabado;
+    // },
+    // aplicarEstiloMarcacion(entryTime, exitTime) {
+    //   if (entryTime == null || exitTime == null) {
+    //     return {
+    //       ausente: false,
+    //       incompleto: true,
+    //       vacaciones: false
+    //     };
+    //   } else {
+    //     return {
+    //       ausente: false,
+    //       incompleto: false,
+    //       vacaciones: false
+    //     };
+    //   }
+    // },
     guardarMarcaciones() {
-      this.ausencias.length = 0;
+      this.absences.length = 0;
       this.attendanceModal.forEach(dato => {
-        var marcacion = {};
+        var attSend = {};
 
-        marcacion.fecha = dato.fecha;
-        marcacion.employee = dato.employeeId;
-        marcacion.employeeName = dato.employeeName;
-        marcacion.entrada = dato.entrada;
-        marcacion.salida = dato.salida;
+        attSend.date = dato.date;
+        attSend.employee = dato.employeeId;
+        attSend.employeeName = dato.employeeName;
+        attSend.entryTime = dato.entryTime;
+        attSend.exitTime = dato.exitTime;
         //calculo de Horas trabajadas
-        marcacion.horasTrabajadas = this.handleHorasTrabajadas(
-          dato.entrada,
-          dato.salida
+        attSend.workedHours = this.handleWorkedHours(
+          dato.entryTime,
+          dato.exitTime
         );
 
-        marcacion.horasExtras = this.calculoBancoH(
-          dato.entrada,
-          dato.salida,
+        attSend.extraHours = this.calculoBancoH(
+          dato.entryTime,
+          dato.exitTime,
           dato.employeeId,
-          dato.fecha
+          dato.date
         );
 
-        marcacion.horasFaltantes = this.calculoHorasFaltantes(
-          dato.entrada,
-          dato.salida,
+        attSend.horasFaltantes = this.calculoHorasFaltantes(
+          dato.entryTime,
+          dato.exitTime,
           dato.employeeId,
-          dato.fecha
+          dato.date
         );
 
-        marcacion.observacion = this.handleObservacion(dato.fecha);
-        marcacion.estilo = this.aplicarEstiloMarcacion(
-          dato.entrada,
-          dato.salida
+        attSend.observacion = this.handleObservacion(dato.date);
+        attSend.estilo = this.aplicarEstiloMarcacion(
+          dato.entryTime,
+          dato.exitTime
         );
 
-        this.postMarcaciones.push(marcacion);
+        this.attendancesToSend.push(attSend);
       });
 
       this.verificarAusenciasVacaciones();
-     
     },
     async verificarAusenciasVacaciones() {
       console.log(this.attendanceModal[0].fecha);
@@ -1004,75 +972,75 @@ export default {
               marcacion.fecha = this.attendanceModal[0].fecha;
               marcacion.employee = employee._id;
               marcacion.employeeName = employee.nombre;
-              marcacion.entrada = null;
-              marcacion.salida = null;
-              marcacion.horasTrabajadas = null;
-              marcacion.horasExtras = null;
+              marcacion.entryTime = null;
+              marcacion.exitTime = null;
+              marcacion.workedHours = null;
+              marcacion.extraHours = null;
               marcacion.horasFaltantes = null;
               marcacion.observacion = "Vacaciones";
               marcacion.estilo.ausente = false;
               marcacion.estilo.incompleto = false;
               marcacion.estilo.vacaciones = true;
               console.log("Persona de vacaciones", JSON.stringify(marcacion));
-              this.ausencias.push(marcacion);
-              console.log(JSON.stringify(this.ausencias));
+              this.absences.push(marcacion);
+              console.log(JSON.stringify(this.absences));
             } else {
               console.log("Entro en el Else");
               //si no cumplio condiciones anteriores, es una ausencia.
               marcacion.fecha = this.attendanceModal[0].fecha;
               marcacion.employee = employee._id;
               marcacion.employeeName = employee.nombre;
-              marcacion.entrada = null;
-              marcacion.salida = null;
-              marcacion.horasTrabajadas = null;
-              marcacion.horasExtras = null;
+              marcacion.entryTime = null;
+              marcacion.exitTime = null;
+              marcacion.workedHours = null;
+              marcacion.extraHours = null;
               marcacion.horasFaltantes = null;
               marcacion.observacion = "Ausencia";
               marcacion.estilo.ausente = true;
               marcacion.estilo.incompleto = false;
               marcacion.estilo.vacaciones = false;
 
-              this.ausencias.push(marcacion);
+              this.absences.push(marcacion);
             }
 
             isFechaVacaciones = null;
           }
         }
       }
-      console.log("Array Ausencias", JSON.stringify(this.ausencias));
-      console.log("Array Marcaciones", JSON.stringify(this.postMarcaciones));
-      if (this.ausencias.length > 0) {
-        this.postMarcaciones = this.ausencias.concat(this.postMarcaciones);
+      console.log("Array Ausencias", JSON.stringify(this.absences));
+      console.log("Array Marcaciones", JSON.stringify(this.attendancesToSend));
+      if (this.absences.length > 0) {
+        this.attendancesToSend = this.absences.concat(this.attendancesToSend);
       }
 
       console.log(
         "Despues de concatenar",
-        JSON.stringify(this.postMarcaciones)
+        JSON.stringify(this.attendancesToSend)
       );
 
       this.$http
-        .post(`/asistencias/test-data`, this.postMarcaciones)
+        .post(`/asistencias/test-data`, this.attendancesToSend)
         .then(response => {
           this.$message({
             type: "success",
             message: "Registro insertado exitosamente"
           });
-          this.postMarcaciones.length = 0;
+          this.attendancesToSend.length = 0;
           this.queryData();
           // this.obtenerAsistencias();
           console.log(response);
         });
-    },
-    async returnVacacionesData(vacaciones) {
-      let response = await this.$http.get(`/eventos/edit/${vacaciones}`);
-      console.log("Response", response);
-      return response;
     }
+    // async returnVacacionesData(vacaciones) {
+    //   let response = await this.$http.get(`/eventos/edit/${vacaciones}`);
+    //   console.log("Response", response);
+    //   return response;
+    // }
   },
   created() {
     this.queryData();
-    this.obtenerFuncionarios();
-    this.obtenerFeriados();
+    this.getEmployees();
+    this.getHolidays();
   },
   mounted() {
     this.modal = $(this.$el).find(".ui.longer.modal");

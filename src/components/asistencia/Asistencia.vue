@@ -28,7 +28,7 @@
         <div class="required field">
           <label for="">Marcacion Entrada</label>
           <div class="field" :class="{error: errors.has('attEntry')}">
-            <el-time-picker name="attEntry" data-vv-as="marcación entrada" v-validate="'required'" v-model="attendance.attEntry" value-format="HH:mm" format="HH:mm" :picker-options="{
+            <el-time-picker name="attEntry" data-vv-as="marcación entrada" v-validate="'required'" v-model="attendance.entryTime" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Seleccionar hora">
             </el-time-picker>
@@ -39,7 +39,7 @@
         <div class="required field">
           <label for="">Marcacion Salida</label>
           <div class="field" :class="{error: errors.has('attExit')}">
-            <el-time-picker name="attExit" data-vv-as="marcación salida" v-validate="'required'" v-model="attendance.attExit" value-format="HH:mm" format="HH:mm" :picker-options="{
+            <el-time-picker name="attExit" data-vv-as="marcación salida" v-validate="'required'" v-model="attendance.exitTime" value-format="HH:mm" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Seleccionar hora">
             </el-time-picker>
@@ -67,8 +67,8 @@ export default {
         date: null,
         employee: null,
         employeeName: null,
-        attEntry: null,
-        attExit: null,
+        entryTime: null,
+        exitTime: null,
         workedHours: null,
         extraHours: null,
         delay: null,
@@ -91,19 +91,19 @@ export default {
               this.employeeSelected
             );
             this.attendance.workedHours = this.getWorkedHours(
-              this.attendance.attEntry,
-              this.attendance.attExit
+              this.attendance.entryTime,
+              this.attendance.exitTime
             );
             this.attendance.delay = this.getDelay(
               this.attendance.employee,
-              this.attendance.attEntry,
-              this.attendance.attExit,
+              this.attendance.entryTime,
+              this.attendance.exitTime,
               this.attendance.date
             );
             this.attendance.extraHours = this.getExtraHours(
               this.attendance.employee,
-              this.attendance.attEntry,
-              this.attendance.attExit,
+              this.attendance.entryTime,
+              this.attendance.exitTime,
               this.attendance.date
             );
             this.attendance.status.absent = false;
@@ -130,19 +130,19 @@ export default {
               this.employeeSelected
             );
             this.attendance.workedHours = this.getWorkedHours(
-              this.attendance.attEntry,
-              this.attendance.attExit
+              this.attendance.entryTime,
+              this.attendance.exitTime
             );
             this.attendance.delay = this.getDelay(
               this.attendance.employee,
-              this.attendance.attEntry,
-              this.attendance.attExit,
+              this.attendance.entryTime,
+              this.attendance.exitTime,
               this.attendance.date
             );
             this.attendance.extraHours = this.getExtraHours(
               this.attendance.employee,
-              this.attendance.attEntry,
-              this.attendance.attExit,
+              this.attendance.entryTime,
+              this.attendance.exitTime,
               this.attendance.date
             );
 
@@ -302,8 +302,8 @@ export default {
         .get(`/asistencias/edit/${this.$route.params.id}`)
         .then(response => {
           this.attendance.date = response.data.date;
-          this.attendance.attEntry = response.data.attEntry;
-          this.attendance.attExit = response.data.attExit;
+          this.attendance.entryTime = response.data.entryTime;
+          this.attendance.exitTime = response.data.exitTime;
           this.employeeSelected = response.data.employee;
           this.attendance.remark = response.data.remark;
           $(this.$el)
