@@ -444,10 +444,10 @@ export default {
       return result;
     },
     //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
-    retornarDiaFeriado(fecha) {
+    returnHoliday(fecha) {
       return this.holidaysPerYear.findIndex(feriado => {
         console.log(
-          "Fecha Recibida en retornarDiaferiado",
+          "Fecha Recibida en returnHoliday",
           fecha,
           feriado.fechaFeriado
         );
@@ -464,7 +464,7 @@ export default {
         formatDate,
         holiday;
       //verifica que la fecha pasada es o no un feriado
-      holiday = this.retornarDiaFeriado(date);
+      holiday = this.returnHoliday(date);
       //formato a Objeto fecha para poder usar el metodo getDay
       formatDate = new Date(date);
       //retorna los datos del empleado
@@ -562,7 +562,7 @@ export default {
         formatDate,
         holiday;
 
-      holiday = this.retornarDiaFeriado(fecha);
+      holiday = this.returnHoliday(fecha);
       formatDate = new Date(fecha);
 
       employee = this.employees.find(employee => {
@@ -635,7 +635,7 @@ export default {
     //verifica si es domingo o no para insertar texto en observacion
     handleObservacion(fecha) {
       var domingo = new Date(fecha);
-      var holiday = this.retornarDiaFeriado(new Date(fecha));
+      var holiday = this.returnHoliday(new Date(fecha));
       if (domingo.getDay() === 0) {
         return "Hora Extra Domingo";
       }
@@ -932,10 +932,10 @@ export default {
     },
     async verificarAusenciasVacaciones() {
       console.log(this.attendanceModal[0].fecha);
-      var fecha = new Date(this.attendanceModal[0].fecha);
-      var holiday = this.retornarDiaFeriado(fecha);
+      var attDate = new Date(this.attendanceModal[0].date);
+      var holiday = this.returnHoliday(attDate);
       //si no es domingo verificar si esta de vacaciones o ausente
-      if (fecha.getDay() !== 0 && holiday === -1) {
+      if (attDate.getDay() !== 0 && holiday === -1) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
         for (let employee of this.employees) {
           var ausencia = this.attendanceModal.findIndex(item => {
@@ -950,7 +950,7 @@ export default {
             );
             var marcacion = {};
             marcacion.estilo = {};
-            var consultaVacaciones, fecha, isFechaVacaciones;
+            var consultaVacaciones, attDateFormat, isFechaVacaciones;
             // debugger;
             consultaVacaciones = await this.$http.get(
               `/eventos/vacaciones/${employee._id}`
@@ -958,9 +958,9 @@ export default {
             console.log("Resultado await", consultaVacaciones);
             // debugger;
             if (consultaVacaciones.data.length > 0) {
-              fecha = moment(this.attendanceModal[0].fecha).format();
+              attDateFormat = moment(this.attendanceModal[0].date).format();
               isFechaVacaciones = consultaVacaciones.data.find(evento => {
-                return moment(fecha).isBetween(
+                return moment(attDateFormat).isBetween(
                   evento.fechaInicio,
                   evento.fechaFin,
                   null,

@@ -9,9 +9,9 @@
           <div class="inline fields">
             <div class="ten wide field">
               <div class="ui icon input">
-                <input type="text" v-model="query.busqueda" @keydown="consultarEventos" placeholder="Buscar Evento...">
+                <input type="text" v-model="query.parameter" @keydown="consultarEventos" placeholder="Buscar Evento...">
                 <!-- <i @click="consultarEventos" class="inverted teal circular search link icon"></i> -->
-                <i class="close link icon" v-show="query.busqueda" @click="cleanField()"></i>
+                <i class="close link icon" v-show="query.parameter" @click="cleanField()"></i>
               </div>
               <button class="ui circular teal icon button" @click="consultarEventos">
                 <i class="search icon"></i>
@@ -23,14 +23,14 @@
 
             <div class="three wide field">
               <div class="ui radio checkbox">
-                <input type="radio" name="vacaciones" value="vacaciones" v-model="listado">
+                <input type="radio" name="vacaciones" value="vacaciones" v-model="listType">
                 <label>Vacaciones</label>
               </div>
             </div>
 
             <div class="two wide field">
               <div class="ui radio checkbox">
-                <input type="radio" name="feriado" value="feriado" v-model="listado">
+                <input type="radio" name="feriado" value="feriado" v-model="listType">
                 <label>Feriados</label>
               </div>
             </div>
@@ -40,7 +40,7 @@
 
         <div class="field">
           <div class="ui right floated main menu">
-            <a class="icon item" @click="incluirEvento">
+            <a class="icon item" @click="addEvent">
               <i class="plus icon"></i>
             </a>
 
@@ -51,7 +51,7 @@
 
     </div>
 
-    <div class="field" v-if="listado==='feriado'">
+    <div class="field" v-if="listType==='feriado'">
       <table class="ui teal celled table">
         <thead>
           <tr>
@@ -62,13 +62,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="evento in eventos" :key="evento._id" v-if="evento.tipoEvento==='feriado'">
-            <td class="capital">{{evento.tipoEvento}}</td>
-            <td>{{evento.motivoFeriado}}</td>
-            <td>{{moment(evento.fechaFeriado).format("L")}}</td>
+          <tr v-for="event in events" :key="event._id" v-if="event.tipoEvento==='feriado'">
+            <td class="capital">{{event.tipoEvento}}</td>
+            <td>{{event.motivoFeriado}}</td>
+            <td>{{moment(event.fechaFeriado).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" @click="editarEvento(evento.activo, evento._id)"></i>
-              <i class="trash link icon" @click="confirm(evento._id)"></i>
+              <i class="edit row link icon" @click="editEvent(event.activo, event._id)"></i>
+              <i class="trash link icon" @click="confirm(event._id)"></i>
             </td>
           </tr>
 
@@ -98,15 +98,15 @@
         </thead>
 
         <tbody>
-          <tr v-for="evento in eventos" :key="evento._id" v-if="evento.tipoEvento==='vacaciones'">
-            <td class="capital">{{evento.tipoEvento}}</td>
-            <td>{{evento.nombreFuncionario}}</td>
-            <td>{{moment(evento.fechaInicio).format("L")}}</td>
-            <td>{{moment(evento.fechaFin).format("L")}}</td>
+          <tr v-for="event in events" :key="event._id" v-if="event.tipoEvento==='vacaciones'">
+            <td class="capital">{{event.tipoEvento}}</td>
+            <td>{{event.nombreFuncionario}}</td>
+            <td>{{moment(event.fechaInicio).format("L")}}</td>
+            <td>{{moment(event.fechaFin).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" :class="{disabled:!evento.activo}" @click="editarEvento(evento.activo, evento._id)"></i>
-              <i class="trash link icon" :class="{disabled:!evento.activo}" @click="confirm(evento._id, evento.funcionario, evento.activo)"></i>
-              <i class="archive link icon" :class="{disabled:!evento.activo}" @click="archivarVacaciones(evento._id, evento.funcionario, evento.activo)"></i>
+              <i class="edit row link icon" :class="{disabled:!event.activo}" @click="editEvent(event.activo, event._id)"></i>
+              <i class="trash link icon" :class="{disabled:!event.activo}" @click="confirm(event._id, event.funcionario, event.activo)"></i>
+              <i class="archive link icon" :class="{disabled:!event.activo}" @click="closeVacations(event._id, event.funcionario, event.activo)"></i>
             </td>
           </tr>
         </tbody>
@@ -132,10 +132,10 @@ export default {
   name: "calendarioList",
   data() {
     return {
-      eventos: [],
-      listado: "vacaciones",
+      events: [],
+      listType: "vacaciones",
       query: {
-        busqueda: null
+        parameter: null
       },
       pageOne: {
         currentPage: 1,
@@ -146,35 +146,35 @@ export default {
   },
   methods: {
     cleanField() {
-      this.query.busqueda = null;
-      this.obtenerListadoEventos();
+      this.query.parameter = null;
+      this.getEvents();
     },
-    incluirEvento() {
+    addEvent() {
       this.$router.push({ name: "incluirEvento" });
     },
-    editarEvento(eventoActivo, eventId) {
-      if (eventoActivo) {
+    editEvent(eventStatus, eventId) {
+      if (eventStatus) {
         this.$router.push({ name: "editarEvento", params: { id: eventId } });
       }
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
-      this.obtenerListadoEventos();
+      this.getEvents();
     },
-    archivarVacaciones(eventokey, funcionarioId, eventoActivo) {
-      if (eventoActivo) {
+    closeVacations(eventkey, eventStatus) {
+      if (eventStatus) {
       }
-      console.log("key", eventokey);
-      this.$http.get(`/eventos/deactivate-vacation/${eventokey}`).then(() => {
+      console.log("key", eventkey);
+      this.$http.get(`/eventos/deactivate-vacation/${eventkey}`).then(() => {
         this.$message({
           type: "info",
           message: "Registro archivado"
         });
-        this.obtenerListadoEventos();
+        this.getEvents();
       });
     },
-    confirm(id, funcionario, eventoActivo) {
-      if (eventoActivo) {
+    confirm(id, funcionario, eventStatus) {
+      if (eventStatus) {
         this.$confirm(
           "El registro sera eliminado permanentemente. Desea Continuar?",
           "Atencion!",
@@ -201,15 +201,15 @@ export default {
     },
     consultarEventos(e) {
       if (e && e.keyCode === 13) {
-        this.obtenerListadoEventos(true);
+        this.getEvents(true);
         return;
       } else {
-        this.obtenerListadoEventos(true);
+        this.getEvents(true);
       }
     },
     eliminarEvento(id, funcionario) {
       // debugger;
-      var index = this.eventos.findIndex(i => i.id === id);
+      var index = this.events.findIndex(i => i.id === id);
       if (funcionario) {
         this.$http
           .put(`/funcionarios/update-vacation/${funcionario}`, {
@@ -218,16 +218,16 @@ export default {
           })
           .then(response => {
             this.$http.delete(`/eventos/delete/${id}`).then(response => {
-              this.eventos.splice(index, 1);
+              this.events.splice(index, 1);
             });
           });
       } else {
         this.$http.delete(`/eventos/delete/${id}`).then(response => {
-          this.eventos.splice(index, 1);
+          this.events.splice(index, 1);
         });
       }
     },
-    obtenerListadoEventos(pageReset) {
+    getEvents(pageReset) {
       if (pageReset) {
         this.pageOne.currentPage = 1;
       }
@@ -235,11 +235,11 @@ export default {
         .get(
           `/eventos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&tipoEvento=${this.listado}&busqueda=${this.query.busqueda}`
+          }&tipoEvento=${this.listType}&parameter=${this.query.parameter}`
         )
         .then(response => {
           console.log(response);
-          this.eventos = response.data.docs;
+          this.events = response.data.docs;
           this.pageOne.totalItems = response.data.total;
         })
         .catch(e => {
@@ -248,12 +248,12 @@ export default {
     }
   },
   watch: {
-    listado: function() {
-      return this.obtenerListadoEventos();
+    listType: function() {
+      return this.getEvents();
     }
   },
   created() {
-    this.obtenerListadoEventos();
+    this.getEvents();
   },
   components: {
     appPagination: Pagination
