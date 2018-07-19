@@ -35,7 +35,7 @@
       </div>
       <div class="actions">
 
-        <button class="ui positive teal button" v-show="!warningMessage" @click="guardarMarcaciones">Aceptar</button>
+        <button class="ui positive teal button" v-show="!warningMessage" @click="saveAttendance">Aceptar</button>
         <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
 
       </div>
@@ -455,36 +455,35 @@ export default {
       });
     },
     //retorna el valor en horas de horas extras para el banco de horas
-    calculoBancoH(entryTime, exitTime, employeeId, fecha) {
-      var sabadoMedioTiempo,
+    calculateExtraHour(entryTime, exitTime, employeeId, date) {
+      var saturdayHalfTime,
         workingHours,
         employee,
         workedHours,
         extraHours,
-        verFecha,
-        diaFeriado;
+        formatDate,
+        holiday;
       //verifica que la fecha pasada es o no un feriado
-      diaFeriado = this.retornarDiaFeriado(fecha);
-      console.log("Resultado de retonar dia Feriado", diaFeriado);
-      verFecha = new Date(fecha);
+      holiday = this.retornarDiaFeriado(date);
+      //formato a Objeto fecha para poder usar el metodo getDay
+      formatDate = new Date(date);
+      //retorna los datos del empleado
       employee = this.employees.find(employee => {
         if (employee._id === employeeId) {
           return employee;
         }
         return null;
       });
-
+      //si el empleado existe, obtener las horas que debe trabajar y si tiene permiso de sabado medio tiempo
       if (employee) {
-        sabadoMedioTiempo = employee.medioTiempo;
+        saturdayHalfTime = employee.halfTime;
         workingHours = employee.workingHours;
       }
 
-      console.log(verFecha);
-
       //si la fecha es dia sabado, (verificar que funcione) es true, si el dia es sabado
-      if (verFecha.getDay() === 6) {
+      if (formatDate.getDay() === 6) {
         //si el funcionario tiene habilitado sabado medio tiempo
-        if (sabadoMedioTiempo) {
+        if (saturdayHalfTime) {
           workedHours = this.handleWorkedHours(entryTime, exitTime);
 
           console.log("Resultado Horas Trabajadas", workedHours);
@@ -526,7 +525,7 @@ export default {
         }
         //else del verificar si es dia sabado
       } else {
-        if (verFecha.getDay() === 0 || diaFeriado !== -1) {
+        if (formatDate.getDay() === 0 || holiday !== -1) {
           extraHours = this.handleWorkedHours(entryTime, exitTime);
           console.log(extraHours);
           return extraHours;
@@ -554,17 +553,17 @@ export default {
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
     calculoHorasFaltantes(entryTime, exitTime, employeeId, fecha) {
-      var sabadoMedioTiempo,
+      var saturdayHalfTime,
         workingHours,
         employee,
         workedHours,
         result,
         extraHours,
-        verFecha,
-        diaFeriado;
+        formatDate,
+        holiday;
 
-      diaFeriado = this.retornarDiaFeriado(fecha);
-      verFecha = new Date(fecha);
+      holiday = this.retornarDiaFeriado(fecha);
+      formatDate = new Date(fecha);
 
       employee = this.employees.find(employee => {
         if (employee._id === employeeId) {
@@ -574,23 +573,25 @@ export default {
       });
 
       if (employee) {
-        sabadoMedioTiempo = employee.medioTiempo;
+        saturdayHalfTime = employee.halfTime;
         workingHours = employee.workingHours;
       }
-
-      if (verFecha.getDay() === 6) {
-        if (sabadoMedioTiempo) {
-          (workedHours = this.handleWorkedHours(entryTime, exitTime)),
-            console.log("Horas trabajadas " + workedHours);
+      //si es dia sabado verificar si funcionario posee medio tiempo
+      if (formatDate.getDay() === 6) {
+        if (saturdayHalfTime) {
+          //calcula las horas trabajadas en formato HH:mm trabajados ese dia
+          workedHours = this.handleWorkedHours(entryTime, exitTime);
 
           if (!workedHours.localeCompare("00:00")) {
             return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
           }
+          //convierte las hora trabajadas HH:MM en minutos y descuenta 300 lo que vendria a ser la mitad de la jornada
           result = moment.duration(workedHours, "HH:mm").asMinutes() - 300;
-
+          //si resultado es menor a cero es un retraso.
           if (result < 0) {
             return this.handleNegative(result);
           }
+          //si no es un retraso retorna null
           return null;
         } else {
           workedHours = this.handleWorkedHours(entryTime, exitTime);
@@ -609,7 +610,7 @@ export default {
           return null;
         }
       } else {
-        if (verFecha.getDay() === 0 || diaFeriado !== -1) {
+        if (formatDate.getDay() === 0 || holiday !== -1) {
           extraHours = null;
 
           return extraHours;
@@ -634,12 +635,12 @@ export default {
     //verifica si es domingo o no para insertar texto en observacion
     handleObservacion(fecha) {
       var domingo = new Date(fecha);
-      var diaFeriado = this.retornarDiaFeriado(new Date(fecha));
+      var holiday = this.retornarDiaFeriado(new Date(fecha));
       if (domingo.getDay() === 0) {
         return "Hora Extra Domingo";
       }
 
-      if (diaFeriado !== -1) {
+      if (holiday !== -1) {
         return "Hora Extra por Dia Feriado";
       }
 
@@ -888,40 +889,40 @@ export default {
     //     };
     //   }
     // },
-    guardarMarcaciones() {
+    saveAttendance() {
       this.absences.length = 0;
-      this.attendanceModal.forEach(dato => {
+      this.attendanceModal.forEach(attModal => {
         var attSend = {};
 
-        attSend.date = dato.date;
-        attSend.employee = dato.employeeId;
-        attSend.employeeName = dato.employeeName;
-        attSend.entryTime = dato.entryTime;
-        attSend.exitTime = dato.exitTime;
+        attSend.date = attModal.date;
+        attSend.employee = attModal.employeeId;
+        attSend.employeeName = attModal.employeeName;
+        attSend.entryTime = attModal.entryTime;
+        attSend.exitTime = attModal.exitTime;
         //calculo de Horas trabajadas
         attSend.workedHours = this.handleWorkedHours(
-          dato.entryTime,
-          dato.exitTime
+          attModal.entryTime,
+          attModal.exitTime
         );
 
-        attSend.extraHours = this.calculoBancoH(
-          dato.entryTime,
-          dato.exitTime,
-          dato.employeeId,
-          dato.date
+        attSend.extraHours = this.calculateExtraHour(
+          attModal.entryTime,
+          attModal.exitTime,
+          attModal.employeeId,
+          attModal.date
         );
 
         attSend.horasFaltantes = this.calculoHorasFaltantes(
-          dato.entryTime,
-          dato.exitTime,
-          dato.employeeId,
-          dato.date
+          attModal.entryTime,
+          attModal.exitTime,
+          attModal.employeeId,
+          attModal.date
         );
 
-        attSend.observacion = this.handleObservacion(dato.date);
-        attSend.estilo = this.aplicarEstiloMarcacion(
-          dato.entryTime,
-          dato.exitTime
+        attSend.observacion = this.handleObservacion(attModal.date);
+        attSend.status = this.aplicarEstiloMarcacion(
+          attModal.entryTime,
+          attModal.exitTime
         );
 
         this.attendancesToSend.push(attSend);
@@ -932,9 +933,9 @@ export default {
     async verificarAusenciasVacaciones() {
       console.log(this.attendanceModal[0].fecha);
       var fecha = new Date(this.attendanceModal[0].fecha);
-      var diaFeriado = this.retornarDiaFeriado(fecha);
+      var holiday = this.retornarDiaFeriado(fecha);
       //si no es domingo verificar si esta de vacaciones o ausente
-      if (fecha.getDay() !== 0 && diaFeriado === -1) {
+      if (fecha.getDay() !== 0 && holiday === -1) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
         for (let employee of this.employees) {
           var ausencia = this.attendanceModal.findIndex(item => {
