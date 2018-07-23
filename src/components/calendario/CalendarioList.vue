@@ -9,11 +9,10 @@
           <div class="inline fields">
             <div class="ten wide field">
               <div class="ui icon input">
-                <input type="text" v-model="query.parameter" @keydown="consultarEventos" placeholder="Buscar Evento...">
-                <!-- <i @click="consultarEventos" class="inverted teal circular search link icon"></i> -->
+                <input type="text" v-model="query.parameter" @keydown="searchEvents" placeholder="Buscar Evento...">
                 <i class="close link icon" v-show="query.parameter" @click="cleanField()"></i>
               </div>
-              <button class="ui circular teal icon button" @click="consultarEventos">
+              <button class="ui circular teal icon button" @click="searchEvents">
                 <i class="search icon"></i>
               </button>
             </div>
@@ -62,12 +61,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="event in events" :key="event._id" v-if="event.tipoEvento==='feriado'">
-            <td class="capital">{{event.tipoEvento}}</td>
-            <td>{{event.motivoFeriado}}</td>
-            <td>{{moment(event.fechaFeriado).format("L")}}</td>
+          <tr v-for="event in events" :key="event._id" v-if="event.eventType==='feriado'">
+            <td class="capital">{{event.eventType}}</td>
+            <td>{{event.holidayDescription}}</td>
+            <td>{{moment(event.holidayDate).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" @click="editEvent(event.activo, event._id)"></i>
+              <i class="edit row link icon" @click="editEvent(event.active, event._id)"></i>
               <i class="trash link icon" @click="confirm(event._id)"></i>
             </td>
           </tr>
@@ -98,15 +97,15 @@
         </thead>
 
         <tbody>
-          <tr v-for="event in events" :key="event._id" v-if="event.tipoEvento==='vacaciones'">
-            <td class="capital">{{event.tipoEvento}}</td>
-            <td>{{event.nombreFuncionario}}</td>
-            <td>{{moment(event.fechaInicio).format("L")}}</td>
-            <td>{{moment(event.fechaFin).format("L")}}</td>
+          <tr v-for="event in events" :key="event._id" v-if="event.eventType==='vacaciones'">
+            <td class="capital">{{event.eventType}}</td>
+            <td>{{event.employeeName}}</td>
+            <td>{{moment(event.startDate).format("L")}}</td>
+            <td>{{moment(event.endDate).format("L")}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" :class="{disabled:!event.activo}" @click="editEvent(event.activo, event._id)"></i>
-              <i class="trash link icon" :class="{disabled:!event.activo}" @click="confirm(event._id, event.funcionario, event.activo)"></i>
-              <i class="archive link icon" :class="{disabled:!event.activo}" @click="closeVacations(event._id, event.funcionario, event.activo)"></i>
+              <i class="edit row link icon" :class="{disabled:!event.active}" @click="editEvent(event.active, event._id)"></i>
+              <i class="trash link icon" :class="{disabled:!event.active}" @click="confirm(event._id, event.employee, event.active)"></i>
+              <i class="archive link icon" :class="{disabled:!event.active}" @click="closeVacations(event._id, event.employee, event.active)"></i>
             </td>
           </tr>
         </tbody>
@@ -173,7 +172,7 @@ export default {
         this.getEvents();
       });
     },
-    confirm(id, funcionario, eventStatus) {
+    confirm(id, employee, eventStatus) {
       if (eventStatus) {
         this.$confirm(
           "El registro sera eliminado permanentemente. Desea Continuar?",
@@ -185,7 +184,7 @@ export default {
           }
         )
           .then(() => {
-            this.eliminarEvento(id, funcionario);
+            this.deleteEvent(id, employee);
             this.$message({
               type: "success",
               message: "Registro Eliminado"
@@ -199,7 +198,7 @@ export default {
           });
       }
     },
-    consultarEventos(e) {
+    searchEvents(e) {
       if (e && e.keyCode === 13) {
         this.getEvents(true);
         return;
@@ -207,14 +206,14 @@ export default {
         this.getEvents(true);
       }
     },
-    eliminarEvento(id, funcionario) {
+    deleteEvent(id, employee) {
       // debugger;
       var index = this.events.findIndex(i => i.id === id);
-      if (funcionario) {
+      if (employee) {
         this.$http
-          .put(`/funcionarios/update-vacation/${funcionario}`, {
-            vacaciones: id,
-            activo: false
+          .put(`/funcionarios/update-vacation/${employee}`, {
+            vacations: id,
+            active: false
           })
           .then(response => {
             this.$http.delete(`/eventos/delete/${id}`).then(response => {
@@ -235,7 +234,7 @@ export default {
         .get(
           `/eventos?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&tipoEvento=${this.listType}&parameter=${this.query.parameter}`
+          }&eventType=${this.listType}&parameter=${this.query.parameter}`
         )
         .then(response => {
           console.log(response);

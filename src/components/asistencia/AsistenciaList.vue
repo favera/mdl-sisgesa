@@ -36,7 +36,7 @@
       <div class="actions">
 
         <button class="ui positive teal button" v-show="!warningMessage" @click="saveAttendance">Aceptar</button>
-        <div class="ui deny button" @click="cancelarArchivo">Cancelar</div>
+        <div class="ui deny button" @click="cancelFile">Cancelar</div>
 
       </div>
     </div>
@@ -53,12 +53,12 @@
             <div class="ten wide field">
 
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre" @keydown="consultarAsistencia" v-model="query.busqueda">
+                <input type="text" placeholder="Buscar por nombre" @keydown="searchAttendance" v-model="query.busqueda">
                 <!-- <i class="search icon" v-if="parameterAvanzada"></i> -->
-                <!-- <i @click="consultarAsistencia" class="inverted teal circular search link icon" v-else></i> -->
+                <!-- <i @click="searchAttendance" class="inverted teal circular search link icon" v-else></i> -->
 
               </div>
-              <button class="ui circular teal icon button" @click="consultarAsistencia">
+              <button class="ui circular teal icon button" @click="searchAttendance">
                 <i class="search icon"></i>
               </button>
 
@@ -82,7 +82,7 @@
               </vue-xlsx-table>
             </a>
 
-            <a class="icon item" @click="nuevaAsistencia">
+            <a class="icon item" @click="addAttendance">
               <span data-tooltip="Crear Asistencia Manualmente">
                 <i class="plus icon"></i>
               </span>
@@ -147,7 +147,7 @@
             </div>
 
             <div class="field" style="margin-left: 20px">
-              <button @click="consultarAsistencia" class="ui circular teal icon button">
+              <button @click="searchAttendance" class="ui circular teal icon button">
                 <i class="search icon"></i>
               </button>
 
@@ -177,19 +177,19 @@
           </thead>
 
           <tbody>
-            <tr v-for="(marcacion, index) in marcaciones" :key="marcacion._id" v-bind:class="{negative: marcacion.estilo.ausente, positive: marcacion.estilo.vacaciones, warning: marcacion.estilo.incompleto}">
-              <td>{{marcacion.employeeName}}</td>
-              <td>{{moment(marcacion.fecha).format("L")}}</td>
-              <td>{{(marcacion.entryTime || "--") + " hs"}}</td>
-              <td>{{(marcacion.exitTime || "--") + " hs"}}</td>
-              <td>{{(marcacion.workedHours || "--") + " hs"}}</td>
-              <td>{{(marcacion.horasFaltantes || "--") + " hs"}}</td>
-              <td>{{(marcacion.extraHours || "--") + " hs"}}</td>
-              <td>{{marcacion.observacion || "--"}}</td>
+            <tr v-for="(attendance, index) in attendances" :key="attendance._id" v-bind:class="{negative: attendance.status.absence, positive: attendance.status.vacations, warning: attendance.status.incomplete}">
+              <td>{{attendance.employeeName}}</td>
+              <td>{{moment(attendance.fecha).format("L")}}</td>
+              <td>{{(attendance.entryTime || "--") + " hs"}}</td>
+              <td>{{(attendance.exitTime || "--") + " hs"}}</td>
+              <td>{{(attendance.workedHours || "--") + " hs"}}</td>
+              <td>{{(attendance.delay || "--") + " hs"}}</td>
+              <td>{{(attendance.extraHours || "--") + " hs"}}</td>
+              <td>{{attendance.remark || "--"}}</td>
 
               <td class="center aligned">
-                <i @click="guardarPaginacion(marcacion._id)" class="edit row link icon"></i>
-                <i @click="deleteAttendance(marcacion._id, index)" class="trash link icon"></i>
+                <i @click="savePaginationNumber(attendance._id)" class="edit row link icon"></i>
+                <i @click="deleteAttendance(attendance._id, index)" class="trash link icon"></i>
 
               </td>
             </tr>
@@ -246,68 +246,41 @@ export default {
       attendanceModal: [],
       validateAttendance: [],
       attendancesToSend: [],
-
-      marcaciones: [],
-      eventos: [],
+      attendances: [],
       attendanceSheet: [],
-      ausente: false,
+      absence: false,
       modal: null,
       isSaturday: null,
-      marcacion: {
-        fecha: null,
-        entryTime: null,
-        exitTime: null,
-        workedHours: null,
-        horasFaltantes: null,
-        extraHours: null,
-        observacion: null,
-        estilo: {}
-      },
+      // marcacion: {
+      //   fecha: null,
+      //   entryTime: null,
+      //   exitTime: null,
+      //   workedHours: null,
+      //   delay: null,
+      //   extraHours: null,
+      //   remark: null,
+      //   status: {}
+      // },
       employees: [],
-      sabados: [],
-      nombreBusqueda: null,
-      searchDateStart: "",
-      searchDateEnd: "",
+      // sabados: [],
       absences: [],
-      totalBancoHora: 0,
-      totalRetraso: 0,
-      totalHoraExtra: 0,
       warningMessage: false,
       pageOne: {
         currentPage: 1,
         totalItems: 0,
         itemsPerPage: 10
-      },
-      json_fields: {
-        funcionario: "Funcionario",
-        fecha: "Fecha",
-        entryTime: "Entrada",
-        exitTime: "Salida",
-        workedHours: "Horas Trabajadas",
-        bancoHora: "Banco de Horas",
-        retraso: "Horas faltantes"
-      },
-      json_data: [],
-      json_meta: [
-        [
-          {
-            key: "charset",
-            value: "utf-8"
-          }
-        ]
-      ]
+      }
     };
   },
   components: {
     appPagination: Pagination
   },
-  computed: {},
   methods: {
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.queryData();
     },
-    guardarPaginacion(marcacionId) {
+    savePaginationNumber(attId) {
       var page = {};
       page.itemsPerPage = this.pageOne.itemsPerPage;
       page.currentPage = this.pageOne.currentPage;
@@ -316,10 +289,10 @@ export default {
 
       this.$router.push({
         name: "editarAsistencia",
-        params: { id: marcacionId }
+        params: { id: attId }
       });
     },
-    consultarAsistencia(e) {
+    searchAttendance(e) {
       if (e && e.keyEvent === 13) {
         this.queryData(true);
         return;
@@ -364,11 +337,11 @@ export default {
           )
           .then(response => {
             if (response.data.docs.length === 0) {
-              this.marcaciones.length = 0;
+              this.attendances.length = 0;
               this.showMessage = true;
             } else {
               this.showMessage = false;
-              this.marcaciones = response.data.docs;
+              this.attendances = response.data.docs;
               this.pageOne.totalItems = response.data.total;
             }
           });
@@ -383,11 +356,11 @@ export default {
           )
           .then(response => {
             if (response.data.docs.length === 0) {
-              this.marcaciones.length = 0;
+              this.attendances.length = 0;
               this.showMessage = true;
             } else {
               this.showMessage = false;
-              this.marcaciones = response.data.docs;
+              this.attendances = response.data.docs;
               this.pageOne.totalItems = response.data.total;
             }
           });
@@ -398,33 +371,10 @@ export default {
         this.employees = response.data;
       });
     },
-    // obtenerAsistencias() {
-    //   this.$http
-    //     .get(
-    //       `/asistencias?page=${this.pageOne.currentPage}&limit=${
-    //         this.pageOne.itemsPerPage
-    //       }`,
-    //       {
-    //         headers: {
-    //           "x-auth": localStorage.token
-    //         }
-    //       }
-    //     )
-    //     .then(response => {
-    //       this.marcaciones = response.data.docs;
-    //       this.pageOne.totalItems = response.data.total;
-    //     });
-    // },
-    // limpiarDatos() {
-    //   this.json_data.length = 0;
-    //   this.nombreBusqueda = null;
-    //   this.totalBancoHora = 0;
-    //   this.totalRetraso = 0;
-    // },
-    cancelarArchivo() {
+    cancelFile() {
       this.attendanceModal.length = 0;
     },
-    abrirModal() {
+    openModal() {
       this.modal
         .modal("setting", { observeChanges: true })
         .modal("show")
@@ -444,14 +394,14 @@ export default {
       return result;
     },
     //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
-    returnHoliday(fecha) {
-      return this.holidaysPerYear.findIndex(feriado => {
+    returnHoliday(date) {
+      return this.holidaysPerYear.findIndex(holiday => {
         console.log(
           "Fecha Recibida en returnHoliday",
-          fecha,
-          feriado.fechaFeriado
+          date,
+          holiday.holidayDate
         );
-        return moment(feriado.fechaFeriado).isSame(fecha);
+        return moment(holiday.holidayDate).isSame(date);
       });
     },
     //retorna el valor en horas de horas extras para el banco de horas
@@ -552,7 +502,7 @@ export default {
       }
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
-    calculoHorasFaltantes(entryTime, exitTime, employeeId, fecha) {
+    calculateDelay(entryTime, exitTime, employeeId, date) {
       var saturdayHalfTime,
         workingHours,
         employee,
@@ -562,8 +512,8 @@ export default {
         formatDate,
         holiday;
 
-      holiday = this.returnHoliday(fecha);
-      formatDate = new Date(fecha);
+      holiday = this.returnHoliday(date);
+      formatDate = new Date(date);
 
       employee = this.employees.find(employee => {
         if (employee._id === employeeId) {
@@ -581,7 +531,7 @@ export default {
         if (saturdayHalfTime) {
           //calcula las horas trabajadas en formato HH:mm trabajados ese dia
           workedHours = this.handleWorkedHours(entryTime, exitTime);
-
+          //cuando el valor es
           if (!workedHours.localeCompare("00:00")) {
             return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
           }
@@ -633,10 +583,10 @@ export default {
       }
     },
     //verifica si es domingo o no para insertar texto en observacion
-    handleObservacion(fecha) {
-      var domingo = new Date(fecha);
-      var holiday = this.returnHoliday(new Date(fecha));
-      if (domingo.getDay() === 0) {
+    handleRemark(date) {
+      var isSunday = new Date(date);
+      var holiday = this.returnHoliday(new Date(date));
+      if (isSunday.getDay() === 0) {
         return "Hora Extra Domingo";
       }
 
@@ -647,7 +597,7 @@ export default {
       return "";
     },
 
-    nuevaAsistencia() {
+    addAttendance() {
       this.$router.push({ name: "incluirAsistencia" });
     },
     deleteAttendance(attendanceId, index) {
@@ -665,7 +615,7 @@ export default {
             .delete(`/asistencias/delete/${attendanceId}`)
             .then(response => {
               if (response.status === 200) {
-                this.marcaciones.splice(index, 1);
+                this.attendances.splice(index, 1);
                 this.$message({
                   type: "success",
                   message: "Registro Eliminado exitosamente"
@@ -744,7 +694,7 @@ export default {
               employee.workingHours
             );
           });
-          this.abrirModal();
+          this.openModal();
 
           // this.isSaturday = this.getSaturday(this.attendanceModal[0].date);
         });
@@ -874,21 +824,21 @@ export default {
     //   console.log("INDICE SABADO", fechaSabado);
     //   return fechaSabado;
     // },
-    // aplicarEstiloMarcacion(entryTime, exitTime) {
-    //   if (entryTime == null || exitTime == null) {
-    //     return {
-    //       ausente: false,
-    //       incompleto: true,
-    //       vacaciones: false
-    //     };
-    //   } else {
-    //     return {
-    //       ausente: false,
-    //       incompleto: false,
-    //       vacaciones: false
-    //     };
-    //   }
-    // },
+    handleStatus(entryTime, exitTime) {
+      if (entryTime == null || exitTime == null) {
+        return {
+          absence: false,
+          incomplete: true,
+          vacations: false
+        };
+      } else {
+        return {
+          absence: false,
+          incomplete: false,
+          vacations: false
+        };
+      }
+    },
     saveAttendance() {
       this.absences.length = 0;
       this.attendanceModal.forEach(attModal => {
@@ -912,15 +862,15 @@ export default {
           attModal.date
         );
 
-        attSend.horasFaltantes = this.calculoHorasFaltantes(
+        attSend.delay = this.calculateDelay(
           attModal.entryTime,
           attModal.exitTime,
           attModal.employeeId,
           attModal.date
         );
 
-        attSend.observacion = this.handleObservacion(attModal.date);
-        attSend.status = this.aplicarEstiloMarcacion(
+        attSend.remark = this.handleRemark(attModal.date);
+        attSend.status = this.handleStatus(
           attModal.entryTime,
           attModal.exitTime
         );
@@ -928,83 +878,76 @@ export default {
         this.attendancesToSend.push(attSend);
       });
 
-      this.verificarAusenciasVacaciones();
+      this.validateVacationsAndAbsences();
     },
-    async verificarAusenciasVacaciones() {
-      console.log(this.attendanceModal[0].fecha);
+    async validateVacationsAndAbsences() {
       var attDate = new Date(this.attendanceModal[0].date);
       var holiday = this.returnHoliday(attDate);
       //si no es domingo verificar si esta de vacaciones o ausente
       if (attDate.getDay() !== 0 && holiday === -1) {
         //nuevo loop por funcionario para poder verificar si tiene marcaciones en datos marcaciones
         for (let employee of this.employees) {
-          var ausencia = this.attendanceModal.findIndex(item => {
-            console.log("comparacion", item.employeeId, employee._id);
+          var absenceIndex = this.attendanceModal.findIndex(item => {
             return employee._id === item.employeeId;
           });
-          console.log("Ausente:", ausencia);
-          if (ausencia === -1) {
-            console.log(
-              "Funcionario Ausente, verificar si esta de vacaciones",
-              employee._id
-            );
-            var marcacion = {};
-            marcacion.estilo = {};
-            var consultaVacaciones, attDateFormat, isFechaVacaciones;
+          if (absenceIndex === -1) {
+            var attendance = {};
+            attendance.status = {};
+            var getVacations, attDateFormat, isVacationDate;
             // debugger;
-            consultaVacaciones = await this.$http.get(
+            getVacations = await this.$http.get(
               `/eventos/vacaciones/${employee._id}`
             );
-            console.log("Resultado await", consultaVacaciones);
+            console.log("Resultado await", getVacations);
             // debugger;
-            if (consultaVacaciones.data.length > 0) {
+            if (getVacations.data.length > 0) {
               attDateFormat = moment(this.attendanceModal[0].date).format();
-              isFechaVacaciones = consultaVacaciones.data.find(evento => {
+              isVacationDate = getVacations.data.find(event => {
                 return moment(attDateFormat).isBetween(
-                  evento.fechaInicio,
-                  evento.fechaFin,
+                  event.startDate,
+                  event.endDate,
                   null,
                   "[]"
                 );
               });
             }
 
-            if (isFechaVacaciones) {
-              marcacion.fecha = this.attendanceModal[0].fecha;
-              marcacion.employee = employee._id;
-              marcacion.employeeName = employee.nombre;
-              marcacion.entryTime = null;
-              marcacion.exitTime = null;
-              marcacion.workedHours = null;
-              marcacion.extraHours = null;
-              marcacion.horasFaltantes = null;
-              marcacion.observacion = "Vacaciones";
-              marcacion.estilo.ausente = false;
-              marcacion.estilo.incompleto = false;
-              marcacion.estilo.vacaciones = true;
-              console.log("Persona de vacaciones", JSON.stringify(marcacion));
-              this.absences.push(marcacion);
+            if (isVacationDate) {
+              attendance.date = this.attendanceModal[0].date;
+              attendance.employee = employee._id;
+              attendance.employeeName = employee.name;
+              attendance.entryTime = null;
+              attendance.exitTime = null;
+              attendance.workedHours = null;
+              attendance.extraHours = null;
+              attendance.delay = null;
+              attendance.remark = "Vacaciones";
+              attendance.status.absence = false;
+              attendance.status.incomplete = false;
+              attendance.status.vacations = true;
+              console.log("Persona de vacaciones", JSON.stringify(attendance));
+              this.absences.push(attendance);
               console.log(JSON.stringify(this.absences));
             } else {
               console.log("Entro en el Else");
               //si no cumplio condiciones anteriores, es una ausencia.
-              marcacion.fecha = this.attendanceModal[0].fecha;
-              marcacion.employee = employee._id;
-              marcacion.employeeName = employee.nombre;
-              marcacion.entryTime = null;
-              marcacion.exitTime = null;
-              marcacion.workedHours = null;
-              marcacion.extraHours = null;
-              marcacion.horasFaltantes = null;
-              marcacion.observacion = "Ausencia";
-              marcacion.estilo.ausente = true;
-              marcacion.estilo.incompleto = false;
-              marcacion.estilo.vacaciones = false;
+              attendance.fecha = this.attendanceModal[0].fecha;
+              attendance.employee = employee._id;
+              attendance.employeeName = employee.nombre;
+              attendance.entryTime = null;
+              attendance.exitTime = null;
+              attendance.workedHours = null;
+              attendance.extraHours = null;
+              attendance.delay = null;
+              attendance.remark = "Ausencia";
+              attendance.status.absence = true;
+              attendance.status.incomplete = false;
+              attendance.status.vacations = false;
 
-              this.absences.push(marcacion);
+              this.absences.push(attendance);
             }
 
-            isFechaVacaciones = null;
+            isVacationDate = null;
           }
         }
       }
@@ -1020,7 +963,7 @@ export default {
       );
 
       this.$http
-        .post(`/asistencias/test-data`, this.attendancesToSend)
+        .post(`/asistencias/add-data`, this.attendancesToSend)
         .then(response => {
           this.$message({
             type: "success",
@@ -1028,15 +971,9 @@ export default {
           });
           this.attendancesToSend.length = 0;
           this.queryData();
-          // this.obtenerAsistencias();
           console.log(response);
         });
     }
-    // async returnVacacionesData(vacaciones) {
-    //   let response = await this.$http.get(`/eventos/edit/${vacaciones}`);
-    //   console.log("Response", response);
-    //   return response;
-    // }
   },
   created() {
     this.queryData();
