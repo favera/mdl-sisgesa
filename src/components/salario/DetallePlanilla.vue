@@ -84,7 +84,7 @@
               <td>{{resultado.name}}</td>
               <td>{{resultado.extraHourMinutes }} Min</td>
               <td>{{resultado.delay}} Min</td>
-              <td>{{resultado.abscence}} dias</td>
+              <td>{{resultado.absence}} dias</td>
               <td>{{resultado.salary.toLocaleString()}} {{resultado.coin}}</td>
               <td>{{returnNegative(resultado.ips, resultado.coin)}} </td>
               <td>{{returnNegative(resultado.salaryAdvance, resultado.coin)}} </td>
@@ -353,7 +353,7 @@ export default {
 
         if (funcionarioExists) {
           if (marcacion.estilo.ausente) {
-            this.resultadoTotal[index].abscence += 1;
+            this.resultadoTotal[index].absence += 1;
 
             this.resultadoTotal[index].discount += Math.round(
               marcacion.funcionario.salario / 26
@@ -435,7 +435,7 @@ export default {
           totalMes.coin = marcacion.funcionario.moneda;
 
           if (marcacion.estilo.ausente) {
-            totalMes.abscence = 1;
+            totalMes.absence = 1;
 
             totalMes.discount += Math.round(marcacion.funcionario.salario / 26);
             summary.date = marcacion.fecha;
@@ -446,7 +446,7 @@ export default {
             totalMes.salarySummary.push(summary);
             summary = {};
           } else {
-            totalMes.abscence = 0;
+            totalMes.absence = 0;
           }
 
           // if (marcacion.estilo.incompleto) {
