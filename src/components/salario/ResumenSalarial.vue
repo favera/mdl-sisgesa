@@ -24,7 +24,7 @@
                         <div class="middle aligned content">
                             <div class="header">
                                 <!-- <i class="olive circle outlined user icon"></i> -->
-                                {{this.resumenSalarial.name}}
+                                {{this.payment.name}}
                             </div>
                             <div class="meta">Funcionario</div>
                         </div>
@@ -40,10 +40,10 @@
                         <div class="ui basic segment">
                             <div class="ui horizontal statistic">
                                 <div class="value">
-                                    {{this.resumenSalarial.salary.toLocaleString()}}
+                                    {{this.payment.salary.toLocaleString()}}
                                 </div>
                                 <div class="label">
-                                    {{this.resumenSalarial.coin}}
+                                    {{this.payment.coin}}
                                 </div>
                             </div>
                         </div>
@@ -56,10 +56,10 @@
                         <div class="ui basic segment">
                             <div class="ui horizontal statistic">
                                 <div class="value">
-                                    {{this.resumenSalarial.salaryBalance.toLocaleString()}}
+                                    {{this.payment.salaryBalance.toLocaleString()}}
                                 </div>
                                 <div class="label">
-                                    {{this.resumenSalarial.coin}}
+                                    {{this.payment.coin}}
                                 </div>
                             </div>
                         </div>
@@ -77,7 +77,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="item in resumenSalarial.salarySummary" :key="item._id">
+                    <tr v-for="item in payment.salarySummary" :key="item._id">
                         <td>{{moment(item.date).format("L")}}</td>
                         <td>{{returnDescription(item.description, item.amount)}}</td>
                         <td>{{Math.round(item.amount).toLocaleString()}} {{ item.coin}}</td>
@@ -95,7 +95,7 @@ export default {
     id: {
       type: String
     },
-    resumenSalarial: {
+    payment: {
       type: Object
     },
     startDate: {
@@ -109,12 +109,7 @@ export default {
     }
   },
   data() {
-    return {
-      details: [],
-      attendance: [],
-      advance: [],
-      lending: []
-    };
+    return {};
   },
   methods: {
     returnList() {

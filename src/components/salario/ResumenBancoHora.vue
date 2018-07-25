@@ -22,7 +22,7 @@
             <div class="middle aligned content">
               <div class="header">
                 <!-- <i class="olive circle outlined user icon"></i> -->
-                {{this.nombre}}
+                {{this.name}}
               </div>
               <div class="meta">Funcionario</div>
             </div>
@@ -38,13 +38,13 @@
             <div class="ui basic segment">
               <div class="ui horizontal statistic">
                 <div class="value">
-                  {{getHours(this.totalBancoHoras.totalMinutes) || "00"}}
+                  {{getHours(this.totalBankHours.totalMinutes) || "00"}}
                 </div>
                 <div class="label">
                   horas
                 </div>
                 <div class="value">
-                  {{getMinutes(this.totalBancoHoras.totalMinutes) || "00"}}
+                  {{getMinutes(this.totalBankHours.totalMinutes) || "00"}}
                 </div>
                 <div class="label">
                   minutos
@@ -60,14 +60,14 @@
             <div class="ui basic segment">
               <div class="ui horizontal statistic">
                 <div class="value">
-                  {{ moment(this.resumenHoras.horaExtraHora, "HH").format("HH")}}
+                  {{ moment(this.monthlyBankHours.extraHoursInHour, "HH").format("HH")}}
                 </div>
                 <div class="label">
                   horas
                 </div>
 
                 <div class="value">
-                  {{moment(this.resumenHoras.horaExtraMinutos, "mm").format("mm")}}
+                  {{moment(this.monthlyBankHours.extraHoursInMinutes, "mm").format("mm")}}
                 </div>
                 <div class="label">
                   Minutos
@@ -88,21 +88,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(dato, index) in historico" v-bind:key="dato._id" v-if="!dato.pagoHoraExtra">
-            <td>{{moment(dato.fecha).format("DD/MM/YYYY")}}</td>
-            <td class="center aligned">{{getObservacion(dato.observacion, dato.horasFaltantes)}}</td>
-            <td class="center aligned">{{dato.horasFaltantes || dato.horasExtras}} Hs.</td>
+          <tr v-for="(data, index) in bankHoursData" v-bind:key="data._id" v-if="!data.payExtraHours">
+            <td>{{moment(data.date).format("DD/MM/YYYY")}}</td>
+            <td class="center aligned">{{getRemark(data.remark, data.delay)}}</td>
+            <td class="center aligned">{{data.delay || data.extraHours}} Hs.</td>
             <td class="center aligned" v-show="!this.showOptions">
-              <span v-if="dato.bancoHora">
+              <span v-if="data.bankHours">
                 <i class="undo link icon"></i>
               </span>
-              <span v-else-if="dato.horasExtras">
-                <i class="checkmark box link icon" @click="saveBankHours(dato.horasExtras, dato.funcionario._id, dato._id, index)"></i>
-                <i class="remove link icon" @click="undoBankHour(dato._id, dato.horasExtras, index)"></i>
-                <i class="money bill alternate outline link icon" @click="payOverTime(dato._id, index)"></i>
+              <span v-else-if="data.extraHours">
+                <i class="checkmark box link icon" @click="saveBankHours(data.extraHours, data.employee._id, data._id, index)"></i>
+                <i class="remove link icon" @click="undoBankHour(data._id, data.extraHours, index)"></i>
+                <i class="money bill alternate outline link icon" @click="payOverTime(data._id, index)"></i>
               </span>
 
-              <i class="clock outline link icon" v-if="dato.horasFaltantes" @click="amendDelay(dato._id, dato.funcionario._id, dato.horasFaltantes, index)"></i>
+              <i class="clock outline link icon" v-if="data.delay" @click="amendDelay(data._id, data.employee._id, data.delay, index)"></i>
             </td>
           </tr>
         </tbody>
@@ -118,10 +118,10 @@ export default {
     id: {
       type: String
     },
-    funcionario: {
+    employee: {
       type: String
     },
-    nombre: {
+    name: {
       type: String
     },
     startDate: {
@@ -136,57 +136,57 @@ export default {
   },
   data() {
     return {
-      historico: [],
-      totalBancoHoras: {
+      bankHoursData: [],
+      totalBankHours: {
         totalMinutes: null,
-        funcionario: null
+        employee: null
       },
-      resumenHoras: {
-        totalHoraExtra: 0,
-        horaExtraMinutos: null,
-        horaExtraHora: null
+      monthlyBankHours: {
+        totalExtraHours: 0,
+        extraHoursInMinutes: null,
+        extraHoursInHour: null
       },
       showOptions: !this.detail
     };
   },
   methods: {
     async getHistoricAttendance() {
-      var totalHoursPromise = this.$http.get(
-        `/salarios/banco-hora/${this.funcionario}`
+      var totalBankHoursPromise = this.$http.get(
+        `/salarios/bank-hour/${this.employee}`
       );
       var attendanceHistoricPromise = this.$http.get(
-        `/salarios/attendance-historic/${this.funcionario}?inicio=${
+        `/salarios/attendance-historic/${this.employee}?startDate=${
           this.startDate
-        }&fin=${this.endDate}`
+        }&endDate=${this.endDate}`
       );
 
-      const [totalHours, attendanceHistoric] = await Promise.all([
-        totalHoursPromise,
+      const [totalBankHours, attendanceHistoric] = await Promise.all([
+        totalBankHoursPromise,
         attendanceHistoricPromise
       ]);
 
-      this.historico = attendanceHistoric.data;
-      if (totalHours.data.length > 0) {
-        this.totalBancoHoras.totalMinutes = totalHours.data[0].totalMinutes;
-        this.totalBancoHoras.funcionario = totalHours.data[0].funcionario;
-        this.totalBancoHoras._id = totalHours.data[0]._id;
+      this.bankHoursData = attendanceHistoric.data;
+      if (totalBankHours.data.length > 0) {
+        this.totalBankHours.totalMinutes = totalBankHours.data[0].totalMinutes;
+        this.totalBankHours.employee = totalBankHours.data[0].employee;
+        this.totalBankHours._id = totalBankHours.data[0]._id;
       }
 
       //Obtener el total de las Horas extras para desplegar
-      if (this.historico.length > 0) {
-        this.historico.forEach(element => {
-          if (element.horasExtras && !element.pagoHoraExtra) {
-            this.resumenHoras.totalHoraExtra += moment
-              .duration(element.horasExtras, "HH:mm")
+      if (this.bankHoursData.length > 0) {
+        this.bankHoursData.forEach(attEmployee => {
+          if (attEmployee.extraHours && !attEmployee.payExtraHours) {
+            this.monthlyBankHours.totalExtraHours += moment
+              .duration(attEmployee.extraHours, "HH:mm")
               .asMinutes();
           }
         });
 
         var h, m;
-        h = Math.floor(this.resumenHoras.totalHoraExtra / 60);
-        m = this.resumenHoras.totalHoraExtra % 60;
-        this.resumenHoras.horaExtraHora = h;
-        this.resumenHoras.horaExtraMinutos = m;
+        h = Math.floor(this.monthlyBankHours.totalExtraHours / 60);
+        m = this.monthlyBankHours.totalExtraHours % 60;
+        this.monthlyBankHours.extraHoursInHour = h;
+        this.monthlyBankHours.extraHoursInMinutes = m;
       }
     },
     getHours(value) {
@@ -195,7 +195,7 @@ export default {
     getMinutes(value) {
       return value % 60;
     },
-    amendDelay(attendanceId, funcionarioId, horasFaltantes, index) {
+    amendDelay(attendanceId, employeeId, delay, index) {
       this.$confirm(
         "Est accion reducira el descuento del banco de horas acumulado por el funcionario",
         "Alerta",
@@ -205,43 +205,38 @@ export default {
           type: "warning"
         }
       ).then(() => {
-        if (this.totalBancoHoras.totalMinutes > 0) {
-          var descuento = moment.duration(horasFaltantes, "HH:mm").asMinutes();
+        if (this.totalBankHours.totalMinutes > 0) {
+          var discount = moment.duration(delay, "HH:mm").asMinutes();
           var updateAttendance = {};
-          var updateBancoHora = {};
-          //valor de descuento sale negativo
-          var result = this.totalBancoHoras.totalMinutes + descuento;
+          var updateBankHours = {};
+          //valor de discount sale negativo
+          var result = this.totalBankHours.totalMinutes + discount;
           if (result >= 0) {
-            updateAttendance.horasFaltantes = null;
-            updateBancoHora.totalMinutes = descuento;
+            updateAttendance.delay = null;
+            updateBankHours.totalMinutes = discount;
           } else if (result < 0) {
             result = result * -1;
             var h = Math.floor(result / 60),
               m = result % 60;
-            updateAttendance.horasFaltantes = `-${moment
+            updateAttendance.delay = `-${moment
               .utc()
               .hours(h)
               .minutes(m)
               .format("HH:mm")}`;
-            updateBancoHora.totalMinutes =
-              this.totalBancoHoras.totalMinutes * -1;
+            updateBankHours.totalMinutes =
+              this.totalBankHours.totalMinutes * -1;
           }
           this.$http
             .put(`/asistencias/amend-delay/${attendanceId}`, updateAttendance)
             .then(() => {
               this.$http
-                .post(
-                  `/salarios/add/banco-hora/${funcionarioId}`,
-                  updateBancoHora
-                )
+                .post(`/salarios/add/bank-hour/${employeeId}`, updateBankHours)
                 .then(response => {
-                  this.totalBancoHoras.totalMinutes =
-                    response.data.totalMinutes;
-                  this.$set(this.historico, index, updateAttendance);
+                  this.totalBankHours.totalMinutes = response.data.totalMinutes;
+                  this.$set(this.bankHoursData, index, updateAttendance);
                 });
             });
         } else {
-          console.log("Entro en el esle");
           this.$message({
             type: "error",
             message: "Funcionario sin banco de horas disponible"
@@ -263,20 +258,20 @@ export default {
           .put(`/asistencias/cancel-overtime/${attendanceId}`)
           .then(response => {
             console.log(response);
-            this.resumenHoras.totalHoraExtra -= moment
+            this.monthlyBankHours.totalExtraHours -= moment
               .duration(value, "HH:mm")
               .asMinutes();
-            this.resumenHoras.horaExtraHora = Math.floor(
-              this.resumenHoras.totalHoraExtra / 60
+            this.monthlyBankHours.extraHoursInHour = Math.floor(
+              this.monthlyBankHours.totalExtraHours / 60
             );
-            this.resumenHoras.horaExtraMinutos =
-              this.resumenHoras.totalHoraExtra % 60;
+            this.monthlyBankHours.extraHoursInMinutes =
+              this.monthlyBankHours.totalExtraHours % 60;
 
-            this.historico.splice(index, 1);
+            this.bankHoursData.splice(index, 1);
           });
       });
     },
-    saveBankHours(value, funcionario, asistenciaId, index) {
+    saveBankHours(value, employee, attendanceId, index) {
       this.$confirm(
         "Las horas acumuladas seran depositadas en el Banco de Horas. Continuar?",
         "Alerta",
@@ -288,26 +283,19 @@ export default {
       )
         .then(() => {
           var newItem = {};
-          newItem.funcionario = funcionario;
+          newItem.employee = employee;
           newItem.totalMinutes = moment.duration(value, "HH:mm").asMinutes();
           this.$http
-            .post(`/salarios/add/banco-hora/${funcionario}`, newItem)
+            .post(`/salarios/add/bank-hour/${employee}`, newItem)
             .then(response => {
-              this.totalBancoHoras = response.data;
+              this.totalBankHours = response.data;
               //   debugger;
               this.$http
-                .put(`asistencias/update-banktime/${asistenciaId}`)
+                .put(`asistencias/update-banktime/${attendanceId}`)
                 .then(response => {
                   console.log(response);
-                  //   this.resumenHoras.totalMinutes -= moment
-                  //     .duration(value, "HH:mm")
-                  //     .asMinutes();
-                  //   this.resumenHoras.totalHoraExtra = 0;
-                  //   this.resumenHoras.horaExtraMinutos = null;
-                  //   this.resumenHoras.horaExtraHora = null;
-                  this.$set(this.historico, index, response.data);
 
-                  //   this.getHistoricAttendance();
+                  this.$set(this.bankHoursData, index, response.data);
                 });
             });
         })
@@ -332,13 +320,13 @@ export default {
           this.$http
             .put(`/asistencias/update-overtime/${attendanceId}`)
             .then(response => {
-              if (response.data.pagoHoraExtra) {
+              if (response.data.payExtraHours) {
                 let [hour, minutes] = this.convertOverTime(
-                  response.data.horasExtras
+                  response.data.extraHours
                 );
-                this.resumenHoras.horaExtraHora -= hour;
-                this.resumenHoras.horaExtraMinutos -= minutes;
-                this.historico.splice(index, 1);
+                this.monthlyBankHours.extraHoursInHour -= hour;
+                this.monthlyBankHours.extraHoursInMinutes -= minutes;
+                this.bankHoursData.splice(index, 1);
               }
             });
         })
@@ -382,11 +370,11 @@ export default {
         });
       }
     },
-    getObservacion(observacion, horasFaltantes) {
-      if (!observacion && horasFaltantes) {
+    getRemark(remark, delay) {
+      if (!remark && delay) {
         return "Retraso";
       }
-      return observacion;
+      return remark;
     }
   },
   created() {

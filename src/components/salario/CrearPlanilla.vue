@@ -63,7 +63,7 @@
           <div class="ui right floated main menu">
             <a class="icon item">
 
-              <i class="plus icon" @click="abrirModal()"></i>
+              <i class="plus icon" @click="openModal()"></i>
 
             </a>
           </div>
@@ -314,7 +314,7 @@ export default {
           }
         });
     },
-    abrirModal() {
+    openModal() {
       this.modal
         .modal("setting", { observeChanges: true })
         .modal("show")
