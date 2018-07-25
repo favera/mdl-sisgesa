@@ -639,7 +639,7 @@ export default {
       });
     },
     getEmployees() {
-      this.$http.get(`/funcionarios/full-list`).then(response => {
+      this.$http.get(`/employees/full-list`).then(response => {
         this.employees = response.data;
       });
     },
