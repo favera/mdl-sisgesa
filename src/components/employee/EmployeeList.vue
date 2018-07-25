@@ -126,10 +126,10 @@ export default {
 
       localStorage.setItem("page", JSON.stringify(page));
 
-      this.$router.push({ name: "editarEmpleado", params: { id: employeeId } });
+      this.$router.push({ name: "editEmployee", params: { id: employeeId } });
     },
     newEmployee() {
-      this.$router.push({ name: "incluirEmpleado" });
+      this.$router.push({ name: "includeEmployee" });
     },
     deleteEmployee(employeeId, index) {
       this.$confirm("Este registro sera desactivado. Continuar?", "Atencion!", {
@@ -139,7 +139,7 @@ export default {
       })
         .then(() => {
           this.$http
-            .put(`/funcionarios/deactivate/${employeeId}`, { activo: false })
+            .put(`/employees/deactivate/${employeeId}`, { activo: false })
             .then(response => {
               if (response.status === 200) {
                 this.employees.splice(index, 1);
@@ -163,7 +163,7 @@ export default {
       }
       this.$http
         .get(
-          `/funcionarios?page=${this.pageOne.currentPage}&limit=${
+          `/employees?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }&search=${this.search}`
         )

@@ -1,21 +1,27 @@
-import Asistencia from "./components/asistencia/Asistencia.vue";
-import AsistenciaList from "./components/asistencia/AsistenciaList.vue";
-import Empleado from "./components/empleado/Empleado.vue";
-import EmpleadoList from "./components/empleado/EmpleadoList.vue";
-import Feriado from "./components/feriados/Feriado.vue";
-import FeriadoList from "./components/feriados/FeriadoList.vue";
-import Sucursal from "./components/sucursal/Sucursal.vue";
-import SucursalList from "./components/sucursal/SucursalList.vue";
-import Salario from "./components/salario/CrearPlanilla.vue";
-import PlanillaSalario from "./components/salario/DetallePlanilla.vue";
-import ResumenSalario from "./components/salario/ResumenSalarial.vue";
-import ResumenBancoHora from "./components/salario/ResumenBancoHora.vue";
-import Calendario from "./components/calendario/Calendario.vue";
-import CalendarioList from "./components/calendario/CalendarioList.vue";
 import Adelanto from "./components/adelanto/Adelanto.vue";
 import AdelantoList from "./components/adelanto/AdelantoList.vue";
-import Prestamo from "./components/prestamo/Prestamo.vue";
-import PrestamoList from "./components/prestamo/PrestamoList.vue";
+import Attendance from "./components/attendance/Attendance.vue";
+import AttendanceList from "./components/attendance/AttendanceList.vue";
+import Employee from "./components/employee/Employee.vue";
+import EmployeeList from "./components/employee/EmployeeList.vue";
+import Event from "./components/calendar/Event.vue";
+import EventList from "./components/calendar/EventList.vue";
+import Lending from "./components/lending/Lending.vue";
+import LendingList from "./components/lending/LendingList.vue";
+import Payroll from "./components/payroll/Payroll.vue";
+import DetailPayment from "./components/payroll/DetailPayment.vue";
+import SalarySummary from "./components/payroll/SalarySummary.vue";
+import BankHoursSummary from "./components/payroll/BankHoursSummary.vue";
+import Subsidiary from "./components/sucursal/Subsidiary.vue";
+import SubsidiaryList from "./components/sucursal/SubsidiaryList.vue";
+
+import Feriado from "./components/feriados/Feriado.vue";
+import FeriadoList from "./components/feriados/FeriadoList.vue";
+
+
+
+
+
 import Login from "./Login.vue";
 import Dashboard from "./Dashboard.vue";
 
@@ -31,54 +37,54 @@ export const routes = [
     children: [
       {
         path: "/asistencias",
-        component: AsistenciaList,
-        name: "listadoAsistencia"
+        component: AttendanceList,
+        name: "attendanceList"
       },
       {
         path: "/incluir-Asistencia",
-        component: Asistencia,
-        name: "incluirAsistencia"
+        component: Attendance,
+        name: "includeAttendance"
       },
       {
         path: "/editar-Asistencia/:id",
-        component: Asistencia,
-        name: "editarAsistencia"
+        component: Attendance,
+        name: "editAttendance"
       },
       {
         path: "/funcionarios",
-        component: EmpleadoList,
-        name: "listadoEmpleado",
+        component: EmployeeList,
+        name: "employeeList",
         props: true
       },
       {
         path: "/incluir-funcionario",
-        component: Empleado,
-        name: "incluirEmpleado"
+        component: Employee,
+        name: "includeEmployee"
       },
       {
         path: "/editar-funcionario/:id",
-        component: Empleado,
-        name: "editarEmpleado",
+        component: Employee,
+        name: "editEmployee",
         props: true
       },
       {
         path: "/sucursales",
-        component: SucursalList,
+        component: SubsidiaryList,
         name: "listadoSucursal"
       },
       {
         path: "/incluir-sucursal",
-        component: Sucursal,
+        component: Subsidiary,
         name: "incluirSucursal"
       },
       {
         path: "/editar-sucursal/:id",
-        component: Sucursal,
+        component: Subsidiary,
         name: "editarSucursal"
       },
       {
         path: "/salarios",
-        component: Salario,
+        component: Payroll,
         name: "listadoSalarios"
       },
       {
@@ -98,17 +104,17 @@ export const routes = [
       },
       {
         path: "/calendario",
-        component: CalendarioList,
-        name: "listadoCalendario"
+        component: EventList,
+        name: "listadoEvent"
       },
       {
         path: "/incluir-evento",
-        component: Calendario,
+        component: Event,
         name: "incluirEvento"
       },
       {
         path: "/editar-evento",
-        component: Calendario,
+        component: Event,
         name: "editarEvento"
       },
       {
@@ -128,34 +134,34 @@ export const routes = [
       },
       {
         path: "/prestamos",
-        component: PrestamoList,
+        component: LendingList,
         name: "listadoPrestamo"
       },
       {
         path: "/incluir-prestamo",
-        component: Prestamo,
+        component: Lending,
         name: "incluirPrestamo"
       },
       {
         path: "/editar-prestamo",
-        component: Prestamo,
+        component: Lending,
         name: "editarPrestamo"
       },
       {
         path: "/detalle-planilla-salario",
-        component: PlanillaSalario,
+        component: DetailPayment,
         name: "detallePlanilla",
         props: true
       },
       {
         path: "/resumen-salarial",
-        component: ResumenSalario,
+        component: SalarySummary,
         name: "resumenSalarial",
         props: true
       },
       {
         path: "/resumen-banco-hora",
-        component: ResumenBancoHora,
+        component: BankHoursSummary,
         name: "resumenBancoHora",
         props: true
       }

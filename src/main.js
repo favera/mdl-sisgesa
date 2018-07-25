@@ -14,8 +14,6 @@ import {
   Notification
 } from "element-ui";
 
-var VueFire = require("vuefire");
-var Firebase = require("firebase");
 
 import "../semantic/dist/semantic.css";
 import "../semantic/dist/semantic.js";
@@ -32,7 +30,6 @@ import { routes } from "./routes";
 import vueXlsxTable from "vue-xlsx-table";
 import moment from "moment";
 import axios from "./config/vue-axios";
-//import axios from "axios";
 Validator.localize("es", es);
 
 const config = {
@@ -40,7 +37,6 @@ const config = {
 };
 
 Vue.use(VueRouter);
-Vue.use(VueFire);
 Vue.use(vueXlsxTable, { rABS: false });
 Vue.use(TimePicker);
 Vue.use(TimeSelect);

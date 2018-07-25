@@ -268,7 +268,7 @@ export default {
 
       this.$http
         .get(
-          `/adelantos/?page=${this.pageOne.currentPage}&limit=${
+          `/advances/?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }&startDate=${this.query.startDate}&endDate=${
             this.query.endDate
@@ -291,7 +291,7 @@ export default {
         }
       )
         .then(() => {
-          this.$http.delete(`/adelantos/delete/${advanceId}`).then(response => {
+          this.$http.delete(`/advances/delete/${advanceId}`).then(response => {
             if (response.status === 200) {
               this.advances.splice(index, 1);
               this.$message({

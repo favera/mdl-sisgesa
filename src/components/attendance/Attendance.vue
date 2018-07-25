@@ -114,7 +114,7 @@ export default {
 
             this.$http
               .put(
-                `/asistencias/update/${this.$route.params.id}`,
+                `/attendances/update/${this.$route.params.id}`,
                 this.attendance
               )
               .then(response => {
@@ -153,7 +153,7 @@ export default {
             console.log(JSON.stringify(this.attendance));
 
             this.$http
-              .post(`/asistencias/add`, this.attendance)
+              .post(`/attendances/add`, this.attendance)
               .then(response => {
                 console.log(response);
                 this.success();
@@ -299,7 +299,7 @@ export default {
     //obtiene la asistencia para la edicion
     getAttendance() {
       this.$http
-        .get(`/asistencias/edit/${this.$route.params.id}`)
+        .get(`/attendances/edit/${this.$route.params.id}`)
         .then(response => {
           this.attendance.date = response.data.date;
           this.attendance.entryTime = response.data.entryTime;
@@ -339,7 +339,7 @@ export default {
         });
     },
     cancel() {
-      this.$router.push({ name: "listadoAsistencia" });
+      this.$router.push({ name: "attendanceList" });
     },
     success() {
       this.$notify({

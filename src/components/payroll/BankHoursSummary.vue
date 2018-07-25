@@ -227,7 +227,7 @@ export default {
               this.totalBankHours.totalMinutes * -1;
           }
           this.$http
-            .put(`/asistencias/amend-delay/${attendanceId}`, updateAttendance)
+            .put(`/attendances/amend-delay/${attendanceId}`, updateAttendance)
             .then(() => {
               this.$http
                 .post(`/salarios/add/bank-hour/${employeeId}`, updateBankHours)
@@ -255,7 +255,7 @@ export default {
         }
       ).then(() => {
         this.$http
-          .put(`/asistencias/cancel-overtime/${attendanceId}`)
+          .put(`/attendances/cancel-overtime/${attendanceId}`)
           .then(response => {
             console.log(response);
             this.monthlyBankHours.totalExtraHours -= moment
@@ -291,7 +291,7 @@ export default {
               this.totalBankHours = response.data;
               //   debugger;
               this.$http
-                .put(`asistencias/update-banktime/${attendanceId}`)
+                .put(`attendances/update-banktime/${attendanceId}`)
                 .then(response => {
                   console.log(response);
 
@@ -318,7 +318,7 @@ export default {
       )
         .then(() => {
           this.$http
-            .put(`/asistencias/update-overtime/${attendanceId}`)
+            .put(`/attendances/update-overtime/${attendanceId}`)
             .then(response => {
               if (response.data.payExtraHours) {
                 let [hour, minutes] = this.convertOverTime(

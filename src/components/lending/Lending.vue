@@ -170,7 +170,7 @@ export default {
   methods: {
     getEmployees() {
       this.$http
-        .get(`/funcionarios/full-list`)
+        .get(`/employees/full-list`)
         .then(response => {
           this.employees = response.data;
         })

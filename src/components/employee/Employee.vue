@@ -207,7 +207,7 @@ export default {
       this.$validator.validateAll().then(() => {
         if (this.$route.params.id) {
           this.$http
-            .put(`/funcionarios/update/${this.$route.params.id}`, {
+            .put(`/employees/update/${this.$route.params.id}`, {
               name: this.employee.name,
               acnro: this.employee.acnro,
               identityNumber: this.employee.identityNumber,
@@ -240,7 +240,7 @@ export default {
             });
         } else {
           this.$http
-            .post(`/funcionarios/add`, {
+            .post(`/employees/add`, {
               name: this.employee.name,
               acnro: this.employee.acnro,
               identityNumber: this.employee.identityNumber,
@@ -278,14 +278,14 @@ export default {
     getEmployee() {
       if (this.$route.params.id) {
         this.$http
-          .get(`/funcionarios/edit/${this.$route.params.id}`)
+          .get(`/employees/edit/${this.$route.params.id}`)
           .then(response => {
             this.employee.name = response.data.name;
             this.employee.acnro = response.data.acnro;
             this.employee.identityNumber = response.data.identityNumber;
             this.employee.admissionDate = response.data.admissionDate;
             this.employee.halfTime = response.data.halfTime;
-            this.employee.tipoHoraExtra = response.data.tipoHoraExtra;
+            // this.employee.tipoHoraExtra = response.data.tipoHoraExtra;
             this.employee.workingHours = response.data.workingHours;
             this.employee.salary = response.data.salary;
             this.employee.coin = response.data.coin;

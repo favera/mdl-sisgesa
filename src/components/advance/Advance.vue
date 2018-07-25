@@ -106,7 +106,7 @@ export default {
 
       if (this.$route.params.id) {
         this.$http
-          .get(`/adelantos/edit/${this.$route.params.id}`)
+          .get(`/advances/edit/${this.$route.params.id}`)
           .then(response => {
             this.advance.date = response.data.date;
             this.advance.advanceType = response.data.advanceType;
@@ -149,12 +149,10 @@ export default {
       this.$validator.validateAll();
       if (this.$route.params.id) {
         this.advance.employee = this.employeeSelected;
-        this.advance.employeeName = this.getEmployeeName(
-          this.employeeSelected
-        );
+        this.advance.employeeName = this.getEmployeeName(this.employeeSelected);
         this.advance.amount = parseInt(this.advance.amount.split(".").join(""));
         this.$http
-          .put(`/adelantos/update/${this.$route.params.id}`, this.advance)
+          .put(`/advances/update/${this.$route.params.id}`, this.advance)
           .then(response => {
             console.log(response);
             this.editSuccess();
@@ -166,12 +164,10 @@ export default {
           });
       } else {
         this.advance.employee = this.employeeSelected;
-        this.advance.employeeName = this.getEmployeeName(
-          this.employeeSelected
-        );
+        this.advance.employeeName = this.getEmployeeName(this.employeeSelected);
         this.advance.amount = parseInt(this.advance.amount.split(".").join(""));
         this.$http
-          .post(`/adelantos/add`, this.advance)
+          .post(`/advances/add`, this.advance)
           .then(response => {
             console.log(response);
             this.success();

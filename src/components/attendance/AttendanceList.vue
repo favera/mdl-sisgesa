@@ -288,7 +288,7 @@ export default {
       localStorage.setItem("page", JSON.stringify(page));
 
       this.$router.push({
-        name: "editarAsistencia",
+        name: "editAttendance",
         params: { id: attId }
       });
     },
@@ -329,7 +329,7 @@ export default {
       if (this.query.status === "todos") {
         this.$http
           .get(
-            `/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${
+            `/attendances/query-data?page=${this.pageOne.currentPage}&limit=${
               this.pageOne.itemsPerPage
             }&startDate=${this.query.startDate}&endDate=${
               this.query.endDate
@@ -348,7 +348,7 @@ export default {
       } else {
         this.$http
           .get(
-            `/asistencias/query-data?page=${this.pageOne.currentPage}&limit=${
+            `/attendances/query-data?page=${this.pageOne.currentPage}&limit=${
               this.pageOne.itemsPerPage
             }&startDate=${this.query.startDate}&endDate=${
               this.query.endDate
@@ -612,7 +612,7 @@ export default {
       )
         .then(() => {
           this.$http
-            .delete(`/asistencias/delete/${attendanceId}`)
+            .delete(`/attendances/delete/${attendanceId}`)
             .then(response => {
               if (response.status === 200) {
                 this.attendances.splice(index, 1);
@@ -660,7 +660,7 @@ export default {
       console.log("Fecha Format", firstDate);
       //Trae las asistencias del parametro fecha
       this.$http
-        .get(`/asistencias/full-list?fechaPlanilla=${firstDate}`)
+        .get(`/attendances/full-list?fechaPlanilla=${firstDate}`)
         .then(response => {
           console.log("Response Length", response.data.length);
           if (response.data.length > 0) {
@@ -963,7 +963,7 @@ export default {
       );
 
       this.$http
-        .post(`/asistencias/add-data`, this.attendancesToSend)
+        .post(`/attendances/add-data`, this.attendancesToSend)
         .then(response => {
           this.$message({
             type: "success",

@@ -296,7 +296,7 @@ export default {
     getAttendance() {
       this.$http
         .get(
-          `/asistencias/full-list?startDate=${this.startDate}&endDate=${
+          `/attendances/full-list?startDate=${this.startDate}&endDate=${
             this.endDate
           }`
         )
@@ -306,7 +306,7 @@ export default {
     },
     async getPayrollDetail() {
       const advancePromise = this.$http.get(
-        `/adelantos/monthly-advance?startDate=${this.startDate}&endDate=${
+        `/advances/monthly-advance?startDate=${this.startDate}&endDate=${
           this.endDate
         }`
       );
@@ -316,7 +316,7 @@ export default {
         }`
       );
       const attendacePromise = this.$http.get(
-        `/asistencias/full-list?startDate=${this.startDate}&endDate=${
+        `/attendances/full-list?startDate=${this.startDate}&endDate=${
           this.endDate
         }`
       );
