@@ -367,7 +367,7 @@ export default {
       }
     },
     getEmployees() {
-      this.$http.get(`/funcionarios/full-list`).then(response => {
+      this.$http.get(`/employees/full-list`).then(response => {
         this.employees = response.data;
       });
     },
@@ -393,7 +393,7 @@ export default {
       console.log("Horas trabajadas " + result);
       return result;
     },
-    //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice
+    //verifica que la fecha pasada se encuentra en el array de holidays anuales y retorna el indice
     returnHoliday(date) {
       return this.holidaysPerYear.findIndex(holiday => {
         console.log(
@@ -640,7 +640,7 @@ export default {
         .format();
       this.$http
         .get(
-          `/eventos/feriados?startDate=${firstDayYear}&endDate=${lastDayYear}`
+          `/events/holidays?startDate=${firstDayYear}&endDate=${lastDayYear}`
         )
         .then(response => {
           this.holidaysPerYear = response.data;
@@ -896,7 +896,7 @@ export default {
             var getVacations, attDateFormat, isVacationDate;
             // debugger;
             getVacations = await this.$http.get(
-              `/eventos/vacaciones/${employee._id}`
+              `/events/vacations/${employee._id}`
             );
             console.log("Resultado await", getVacations);
             // debugger;

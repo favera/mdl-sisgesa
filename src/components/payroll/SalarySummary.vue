@@ -113,7 +113,7 @@ export default {
   },
   methods: {
     returnList() {
-      this.$router.push({ name: "listadoSalarios" });
+      this.$router.push({ name: "payrollList" });
     },
     returnDescription(description, amount) {
       if (!description && amount < 0) {
@@ -124,7 +124,7 @@ export default {
     returnDetail() {
       if (this.detail) {
         this.$router.push({
-          name: "detallePlanilla",
+          name: "paymentDetail",
           params: {
             id: this.id,
             enableView: false,
@@ -135,7 +135,7 @@ export default {
         });
       } else {
         this.$router.push({
-          name: "detallePlanilla",
+          name: "paymentDetail",
           params: {
             enableView: true,
             startDate: this.startDate,

@@ -149,11 +149,11 @@ export default {
       this.getEvents();
     },
     addEvent() {
-      this.$router.push({ name: "incluirEvento" });
+      this.$router.push({ name: "includeEvent" });
     },
     editEvent(eventStatus, eventId) {
       if (eventStatus) {
-        this.$router.push({ name: "editarEvento", params: { id: eventId } });
+        this.$router.push({ name: "editEvent", params: { id: eventId } });
       }
     },
     pageOneChanged(pageNum) {
@@ -164,7 +164,7 @@ export default {
       if (eventStatus) {
       }
       console.log("key", eventkey);
-      this.$http.get(`/eventos/deactivate-vacation/${eventkey}`).then(() => {
+      this.$http.get(`/events/deactivate-vacation/${eventkey}`).then(() => {
         this.$message({
           type: "info",
           message: "Registro archivado"
@@ -211,17 +211,17 @@ export default {
       var index = this.events.findIndex(i => i.id === id);
       if (employee) {
         this.$http
-          .put(`/funcionarios/update-vacation/${employee}`, {
+          .put(`/employees/update-vacation/${employee}`, {
             vacations: id,
             active: false
           })
           .then(response => {
-            this.$http.delete(`/eventos/delete/${id}`).then(response => {
+            this.$http.delete(`/events/delete/${id}`).then(response => {
               this.events.splice(index, 1);
             });
           });
       } else {
-        this.$http.delete(`/eventos/delete/${id}`).then(response => {
+        this.$http.delete(`/events/delete/${id}`).then(response => {
           this.events.splice(index, 1);
         });
       }
@@ -232,7 +232,7 @@ export default {
       }
       this.$http
         .get(
-          `/eventos?page=${this.pageOne.currentPage}&limit=${
+          `/events?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }&eventType=${this.listType}&parameter=${this.query.parameter}`
         )

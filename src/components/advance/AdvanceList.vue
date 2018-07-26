@@ -234,10 +234,10 @@ export default {
   },
   methods: {
     addAdvance() {
-      this.$router.push({ name: "incluirAdelanto" });
+      this.$router.push({ name: "includeAdvance" });
     },
     editAdvance(advanceId) {
-      this.$router.push({ name: "editarAdelanto", params: { id: advanceId } });
+      this.$router.push({ name: "editAdvance", params: { id: advanceId } });
     },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;

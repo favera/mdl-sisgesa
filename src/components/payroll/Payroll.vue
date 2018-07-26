@@ -169,11 +169,11 @@ export default {
         }
       ).then(() => {
         this.$http
-          .put(`/prestamos/update/lending/paid`)
+          .put(`/lendings/update/lending/paid`)
           .then(response => {
             console.log(response);
             this.$http
-              .put(`/salarios/update-status/${paymentId}`)
+              .put(`/payrolls/update-status/${paymentId}`)
               .then(response => {
                 if (response.status === 200) {
                   this.$set(this.payroll, index, response.data);
@@ -204,7 +204,7 @@ export default {
         }
       )
         .then(() => {
-          this.$http.delete(`/salarios/delete/${paymentId}`).then(response => {
+          this.$http.delete(`/payrolls/delete/${paymentId}`).then(response => {
             console.log(response);
             if (response.status === 200) {
               this.payroll.splice(index, 1);
@@ -225,7 +225,7 @@ export default {
     paymentDetail(paymentId, month, year) {
       this.getDates(month, year);
       this.$router.push({
-        name: "detallePlanilla",
+        name: "paymentDetail",
         params: {
           id: paymentId,
           enableView: false,
@@ -254,7 +254,7 @@ export default {
       this.getDates(month, year);
 
       this.$router.push({
-        name: "detallePlanilla",
+        name: "paymentDetail",
         params: {
           id: paymentId,
           enableView: true,
@@ -269,7 +269,7 @@ export default {
       this.getDates(month, year);
 
       this.$router.push({
-        name: "detallePlanilla",
+        name: "paymentDetail",
         params: {
           id: paymentId,
           enableView: true,
@@ -282,7 +282,7 @@ export default {
       this.$validator.validateAll().then(() => {
         this.$http
           .get(
-            `/salarios?page=${this.pageOne.currentPage}&limit=${
+            `/payrolls?page=${this.pageOne.currentPage}&limit=${
               this.pageOne.itemsPerPage
             }`
           )
@@ -298,7 +298,7 @@ export default {
     },
     saveSalaryData() {
       this.$http
-        .post("/salarios/add/period", this.salaryData)
+        .post("/payrolls/add/period", this.salaryData)
         .then(response => {
           console.log(response);
         })

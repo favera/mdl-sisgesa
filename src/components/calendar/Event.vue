@@ -117,7 +117,7 @@ export default {
       // debugger;
       if (this.$route.params.id) {
         this.$http
-          .get(`/eventos/edit/${this.$route.params.id}`)
+          .get(`/events/edit/${this.$route.params.id}`)
           .then(response => {
             this.event.eventType = response.data.eventType;
 
@@ -142,7 +142,7 @@ export default {
         if (typeof this.$route.params.id !== "undefined") {
           if (this.event.eventType === "feriado") {
             this.$http
-              .put(`/eventos/update/${this.$route.params.id}`, {
+              .put(`/events/update/${this.$route.params.id}`, {
                 eventType: this.event.eventType,
                 holidayDate: this.event.holidayDate,
                 holidayDescription: this.event.holidayDescription
@@ -153,29 +153,22 @@ export default {
               })
               .catch(e => {
                 if (e.errmsg && e.errmsg.includes("duplicate")) {
-                  this.errors.add(
-                    "holidayDate",
-                    "La fecha indicada ya existe"
-                  );
+                  this.errors.add("holidayDate", "La fecha indicada ya existe");
                 }
                 this.fail();
               });
           } else {
             this.$http
-              .put(`/eventos/update/${this.$route.params.id}`, {
+              .put(`/events/update/${this.$route.params.id}`, {
                 eventType: this.event.eventType,
                 startDate: this.event.startDate,
                 endDate: this.event.endDate,
                 employee: this.employeeSelected,
-                employeeName: this.getEmployeeName(
-                  this.employeeSelected
-                )
+                employeeName: this.getEmployeeName(this.employeeSelected)
               })
               .then(response => {
                 this.$http.put(
-                  `/funcionarios/update-vacation/${
-                    this.employeeSelected
-                  }`,
+                  `/employees/update-vacation/${this.employeeSelected}`,
                   {
                     vacations: response.data._id
                   }
@@ -191,7 +184,7 @@ export default {
         } else {
           if (this.event.eventType === "feriado") {
             this.$http
-              .post(`/eventos/add`, {
+              .post(`/events/add`, {
                 eventType: this.event.eventType,
                 holidayDate: this.event.holidayDate,
                 holidayDescription: this.event.holidayDescription
@@ -206,35 +199,25 @@ export default {
                   error.response.data.errmsg &&
                   error.response.data.errmsg.includes("duplicate")
                 ) {
-                  this.errors.add(
-                    "holidayDate",
-                    "La fecha indicada ya existe"
-                  );
+                  this.errors.add("holidayDate", "La fecha indicada ya existe");
                 }
                 this.fail();
               });
           } else {
             this.$http
-              .post(`/eventos/add`, {
+              .post(`/events/add`, {
                 eventType: this.event.eventType,
                 startDate: this.event.startDate,
                 endDate: this.event.endDate,
                 employee: this.employeeSelected,
-                employeeName: this.getEmployeeName(
-                  this.employeeSelected
-                )
+                employeeName: this.getEmployeeName(this.employeeSelected)
               })
               .then(response => {
                 this.$http
-                  .put(
-                    `/funcionarios/update-vacation/${
-                      this.employeeSelected
-                    }`,
-                    {
-                      vacations: response.data._id,
-                      activo: true
-                    }
-                  )
+                  .put(`/employees/update-vacation/${this.employeeSelected}`, {
+                    vacations: response.data._id,
+                    activo: true
+                  })
                   .then(response => console.log(response));
                 this.success();
                 this.cancel();
@@ -294,7 +277,7 @@ export default {
     },
     getEmployees() {
       this.$http
-        .get(`/funcionarios/full-list`)
+        .get(`/employees/full-list`)
         .then(response => {
           this.employees = response.data;
         })

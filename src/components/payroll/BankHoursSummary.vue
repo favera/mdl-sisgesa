@@ -152,10 +152,10 @@ export default {
   methods: {
     async getHistoricAttendance() {
       var totalBankHoursPromise = this.$http.get(
-        `/salarios/bank-hour/${this.employee}`
+        `/payrolls/bank-hour/${this.employee}`
       );
       var attendanceHistoricPromise = this.$http.get(
-        `/salarios/attendance-historic/${this.employee}?startDate=${
+        `/payrolls/attendance-historic/${this.employee}?startDate=${
           this.startDate
         }&endDate=${this.endDate}`
       );
@@ -230,7 +230,7 @@ export default {
             .put(`/attendances/amend-delay/${attendanceId}`, updateAttendance)
             .then(() => {
               this.$http
-                .post(`/salarios/add/bank-hour/${employeeId}`, updateBankHours)
+                .post(`/payrolls/add/bank-hour/${employeeId}`, updateBankHours)
                 .then(response => {
                   this.totalBankHours.totalMinutes = response.data.totalMinutes;
                   this.$set(this.bankHoursData, index, updateAttendance);
@@ -286,7 +286,7 @@ export default {
           newItem.employee = employee;
           newItem.totalMinutes = moment.duration(value, "HH:mm").asMinutes();
           this.$http
-            .post(`/salarios/add/bank-hour/${employee}`, newItem)
+            .post(`/payrolls/add/bank-hour/${employee}`, newItem)
             .then(response => {
               this.totalBankHours = response.data;
               //   debugger;
@@ -344,12 +344,12 @@ export default {
       return [hour, minutes];
     },
     returnList() {
-      this.$router.push({ name: "listadoSalarios" });
+      this.$router.push({ name: "payrollList" });
     },
     returnDetail() {
       if (this.detail) {
         this.$router.push({
-          name: "detallePlanilla",
+          name: "paymentDetail",
           params: {
             id: this.id,
             enableView: false,
@@ -360,7 +360,7 @@ export default {
         });
       } else {
         this.$router.push({
-          name: "detallePlanilla",
+          name: "paymentDetail",
           params: {
             enableView: true,
             startDate: this.startDate,

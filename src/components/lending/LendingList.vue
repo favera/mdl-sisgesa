@@ -202,7 +202,7 @@ export default {
       this.getLendings();
     },
     addLending() {
-      this.$router.push({ name: "incluirPrestamo" });
+      this.$router.push({ name: "includeLending" });
     },
     editLending(lendingId) {
       this.$router.push({ name: "editarPrestamo", params: { id: lendingId } });
@@ -221,7 +221,7 @@ export default {
       }
       this.$http
         .get(
-          `/prestamos?page=${this.pageOne.currentPage}&limit=${
+          `/lendings?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
           }&inicio=${this.query.startDate}&fin=${
             this.query.endDate
@@ -246,7 +246,7 @@ export default {
         }
       )
         .then(() => {
-          this.$http.delete(`/prestamos/delete/${lendingId}`).then(response => {
+          this.$http.delete(`/lendings/delete/${lendingId}`).then(response => {
             if (response.status === 200) {
               this.lendings.splice(index, 1);
               this.$message({

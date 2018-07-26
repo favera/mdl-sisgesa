@@ -214,7 +214,7 @@ export default {
     getLending() {
       if (this.$route.params.id) {
         this.$http
-          .get(`/prestamos/edit/${this.$route.params.id}`)
+          .get(`/lendings/edit/${this.$route.params.id}`)
           .then(response => {
             this.lending.id = response.data._id;
             this.lending.date = response.data.date;
@@ -242,7 +242,7 @@ export default {
           this.lending.employeeName = this.findEmployee(this.employeeSelected);
 
           this.$http
-            .put(`/prestamos/update/${this.$route.params.id}`, this.lending)
+            .put(`/lendings/update/${this.$route.params.id}`, this.lending)
             .then(response => {
               this.success();
               this.cancel();
@@ -262,7 +262,7 @@ export default {
           }
 
           this.$http
-            .post(`/prestamos/add`, this.lending)
+            .post(`/lendings/add`, this.lending)
             .then(response => {
               this.success();
               this.cancel();
@@ -276,7 +276,7 @@ export default {
       });
     },
     cancel() {
-      this.$router.push({ name: "listadoPrestamo" });
+      this.$router.push({ name: "lendingList" });
     },
     success() {
       this.$notify({

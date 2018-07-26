@@ -321,15 +321,17 @@ export default {
         .endOf("year")
         .format();
       this.$http
-        .get(`/eventos/feriados?inicio=${firstDayYear}&fin=${lastDayYear}`)
+        .get(
+          `/events/holidays?startDate=${firstDayYear}&endDate=${lastDayYear}`
+        )
         .then(response => {
           this.holidaysPerYear = response.data;
         });
     },
-    //obtiene el listado completo de funcionarios
+    //obtiene el listado completo de employees
     getEmployees() {
       this.$http
-        .get(`/funcionarios/full-list/`)
+        .get(`/employees/full-list/`)
         .then(response => {
           this.employees = response.data;
         })

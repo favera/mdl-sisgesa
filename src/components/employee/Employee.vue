@@ -311,10 +311,10 @@ export default {
         });
     },
     returnList() {
-      this.$router.push({ name: "listadoEmpleado" });
+      this.$router.push({ name: "employeeList" });
     },
     cancel() {
-      this.$router.push({ name: "listadoEmpleado" });
+      this.$router.push({ name: "employeeList" });
     },
     editSuccess() {
       this.$notify({

@@ -145,6 +145,8 @@ export default {
       lendingIdentifiers: [],
       //empleados: [],
       lendings: [],
+      //ver si realmente se usa
+      events: [],
       payrollDetail: [],
       // marcacionesEmpleado: [],
       advances: [],
@@ -204,7 +206,7 @@ export default {
     },
     goToBankHourSummary(employee, name) {
       this.$router.push({
-        name: "resumenBancoHora",
+        name: "bankHoursSummary",
         params: {
           id: this.id,
           employee: employee,
@@ -278,7 +280,7 @@ export default {
       return Math.round(netSalary).toLocaleString();
     },
     returnList() {
-      this.$router.push({ name: "listadoSalarios" });
+      this.$router.push({ name: "payrollList" });
     },
     // getDomingos(fecha) {
     //   moment(fecha).date(1);
@@ -311,7 +313,7 @@ export default {
         }`
       );
       const loanPromise = this.$http.get(
-        `/prestamos/loan-period?startDate=${this.startDate}&endDate=${
+        `/lendings/loan-period?startDate=${this.startDate}&endDate=${
           this.endDate
         }`
       );
@@ -615,12 +617,12 @@ export default {
         type: "warning"
       }).then(() => {
         this.$http
-          .put(`/prestamos/update/lending/processed`, this.lendingIdentifiers)
+          .put(`/lendings/update/lending/processed`, this.lendingIdentifiers)
           .then(response => {
             console.log(response);
             this.$http
               .put(
-                `/salarios/update/salary-detail/${idSalaryResume}`,
+                `/payrolls/update/salary-detail/${idSalaryResume}`,
                 this.payrollDetail
               )
               .then(() => {
@@ -646,12 +648,12 @@ export default {
     getEvents() {
       this.$http
         .get(
-          `/eventos/full-list?startDate=${this.startDate}&endDate=${
+          `/events/full-list?startDate=${this.startDate}&endDate=${
             this.endDate
           }`
         )
         .then(response => {
-          this.eventos = response.data;
+          this.events = response.data;
         });
     }
   },
@@ -659,7 +661,7 @@ export default {
     this.loading = true;
     //this.formatDate(this.monthPayment, this.yearPayment);
     if (this.detail) {
-      this.$http.get(`/salarios/salary-detail/${this.id}`).then(response => {
+      this.$http.get(`/payrolls/salary-detail/${this.id}`).then(response => {
         this.payrollDetail = response.data.salaryDetail;
         this.loading = false;
       });

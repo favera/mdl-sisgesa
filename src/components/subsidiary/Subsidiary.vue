@@ -63,7 +63,7 @@ export default {
     saveSubsidiary() {
       if (this.$route.params.id) {
         this.$http
-          .put("/sucursales/update/" + this.$route.params.id, {
+          .put("/subsidiaries/update/" + this.$route.params.id, {
             name: this.subsidiary.name,
             startingTime: this.subsidiary.startingTime,
             endTime: this.subsidiary.endTime,
@@ -76,7 +76,7 @@ export default {
           });
       } else {
         this.$http
-          .post("/sucursales/add", {
+          .post("/subsidiaries/add", {
             name: this.subsidiary.name,
             startingTime: this.subsidiary.startingTime,
             endTime: this.subsidiary.endTime,
@@ -93,7 +93,7 @@ export default {
     getSubsidiary() {
       if (this.$route.params.id) {
         this.$http
-          .get("/sucursales/edit/" + this.$route.params.id)
+          .get("/subsidiaries/edit/" + this.$route.params.id)
           .then(response => {
             this.subsidiary.name = response.data.name;
             this.subsidiary.startingTime = response.data.startingTime;
@@ -103,7 +103,7 @@ export default {
       }
     },
     cancel() {
-      this.$router.push({ name: "listadoSucursal" });
+      this.$router.push({ name: "subsidiaryList" });
     },
     success() {
       this.$notify({

@@ -91,11 +91,11 @@ export default {
   },
   methods: {
     newSubsidiary() {
-      this.$router.push({ name: "incluirSucursal" });
+      this.$router.push({ name: "includeSubsidiary" });
     },
     editSubsidiary(subsidiaryId) {
       this.$router.push({
-        name: "editarSucursal",
+        name: "editSubsidiary",
         params: { id: subsidiaryId }
       });
     },
@@ -111,7 +111,7 @@ export default {
       )
         .then(() => {
           this.$http
-            .delete(`/sucursales/delete/${subsidiaryId}`)
+            .delete(`/subsidiaries/delete/${subsidiaryId}`)
             .then(response => {
               if (response.status === 200) {
                 this.subsidiaries.splice(index, 1);
@@ -140,7 +140,7 @@ export default {
         });
     },
     getSubsidiariesList() {
-      this.$http.get("/sucursales").then(response => {
+      this.$http.get("/subsidiaries").then(response => {
         this.subsidiaries = response.data;
       });
     },

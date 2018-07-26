@@ -1,5 +1,5 @@
-import Adelanto from "./components/adelanto/Adelanto.vue";
-import AdelantoList from "./components/adelanto/AdelantoList.vue";
+import Advance from "./components/advance/Advance.vue";
+import AdvanceList from "./components/advance/AdvanceList.vue";
 import Attendance from "./components/attendance/Attendance.vue";
 import AttendanceList from "./components/attendance/AttendanceList.vue";
 import Employee from "./components/employee/Employee.vue";
@@ -14,21 +14,14 @@ import SalarySummary from "./components/payroll/SalarySummary.vue";
 import BankHoursSummary from "./components/payroll/BankHoursSummary.vue";
 import Subsidiary from "./components/sucursal/Subsidiary.vue";
 import SubsidiaryList from "./components/sucursal/SubsidiaryList.vue";
-
-import Feriado from "./components/feriados/Feriado.vue";
-import FeriadoList from "./components/feriados/FeriadoList.vue";
-
-
-
-
+//Future feature
+// import Feriado from "./components/feriados/Feriado.vue";
+// import FeriadoList from "./components/feriados/FeriadoList.vue";
 
 import Login from "./Login.vue";
-import Dashboard from "./Dashboard.vue";
-
 import Home from "./Home.vue";
 
 export const routes = [
-  // { path: "/", name: "Home", component: Home },
   { path: "/", name: "Login", component: Login },
   {
     path: "/dashboard",
@@ -70,101 +63,101 @@ export const routes = [
       {
         path: "/sucursales",
         component: SubsidiaryList,
-        name: "listadoSucursal"
+        name: "subsidiaryList"
       },
       {
         path: "/incluir-sucursal",
         component: Subsidiary,
-        name: "incluirSucursal"
+        name: "includeSubsidiary"
       },
       {
         path: "/editar-sucursal/:id",
         component: Subsidiary,
-        name: "editarSucursal"
+        name: "editSubsidiary"
       },
       {
         path: "/salarios",
         component: Payroll,
-        name: "listadoSalarios"
-      },
-      {
-        path: "/feriados",
-        component: FeriadoList,
-        name: "listadoFeriado"
-      },
-      {
-        path: "/incluir-feriado",
-        component: Feriado,
-        name: "incluirFeriado"
-      },
-      {
-        path: "/editar-feriado/:id",
-        component: Feriado,
-        name: "editarFeriado"
+        name: "payrollList"
       },
       {
         path: "/calendario",
         component: EventList,
-        name: "listadoEvent"
+        name: "eventList"
       },
       {
         path: "/incluir-evento",
         component: Event,
-        name: "incluirEvento"
+        name: "includeEvent"
       },
       {
         path: "/editar-evento",
         component: Event,
-        name: "editarEvento"
+        name: "editEvent"
       },
       {
         path: "/adelantos",
-        component: AdelantoList,
-        name: "listadoAdelanto"
+        component: AdvanceList,
+        name: "advanceList"
       },
       {
         path: "/incluir-adelanto",
-        component: Adelanto,
-        name: "incluirAdelanto"
+        component: Advance,
+        name: "includeAdvance"
       },
       {
         path: "/editar-adelanto",
-        component: Adelanto,
-        name: "editarAdelanto"
+        component: Advance,
+        name: "editAdvance"
       },
       {
         path: "/prestamos",
         component: LendingList,
-        name: "listadoPrestamo"
+        name: "lendingList"
       },
       {
         path: "/incluir-prestamo",
         component: Lending,
-        name: "incluirPrestamo"
+        name: "includeLending"
       },
       {
         path: "/editar-prestamo",
         component: Lending,
-        name: "editarPrestamo"
+        name: "editLending"
       },
       {
         path: "/detalle-planilla-salario",
         component: DetailPayment,
-        name: "detallePlanilla",
+        name: "paymentDetail",
         props: true
       },
       {
         path: "/resumen-salarial",
         component: SalarySummary,
-        name: "resumenSalarial",
+        name: "salarySummary",
         props: true
       },
       {
         path: "/resumen-banco-hora",
         component: BankHoursSummary,
-        name: "resumenBancoHora",
+        name: "bankHoursSummary",
         props: true
-      }
+      },
+      // {
+      //   path: "/feriados",
+      //   component: FeriadoList,
+      //   name: "listadoFeriado"
+      // },
+      // {
+      //   path: "/incluir-feriado",
+      //   component: Feriado,
+      //   name: "incluirFeriado"
+      // },
+      // {
+      //   path: "/editar-feriado/:id",
+      //   component: Feriado,
+      //   name: "editarFeriado"
+      // }
     ]
   }
 ];

@@ -127,7 +127,7 @@ export default {
     },
     getEmployees() {
       this.$http
-        .get(`/funcionarios/full-list`)
+        .get(`/employees/full-list`)
         .then(response => {
           this.employees = response.data;
         })
@@ -180,7 +180,7 @@ export default {
       }
     },
     cancel() {
-      this.$router.push({ name: "listadoAdelanto" });
+      this.$router.push({ name: "advanceList" });
     },
     success() {
       this.$notify({
