@@ -12,8 +12,8 @@ import Payroll from "./components/payroll/Payroll.vue";
 import DetailPayment from "./components/payroll/DetailPayment.vue";
 import SalarySummary from "./components/payroll/SalarySummary.vue";
 import BankHoursSummary from "./components/payroll/BankHoursSummary.vue";
-import Subsidiary from "./components/sucursal/Subsidiary.vue";
-import SubsidiaryList from "./components/sucursal/SubsidiaryList.vue";
+import Subsidiary from "./components/subsidiary/Subsidiary.vue";
+import SubsidiaryList from "./components/subsidiary/SubsidiaryList.vue";
 //Future feature
 // import Feriado from "./components/feriados/Feriado.vue";
 // import FeriadoList from "./components/feriados/FeriadoList.vue";
@@ -142,7 +142,7 @@ export const routes = [
         component: BankHoursSummary,
         name: "bankHoursSummary",
         props: true
-      },
+      }
       // {
       //   path: "/feriados",
       //   component: FeriadoList,
