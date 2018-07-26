@@ -172,18 +172,20 @@ export default {
   methods: {
     async getDataDashboard() {
       let absencePromise = this.$http.get(
-        `/asistencias/query-data?page=1&limit=10&inicio=${this.dateStart}&fin=${
-          this.dateEnd
-        }&estado=ausentes&busqueda=null`
+        `/attendances/query-data?page=1&limit=10&startDate=${
+          this.dateStart
+        }&endDate=${this.dateEnd}&estado=ausentes&busqueda=null`
       );
       let incompletePromise = this.$http.get(
-        `/asistencias/query-data?page=1&limit=10&inicio=${this.dateStart}&fin=${
-          this.dateEnd
-        }&estado=incompletos&busqueda=null`
+        `/attendances/query-data?page=1&limit=10&startDate=${
+          this.dateStart
+        }&endDate=${this.dateEnd}&estado=incompletos&busqueda=null`
       );
 
       let delayPromise = this.$http.get(
-        `/asistencias/all-delays?inicio=${this.dateStart}&fin=${this.dateEnd}`
+        `/attendances/all-delays?startDate=${this.dateStart}&endDate=${
+          this.dateEnd
+        }`
       );
 
       const [absence, incomplete, delay] = await Promise.all([

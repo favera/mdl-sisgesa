@@ -301,7 +301,7 @@ export default {
     },
     getSubsidiaries() {
       this.$http
-        .get(`/sucursales/`)
+        .get(`/subsidiaries/`)
         .then(response => {
           this.subsidiaries = response.data;
         })

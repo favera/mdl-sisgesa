@@ -15,13 +15,13 @@
         </h4>
         <p>sistema de Gestion Salarial</p>
       </div>
-      <router-link class="item" active-class="active" :to="{name: 'listadoAsistencia'}">Asistencia</router-link>
-      <router-link class="item" active-class="active" :to="{name: 'listadoAdelanto'}">Adelantos</router-link>
-      <router-link class="item" active-class="active" :to="{name: 'listadoSalarios'}">Generar Salario</router-link>
-      <router-link class="item" active-class="active" :to="{name: 'listadoPrestamo'}">Prestamos</router-link>
-      <router-link class="item" active-class="active" :to="{name: 'listadoEmpleado'}">Funcionarios</router-link>
-      <router-link class="item" active-class="active" :to="{name: 'listadoSucursal'}">Sucursales</router-link>
-      <router-link class="item" active-class="active" :to="{name: 'listadoCalendario'}">Calendario</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'attendanceList'}">Asistencia</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'advanceList'}">Adelantos</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'payrollList'}">Generar Salario</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'lendingList'}">Prestamos</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'employeeList'}">Funcionarios</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'subsidiaryList'}">Sucursales</router-link>
+      <router-link class="item" active-class="active" :to="{name: 'eventList'}">Calendario</router-link>
       <!-- <router-link class="item" active-class="active" :to="{name: 'listadoFeriado'}">Feriados</router-link> -->
 
     </div>

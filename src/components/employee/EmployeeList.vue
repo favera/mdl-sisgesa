@@ -6,12 +6,12 @@
         <div class="inline fields">
           <div class="ten wide field">
             <div class="ui icon input">
-              <input v-model="search" type="text" placeholder="Buscar Funcionario..." @keydown="consultarEmpleado">
+              <input v-model="search" type="text" placeholder="Buscar Funcionario..." @keydown="searchEmployee">
               <i @click="cleanField()" v-show="search" class="close link icon"></i>
             </div>
           </div>
 
-          <button class="ui circular teal icon button" @click="consultarEmpleado">
+          <button class="ui circular teal icon button" @click="searchEmployee">
             <i class="search icon"></i>
           </button>
 
@@ -20,8 +20,8 @@
         <div class="field">
 
           <div class="ui right floated main menu">
-            <a class="icon item" @click="newEmployee">
-              <i class="plus icon"></i>
+            <a class="icon item" >
+              <i class="plus icon" @click="newEmployee"></i>
             </a>
             <a class="icon item">
               <i class="print icon"></i>
@@ -108,7 +108,7 @@ export default {
     formatSalary(value) {
       return value.toLocaleString();
     },
-    consultarEmpleado(e) {
+    searchEmployee(e) {
       if (e && e.keyCode === 13) {
         this.getEmployees(true);
 
