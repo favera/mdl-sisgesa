@@ -250,7 +250,7 @@ export default {
       });
     },
     cancel() {
-      this.$router.push({ name: "listadoCalendario" });
+      this.$router.push({ name: "eventList" });
     },
     success() {
       this.$notify({

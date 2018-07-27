@@ -16,7 +16,7 @@
         <div class="field" :class="{error: errors.has('employee')}">
           <select name="employee" v-model="employeeSelected" class="ui dropdown" v-validate="'required'">
             <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.nombre}}</option>
+            <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
           </select>
           <span class="info-error" v-show="errors.has('employee')">{{errors.first('employee')}}</span>
 
