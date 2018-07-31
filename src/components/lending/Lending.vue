@@ -111,7 +111,7 @@
                     </div>
 
                     <div class="middle aligned content">
-                      <div class="ui orange horizontal label">{{installment.estado}}</div>
+                      <div class="ui orange horizontal label">{{installment.state}}</div>
                     </div>
                   </div>
 

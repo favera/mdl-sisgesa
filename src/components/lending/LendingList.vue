@@ -87,7 +87,7 @@
               </td>
 
             </tr>
-            <tr v-show="lending.showInstallments">
+            <tr v-show="lending.showInstallments" :key="lending.date">
               <td colspan="5">
                 <div class="ui padded segments">
                   <div class="ui segment">
@@ -115,9 +115,9 @@
                           </div>
 
                           <div class="middle aligned content">
-                            <div class="ui orange horizontal label" v-if="installment.status ===  'pendiente'">{{installment.status}}</div>
-                            <div class="ui blue horizontal label" v-if="installment.status ===  'procesado'">{{installment.status}}</div>
-                            <div class="ui olive horizontal label" v-if="installment.status ===  'pagado'">{{installment.status}}</div>
+                            <div class="ui orange horizontal label" v-if="installment.state ===  'pendiente'">{{installment.state}}</div>
+                            <div class="ui blue horizontal label" v-if="installment.state ===  'procesado'">{{installment.state}}</div>
+                            <div class="ui olive horizontal label" v-if="installment.state ===  'pagado'">{{installment.state}}</div>
                           </div>
                         </div>
 
@@ -205,7 +205,7 @@ export default {
       this.$router.push({ name: "includeLending" });
     },
     editLending(lendingId) {
-      this.$router.push({ name: "editarPrestamo", params: { id: lendingId } });
+      this.$router.push({ name: "editLending", params: { id: lendingId } });
     },
     searchLending(e) {
       if (e && e.keyEvent === 13) {
@@ -223,7 +223,7 @@ export default {
         .get(
           `/lendings?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&inicio=${this.query.startDate}&fin=${
+          }&startDate=${this.query.startDate}&endDate=${
             this.query.endDate
           }&parameter=${this.query.parameter}`
         )
