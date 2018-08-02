@@ -53,7 +53,7 @@
             <div class="ten wide field">
 
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre" @keydown="searchAttendance" v-model="query.busqueda">
+                <input type="text" placeholder="Buscar por nombre" @keydown="searchAttendance" v-model="query.parameter">
                 <!-- <i class="search icon" v-if="parameterAvanzada"></i> -->
                 <!-- <i @click="searchAttendance" class="inverted teal circular search link icon" v-else></i> -->
 

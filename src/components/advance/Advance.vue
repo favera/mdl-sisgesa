@@ -47,8 +47,13 @@
             <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
 
           </div>
+          <div class="two wide field">
+            <div class="ui disabled input">
+              <input type="text" v-model="advance.coin">
+            </div>
+          </div>
 
-          <div class="four wide field" :class="{'error': errors.has('coin')}">
+          <!-- <div class="four wide field" :class="{'error': errors.has('coin')}">
             <select v-model="advance.coin" class="ui dropdown" id="coinSelector" name="coin" v-validate="'required'">
               <option disbled value="">Seleccionar Moneda..</option>
               <option value="Gs">Guaranies - Gs.</option>
@@ -56,7 +61,7 @@
               <option value="Rs">Reales - Rs.</option>
             </select>
             <span class="info-error" v-show="errors.has('coin')">{{errors.first('coin')}}</span>
-          </div>
+          </div> -->
 
         </div>
       </div>
@@ -118,10 +123,10 @@ export default {
               .find(".ui.dropdown")
               .dropdown("refresh")
               .dropdown("set selected", response.data.employee);
-            $(this.$el)
-              .find("#coinSelector")
-              .dropdown("refresh")
-              .dropdown("set selected", response.data.coin);
+            // $(this.$el)
+            //   .find("#coinSelector")
+            //   .dropdown("refresh")
+            //   .dropdown("set selected", response.data.coin);
           });
       }
     },
@@ -218,24 +223,25 @@ export default {
     employeeSelected: function() {
       var employee = this.employees.find(employee => {
         if (employee._id === this.employeeSelected) {
+          this.advance.coin = employee.coin;
           if (this.advance.advanceType === "quincena") {
             this.salary = employee.salary;
             console.log(this.salary);
             this.advance.amount = Math.floor(
               employee.salary / 2
             ).toLocaleString();
-            $(this.$el)
-              .find("#coinSelector")
-              .dropdown("refresh")
-              .dropdown("set selected", employee.coin);
+            // $(this.$el)
+            //   .find("#coinSelector")
+            //   .dropdown("refresh")
+            //   .dropdown("set selected", employee.coin);
           }
         }
       });
 
-      $(this.$el)
-        .find("#coinSelector")
-        .dropdown("refresh")
-        .dropdown("set selected", this.advance.coin);
+      // $(this.$el)
+      //   .find("#coinSelector")
+      //   .dropdown("refresh")
+      //   .dropdown("set selected", this.advance.coin);
     }
   }
 };

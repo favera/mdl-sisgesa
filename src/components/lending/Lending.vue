@@ -40,7 +40,13 @@
                 <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
               </div>
 
-              <div class="five wide field" :class="{error: errors.has('coin')}">
+              <div class="two wide field">
+                <div class="ui disabled input field">
+                  <input type="text" v-model="lending.coin">
+                </div>
+              </div>
+
+              <!-- <div class="five wide field" :class="{error: errors.has('coin')}">
 
                 <select name="coin" v-model="lending.coin" class="ui dropdown" id="coinSelector" v-validate="'required'">
                   <option disbled value="">Seleccionar Moneda..</option>
@@ -49,7 +55,7 @@
                   <option value="Rs">Reales - Rs.</option>
                 </select>
                 <span class="info-error" v-show="errors.has('coin')">{{errors.first('coin')}}</span>
-              </div>
+              </div> -->
 
             </div>
 
@@ -228,10 +234,10 @@ export default {
               .dropdown("refresh")
               .dropdown("set selected", response.data.employee);
 
-            $(this.$el)
-              .find("#coinSelector")
-              .dropdown("refresh")
-              .dropdown("set selected", response.data.coin);
+            // $(this.$el)
+            //   .find("#coinSelector")
+            //   .dropdown("refresh")
+            //   .dropdown("set selected", response.data.coin);
           });
       }
     },
@@ -319,7 +325,14 @@ export default {
     });
   },
   watch: {
-    $route: "getLending"
+    $route: "getLending",
+    employeeSelected: function() {
+      this.employees.find(employee => {
+        if (employee._id === this.employeeSelected) {
+          this.lending.coin = employee.coin;
+        }
+      });
+    }
     // "prestamo.amount": function(valor) {
     //   console.log(typeof valor);
     //   var test = parseInt(valor.split(".").join(""));
