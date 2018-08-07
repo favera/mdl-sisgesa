@@ -17,7 +17,7 @@
           <div class="field" :class="{error: errors.has('attEmployee')}">
             <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="employeeSelected" class="ui dropdown" id="funcionarioSelector">
               <option disabled value="">Seleccionar Funcionario..</option>
-              <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.nombre}}</option>
+              <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
             </select>
             <span class="info-error" v-show="errors.has('attEmployee')">{{errors.first('attEmployee')}}</span>
           </div>
@@ -168,14 +168,14 @@ export default {
     },
     //retorna el nombre del empleado.
     getEmployeeName(id) {
-      var nombre;
+      var name;
       this.employees.find(employee => {
         if (employee._id === id) {
-          nombre = employee.nombre;
+          name = employee.name;
         }
       });
-      console.log("Nombre", nombre);
-      return nombre;
+      console.log("Nombre", name);
+      return name;
     },
 
     //verifica que la fecha pasada se encuentra en el array de feriados anuales y retorna el indice

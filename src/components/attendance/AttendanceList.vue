@@ -17,7 +17,7 @@
           <tbody>
             <tr v-for="att in attendanceModal" :key="att.id">
               <td>{{att.employeeName}}</td>
-              <td>{{moment(att.fecha).format("L")}}</td>
+              <td>{{moment(att.date).format("L")}}</td>
               <td>{{(att.entryTime || "--") + " hs"}}</td>
               <td>{{(att.exitTime || "--") + " hs"}}</td>
             </tr>
@@ -179,7 +179,7 @@
           <tbody>
             <tr v-for="(attendance, index) in attendances" :key="attendance._id" v-bind:class="{negative: attendance.status.absence, positive: attendance.status.vacations, warning: attendance.status.incomplete}">
               <td>{{attendance.employeeName}}</td>
-              <td>{{moment(attendance.fecha).format("L")}}</td>
+              <td>{{moment(attendance.date).format("L")}}</td>
               <td>{{(attendance.entryTime || "--") + " hs"}}</td>
               <td>{{(attendance.exitTime || "--") + " hs"}}</td>
               <td>{{(attendance.workedHours || "--") + " hs"}}</td>
@@ -598,7 +598,7 @@ export default {
     },
 
     addAttendance() {
-      this.$router.push({ name: "incluirAsistencia" });
+      this.$router.push({ name: "includeAttendance" });
     },
     deleteAttendance(attendanceId, index) {
       this.$confirm(
@@ -896,7 +896,7 @@ export default {
             var getVacations, attDateFormat, isVacationDate;
             // debugger;
             getVacations = await this.$http.get(
-              `/events/vacations/${employee._id}`
+              `/events/employee-vacation/${employee._id}`
             );
             console.log("Resultado await", getVacations);
             // debugger;
@@ -929,11 +929,10 @@ export default {
               this.absences.push(attendance);
               console.log(JSON.stringify(this.absences));
             } else {
-              console.log("Entro en el Else");
               //si no cumplio condiciones anteriores, es una ausencia.
-              attendance.fecha = this.attendanceModal[0].fecha;
+              attendance.date = this.attendanceModal[0].date;
               attendance.employee = employee._id;
-              attendance.employeeName = employee.nombre;
+              attendance.employeeName = employee.name;
               attendance.entryTime = null;
               attendance.exitTime = null;
               attendance.workedHours = null;
