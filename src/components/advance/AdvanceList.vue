@@ -44,7 +44,7 @@
               <i class="plus icon"></i>
             </a>
 
-            <a class="icon item" @click="exportReceipt">
+            <a class="icon item" @click="printSelectedReceipts">
               <i class="print icon"></i>
             </a>
           </div>
@@ -84,9 +84,9 @@
                 <label></label>
               </div>
             </td>
-            <td>{{moment(advance.fecha).format("L")}}</td>
+            <td>{{moment(advance.date).format("L")}}</td>
             <td>{{advance.employeeName}}</td>
-            <td>{{advance.amount.toLocaleString()}} {{advance.moneda}}</td>
+            <td>{{advance.amount.toLocaleString()}} {{advance.coin}}</td>
             <td class="center aligned">
               <i class="edit row link icon" @click="editAdvance(advance._id)"></i>
               <i class="trash link icon" @click="deleteAdvanceSalary(advance._id, index)"></i>
@@ -101,7 +101,7 @@
                   </div>
                   <div class="ui r aligned segment">
                     <p>Fecha: {{moment().format("L")}}</p>
-                    <h4 class="ui header">{{advance.amount}} {{advance.coin}}</h4>
+                    <h4 class="ui header">{{formatAmount(advance.amount)}} {{advance.coin}}</h4>
                   </div>
 
                 </div>
@@ -110,7 +110,7 @@
                   <span class="ui sub header">CI/RG: {{advance.employee.identityNumber.toLocaleString()}} </span>
 
                   <div class="ui basic segment">
-                    <p>Recibi la suma de {{advance.amount}} {{advance.coin}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
+                    <p>Recibi la suma de {{formatAmount(advance.amount)}} {{advance.coin}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
                   </div>
 
                   <br>
@@ -148,6 +148,14 @@
           </tr>
         </tfoot>
       </table>
+
+    </div>
+    <div id="SelectedReceipt">
+      <title>Prueba</title>
+      <ul v-for="advance in printAdvanceSelected" :key="advance._id">
+        <li>{{advance.employee.name}}</li>
+        <li>{{advance.amount}}</li>
+      </ul>
 
     </div>
     <!-- <div class="print" v-for="adelanto in adelantos" :key="adelanto._id">
@@ -205,6 +213,7 @@ export default {
   data() {
     return {
       advances: [],
+      printAdvanceSelected: [],
       print: false,
       advanceType: "quincena",
       query: {
@@ -246,6 +255,28 @@ export default {
     showPrint() {
       this.print = !this.print;
     },
+    formatAmount(value) {
+      return value.toLocaleString();
+    },
+    printSelectedReceipts() {
+      // debugger;
+      this.advances.forEach(advance => {
+        var index = this.advancesSelected.findIndex(idAdvance => {
+          return idAdvance === advance._id;
+        });
+
+        if (index !== -1) {
+          this.printAdvanceSelected.push(advance);
+        }
+      });
+      this.$router.push({
+        name: "printAdvances",
+        params: { advances: this.printAdvanceSelected }
+      });
+      // console.log(routeData);
+      // window.open(routeData.href, this.printSelectedReceipts, "_blank");
+    },
+
     exportReceipt(id) {
       printJS({
         printable: "recibo" + id,

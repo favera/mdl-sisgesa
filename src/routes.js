@@ -1,5 +1,6 @@
 import Advance from "./components/advance/Advance.vue";
 import AdvanceList from "./components/advance/AdvanceList.vue";
+import PrintAdvances from "./components/advance/PrintAdvances.vue";
 import Attendance from "./components/attendance/Attendance.vue";
 import AttendanceList from "./components/attendance/AttendanceList.vue";
 import Employee from "./components/employee/Employee.vue";
@@ -109,6 +110,12 @@ export const routes = [
         path: "/editar-adelanto",
         component: Advance,
         name: "editAdvance"
+      },
+      {
+        path: "/imprimir-adelantos",
+        component: PrintAdvances,
+        name: "printAdvances",
+        props: true
       },
       {
         path: "/prestamos",
