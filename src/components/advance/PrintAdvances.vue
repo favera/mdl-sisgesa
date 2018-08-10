@@ -1,12 +1,32 @@
 <template>
-    <div>
-        <div>
+    <div class="ui grid">
+        <!-- <div>
             <div class="ui button" @click="printListOfRecipes">
                 print
             </div>
+        </div> -->
+
+        <div class="ten wide column row">
+            <div class="left floated eleven wide column">
+                <div class="ui breadcrumb">
+                    <router-link :to="{name: 'advanceList'}">
+                        <a class="section">Listado de Adelantos</a>
+
+                    </router-link>
+                    <i class="right angle icon divider"></i>
+                    <div class=" active section">Impresion de Adelantos</div>
+
+                </div>
+            </div>
+            <div class="right floated five wide column">
+                <button class="ui teal active button" @click="printListOfRecipes">
+                    <i class="print icon"></i>
+                    Imprimir Recibos
+                </button>
+            </div>
         </div>
 
-        <div id="printRecipe">
+        <div id="printRecipe" class="ui ten wide column">
             <div v-for="adelanto in advances" :key="adelanto._id" class="test">
                 <div class="ui segments">
                     <div class="ui horizontal segments">
@@ -79,10 +99,7 @@ export default {
 </script>
 <style scoped>
 .test {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   line-height: 0rem;
-}
-.ui.segment {
-  margin: 0.7rem 0em;
 }
 </style>
