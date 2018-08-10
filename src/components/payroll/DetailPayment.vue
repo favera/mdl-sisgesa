@@ -219,7 +219,7 @@ export default {
     },
     goToPaymentSummary(payment) {
       this.$router.push({
-        name: "resumenSalarial",
+        name: "salarySummary",
         params: {
           id: this.id,
           payment: payment,
