@@ -1,7 +1,6 @@
 <template>
   <div class="ui twelve wide column">
-
-    <div class="ui four column grid">
+    <!-- <div class="ui four column grid">
       <div class="column">
         <div class="ui secondary orange inverted segment">
           <div class="ui two column grid">
@@ -144,7 +143,7 @@
         </div>
       </div>
 
-    </div>
+    </div> -->
   </div>
 
 </template>
@@ -170,37 +169,34 @@ export default {
     };
   },
   methods: {
-    async getDataDashboard() {
-      let absencePromise = this.$http.get(
-        `/attendances/query-data?page=1&limit=10&startDate=${
-          this.dateStart
-        }&endDate=${this.dateEnd}&estado=ausentes&busqueda=null`
-      );
-      let incompletePromise = this.$http.get(
-        `/attendances/query-data?page=1&limit=10&startDate=${
-          this.dateStart
-        }&endDate=${this.dateEnd}&estado=incompletos&busqueda=null`
-      );
-
-      let delayPromise = this.$http.get(
-        `/attendances/all-delays?startDate=${this.dateStart}&endDate=${
-          this.dateEnd
-        }`
-      );
-
-      const [absence, incomplete, delay] = await Promise.all([
-        absencePromise,
-        incompletePromise,
-        delayPromise
-      ]);
-
-      this.queryResults.absence = absence.data;
-      this.queryResults.incomplete = incomplete.data;
-      this.queryResults.delay = delay.data;
-    }
+    // async getDataDashboard() {
+    //   let absencePromise = this.$http.get(
+    //     `/attendances/query-data?page=1&limit=10&startDate=${
+    //       this.dateStart
+    //     }&endDate=${this.dateEnd}&estado=ausentes&busqueda=null`
+    //   );
+    //   let incompletePromise = this.$http.get(
+    //     `/attendances/query-data?page=1&limit=10&startDate=${
+    //       this.dateStart
+    //     }&endDate=${this.dateEnd}&estado=incompletos&busqueda=null`
+    //   );
+    //   let delayPromise = this.$http.get(
+    //     `/attendances/all-delays?startDate=${this.dateStart}&endDate=${
+    //       this.dateEnd
+    //     }`
+    //   );
+    //   const [absence, incomplete, delay] = await Promise.all([
+    //     absencePromise,
+    //     incompletePromise,
+    //     delayPromise
+    //   ]);
+    //   this.queryResults.absence = absence.data;
+    //   this.queryResults.incomplete = incomplete.data;
+    //   this.queryResults.delay = delay.data;
+    // }
   },
   created() {
-    this.getDataDashboard();
+    // this.getDataDashboard();
   }
 };
 </script>

@@ -1,11 +1,18 @@
 <template>
-    <div class="ui middle aligned center aligned grid" id="login">
+    <div class="ui middle aligned center aligned grid">
         <div class="ui four wide column">
+            <div class="column">
+                <div id="login" class="ui centered image">
+                    <img src="./assets/coin.png" alt="" width="100">
+                </div>
+            </div>
             <h2 class="ui teal image header">
                 <div class="content">
-                    Inicie Sesion en su cuenta
+                    SISGESA
                 </div>
+
             </h2>
+            <!-- <p>Sistema de Gestion Salarial</p> -->
             <form class="ui large form">
                 <div class="ui raised segment">
                     <div class="field">
@@ -52,19 +59,18 @@ export default {
       this.$http
         .post("/users/login", { email: this.email, password: this.password })
         .then(response => {
-            this.loginSuccessful(response)
-            
+          this.loginSuccessful(response);
         })
         .catch(() => this.loginFailed());
     },
     loginSuccessful(req) {
-        console.log(req.headers['x-auth']);
-      if (!req.headers['x-auth']) {
+      console.log(req.headers["x-auth"]);
+      if (!req.headers["x-auth"]) {
         this.loginFailed();
         return;
       }
 
-      localStorage.token = req.headers['x-auth'];
+      localStorage.token = req.headers["x-auth"];
       this.error = false;
 
       this.$router.replace(this.$route.query.redirect || "/dashboard");
@@ -80,7 +86,13 @@ export default {
 
 <style>
 #login {
-  margin-top: 10%;
+  background: #ccc;
+  width: 150px;
+  height: 150px;
+  border-radius: 100%;
+  padding-top: 5%;
+  padding-left: 6%;
+  margin-top: 3%;
 }
 </style>
 

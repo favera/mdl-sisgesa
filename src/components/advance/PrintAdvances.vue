@@ -27,7 +27,7 @@
         </div>
 
         <div id="printRecipe" class="ui ten wide column">
-            <div v-for="adelanto in advances" :key="adelanto._id" class="test">
+            <div v-for="advance in advances" :key="advance._id" class="test">
                 <div class="ui segments">
                     <div class="ui horizontal segments">
                         <div class="ui segment">
@@ -36,16 +36,16 @@
                         </div>
                         <div class="ui r aligned segment">
                             <p>Fecha: {{moment().format("L")}}</p>
-                            <h4 class="ui header">Monto: {{adelanto.amount}} {{adelanto.coin}}</h4>
+                            <h4 class="ui header">Monto: {{formatAmount(advance.amount)}} {{advance.coin}}</h4>
                         </div>
 
                     </div>
                     <div class="ui segment">
-                        <div class="ui small header">{{adelanto.employee.name}}</div>
-                        <span class="ui sub header">CI: 4.5263.621</span>
+                        <div class="ui small header">{{advance.employee.name}}</div>
+                        <span class="ui sub header">CI/RG: {{formatAmount(advance.employee.identityNumber)}}</span>
 
                         <div class="ui basic segment">
-                            <p>Recibi la suma de 540.000 Gs, referente al adelanto de salario por los servicios prestados a la empresa</p>
+                            <p>Recibi la suma de {{formatAmount(advance.amount)}} {{advance.coin}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
                         </div>
 
                         <br>
@@ -93,6 +93,9 @@ export default {
         type: "html",
         targetStyles: ["*"]
       });
+    },
+    formatAmount(value) {
+      return value.toLocaleString();
     }
   }
 };

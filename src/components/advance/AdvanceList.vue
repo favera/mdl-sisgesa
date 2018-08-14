@@ -107,7 +107,7 @@
                 </div>
                 <div class="ui segment">
                   <div class="ui small header">{{advance.employee.name}}</div>
-                  <span class="ui sub header">CI/RG: {{advance.employee.identityNumber.toLocaleString()}} </span>
+                  <span class="ui sub header">CI/RG: {{formatAmount(advance.employee.identityNumber)}} </span>
 
                   <div class="ui basic segment">
                     <p>Recibi la suma de {{formatAmount(advance.amount)}} {{advance.coin}}, referente al adelanto de salario por los servicios prestados a la empresa</p>
@@ -158,49 +158,7 @@
       </ul>
 
     </div>
-    <!-- <div class="print" v-for="adelanto in adelantos" :key="adelanto._id">
-      <div class="ui padded segments">
-        <div class="ui horizontal segments">
-          <div class="ui segment">
-            <img src="http://mdl.com.py/template/images/logomarca.png" width="60px">
-            <h4 class="ui header">Recibo de Adelanto de Salario</h4>
-          </div>
-          <div class="ui r aligned segment">
-            <p>Fecha: {{moment().format("L")}}</p>
-            <h4 class="ui header">Monto: {{adelanto.monto}} {{adelanto.moneda}}</h4>
-          </div>
 
-        </div>
-        <div class="ui segment">
-          <div class="ui small header">{{adelanto.funcionario.nombre}}</div>
-          <span class="ui sub header">CI: 4.5263.621</span>
-
-          <div class="ui basic segment">
-            <p>Recibi la suma de 540.000 Gs, referente al adelanto de salario por los servicios prestados a la empresa</p>
-          </div>
-
-          <br>
-
-          <div class="ui basic center aligned segment">
-            <div class="ui three column grid">
-              <div class="column">
-                <div class="ui divider"></div>
-                <p>Aprobado por</p>
-              </div>
-              <div class="column">
-                <div class="ui divider"></div>
-                <p>Firma del Empleado</p>
-              </div>
-              <div class="column">
-                <div class="ui divider"></div>
-                <p>Pago por</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 

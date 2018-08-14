@@ -1,6 +1,46 @@
 <template>
   <div class="ui thirteen wide column">
 
+    <div class="ui small modal" @submit.prevent="addOutsourcedEmployee">
+      <div class="header"> Incluir salario de funcionario</div>
+      <div class="content">
+        <div class="ui twelve wide column">
+          <form class="ui form">
+            <div class="required field">
+              <label>Nombre del Funcionario</label>
+              <input type="text" v-model="outsourcedEmployee.name">
+            </div>
+
+            <div class="required field">
+              <label>Monto de Pago:</label>
+              <input type="text" v-model.lazy="outsourcedEmployee.salary" v-money="money">
+            </div>
+
+            <div class="five wide required field">
+              <label for="">Moneda</label>
+              <div class="field" :class="{error: errors.has('moneda')}">
+                <select v-model="outsourcedEmployee.coin" name="moneda" v-validate="'required'" class="ui fluid dropdown monedaSelector">
+                  <option disbled value="">Seleccionar Moneda..</option>
+                  <option value="Gs">Guaranies - Gs.</option>
+                  <option value="Us">Dolares - Us.</option>
+                  <option value="Rs">Reales - Rs.</option>
+                </select>
+                <span class="info-error" v-show="errors.has('moneda')">{{errors.first('moneda')}}</span>
+              </div>
+
+            </div>
+
+            <div class="actions modal-margin">
+              <button class="ui approve teal button">Aceptar</button>
+              <div class="ui deny button">Cancelar</div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
     <div class="ui form">
       <div class="field">
         <div class="ui breadcrumb">
@@ -36,14 +76,14 @@
 
           <div class="ui right floated main menu">
             <a class="icon item">
-              <i class="user plus icon"></i>
+              <i class="user plus icon" @click="openModal"></i>
             </a>
 
             <a class="icon item">
               <i class="save icon" @click="saveSalaryResume(id)"></i>
             </a>
 
-            <a class="icon item" @click="this.updatePaymentDetail">
+            <a class="icon item" @click="updatePaymentDetail">
               <i class="refresh icon"></i>
             </a>
 
@@ -83,7 +123,7 @@
             <tr v-for="(payment, index) in payrollDetail" :key="payment.employee">
               <td>{{payment.name}}</td>
               <td>{{payment.extraHourMinutes }} Min</td>
-              <td>{{payment.delay}} Min</td>
+              <td>{{payment.delay }} Min</td>
               <td>{{payment.absence}} dias</td>
               <td>{{payment.salary.toLocaleString()}} {{payment.coin}}</td>
               <td>{{returnNegative(payment.ips, payment.coin)}} </td>
@@ -93,11 +133,18 @@
               <td>{{formatExtraHours(payment.extraHourValue)}} {{payment.coin}}</td>
               <td>{{calculateNetSalary(payment.salary, payment.ips, payment.salaryAdvance, payment.lending, payment.discount, payment.extraHourValue, index)}} {{payment.coin}}</td>
               <td>
-                <i class="history link icon" @click="goToBankHourSummary(payment.employee, payment.name)"></i>
-                <i class="icons" @click="goToPaymentSummary(payment)">
-                  <i class="file outline link icon"></i>
-                  <i class="bottom left corner dollar sign icon"></i>
-                </i>
+                <div v-if="payment.employee">
+                  <i class="history link icon" @click="goToBankHourSummary(payment.employee, payment.name)"></i>
+                  <i class="icons" @click="goToPaymentSummary(payment)">
+                    <i class="file outline link icon"></i>
+                    <i class="bottom left corner dollar sign icon"></i>
+                  </i>
+                </div>
+                <div v-else>
+                  <i class="trash icon" @click="deleteOutsourcedEmployee(index, payment._id)"></i>
+                  <i class="edit icon"></i>
+                </div>
+
               </td>
 
             </tr>
@@ -119,7 +166,7 @@
 </template>
 <script>
 import moment from "moment";
-import axios from "axios";
+import { VMoney } from "v-money";
 
 export default {
   props: {
@@ -143,6 +190,17 @@ export default {
     return {
       attendances: [],
       lendingIdentifiers: [],
+      modal: null,
+      outsourcedEmployee: {
+        name: "",
+        salary: "",
+        coin: "",
+        extraHourMinutes: 0,
+        delay: 0,
+        absence: 0,
+        discount: 0,
+        extraHourValue: 0
+      },
       //empleados: [],
       lendings: [],
       //ver si realmente se usa
@@ -150,6 +208,14 @@ export default {
       payrollDetail: [],
       // marcacionesEmpleado: [],
       advances: [],
+      money: {
+        decimal: ",",
+        thousands: ".",
+        prefix: "",
+        suffix: "",
+        precision: 0,
+        masked: false /* doesn't work with directive */
+      },
       loading: true,
       json_fields: {
         nombre: "Funcionario",
@@ -176,6 +242,16 @@ export default {
     };
   },
   methods: {
+    openModal() {
+      this.modal
+        .modal("setting", { observeChanges: true })
+        .modal("show")
+        .modal("refresh");
+    },
+    deleteOutsourcedEmployee(index, id) {
+      console.log("ID DETALLE", id);
+      this.payrollDetail.splice(index, 1);
+    },
     formatDelay(valor) {
       return Math.round(valor * -1).toLocaleString();
     },
@@ -185,6 +261,9 @@ export default {
       this.getPayrollDetail().then(() => {
         this.loading = false;
       });
+    },
+    addOutsourcedEmployee() {
+      this.payrollDetail.push(this.outsourcedEmployee);
     },
     // formatDate(month, year) {
     //   var date = moment()
@@ -247,14 +326,14 @@ export default {
       index
     ) {
       console.log(salary, ips, salaryAdvance, lending, discount);
-      console.log(
-        typeof salary,
-        typeof ips,
-        typeof salaryAdvance,
-        typeof lending,
-        typeof discount
-      );
-      var netSalary = salary;
+      console.log(typeof salary + " este", salary);
+      var netSalary;
+      if (typeof salary === "string") {
+        netSalary = parseInt(salary.split(".").join(""));
+      } else {
+        netSalary = salary;
+      }
+
       if (ips) {
         netSalary = netSalary - ips;
       }
@@ -657,9 +736,11 @@ export default {
         });
     }
   },
+  mounted() {
+    this.modal = $(this.$el).find(".ui.small.modal");
+  },
   created() {
     this.loading = true;
-    //this.formatDate(this.monthPayment, this.yearPayment);
     if (this.detail) {
       this.$http.get(`/payrolls/salary-detail/${this.id}`).then(response => {
         this.payrollDetail = response.data.salaryDetail;
@@ -670,17 +751,18 @@ export default {
         this.loading = false;
       });
     }
-
-    // this.$http.get(`/salarios/salary-detail/${id}`).then(response => {
-    //   this.payrollDetail = response.data.salaryDetail;
-    // });
-  }
+  },
+  directives: { money: VMoney }
 };
 </script>
 
 <style>
 .test {
   margin-top: 2em;
+}
+
+.modal-margin {
+  margin-top: 10px;
 }
 .ui.segment.large {
   height: 400px;
