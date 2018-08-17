@@ -662,6 +662,7 @@ export default {
       this.$http
         .get(`/attendances/full-list?fechaPlanilla=${firstDate}`)
         .then(response => {
+          response.data.length = 0;
           console.log("Response Length", response.data.length);
           if (response.data.length > 0) {
             var attendanceOfDate = response.data;
