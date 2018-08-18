@@ -94,10 +94,10 @@
               </span>
             </a>
 
-            <router-link :to="{name: 'AttendanceReport'}" target="_blank">
+            <router-link :to="{name: 'AttendanceReport', query: {date: this.query.startDate}}" target="_blank">
               <a class="icon item">
-                <span data-tooltip="imprimir informe">
-                  <i class="print icon"></i>
+                <span data-tooltip="Generar informe">
+                  <i class="file icon"></i>
                 </span>
               </a>
             </router-link>
@@ -284,6 +284,7 @@ export default {
     appPagination: Pagination
   },
   methods: {
+    
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.queryData();
