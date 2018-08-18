@@ -122,7 +122,17 @@ export default {
                 this.success();
                 this.cancel();
               })
-              .catch(e => console.log(e));
+              .catch(e => {
+                console.log(e.response);
+                if (e.response.data.code === 11000) {
+                  this.$notify.error({
+                    title: "Error",
+                    message:
+                      "Ya existe la marcacion que desea agregar. Por favor modifique el registro si es necesario actualizar",
+                    duration: 9000
+                  });
+                }
+              });
           } else {
             console.log(this.attendance.date);
             this.attendance.employee = this.employeeSelected;
@@ -159,7 +169,17 @@ export default {
                 this.success();
                 this.cancel();
               })
-              .catch(e => console.log(e));
+              .catch(e => {
+                console.log(e.response);
+                if (e.response.data.code === 11000) {
+                  this.$notify.error({
+                    title: "Error",
+                    message:
+                      "Ya existe la marcacion que desea agregar. Por favor modifique el registro si es necesario actualizar",
+                    duration: 9000
+                  });
+                }
+              });
           }
         })
         .catch(err => {

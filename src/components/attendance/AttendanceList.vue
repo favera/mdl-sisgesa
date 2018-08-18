@@ -89,10 +89,18 @@
             </a>
 
             <a class="icon item" @click="advancedSearch = !advancedSearch">
-
-              <i class="find icon"></i>
-
+              <span data-tooltip="Habilitar busqueda avanzada">
+                <i class="find icon"></i>
+              </span>
             </a>
+
+            <router-link :to="{name: 'AttendanceReport'}" target="_blank">
+              <a class="icon item">
+                <span data-tooltip="imprimir informe">
+                  <i class="print icon"></i>
+                </span>
+              </a>
+            </router-link>
 
           </div>
 

@@ -3,6 +3,7 @@ import AdvanceList from "./components/advance/AdvanceList.vue";
 import PrintAdvances from "./components/advance/PrintAdvances.vue";
 import Attendance from "./components/attendance/Attendance.vue";
 import AttendanceList from "./components/attendance/AttendanceList.vue";
+import AttendanceReport from "./components/attendance/AttendanceReport.vue";
 import Employee from "./components/employee/Employee.vue";
 import EmployeeList from "./components/employee/EmployeeList.vue";
 import Event from "./components/calendar/Event.vue";
@@ -24,6 +25,11 @@ import Home from "./Home.vue";
 
 export const routes = [
   { path: "/", name: "Login", component: Login },
+  {
+    path: "/reporte-asistencias",
+    name: "AttendanceReport",
+    component: AttendanceReport
+  },
   {
     path: "/dashboard",
     name: "Home",
