@@ -519,7 +519,7 @@ export default {
         result,
         extraHours,
         formatDate,
-        holiday;
+        holiday, openHours;
 
       holiday = this.returnHoliday(date);
       formatDate = new Date(date);
@@ -534,62 +534,71 @@ export default {
       if (employee) {
         saturdayHalfTime = employee.halfTime;
         workingHours = employee.workingHours;
+        openHours = moment(employee.subsidiary.startingTime, "HH:mm").format();
       }
-      //si es dia sabado verificar si funcionario posee medio tiempo
-      if (formatDate.getDay() === 6) {
-        if (saturdayHalfTime) {
-          //calcula las horas trabajadas en formato HH:mm trabajados ese dia
-          workedHours = this.handleWorkedHours(entryTime, exitTime);
-          //cuando el valor es
-          if (!workedHours.localeCompare("00:00")) {
-            return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
-          }
-          //convierte las hora trabajadas HH:MM en minutos y descuenta 300 lo que vendria a ser la mitad de la jornada
-          result = moment.duration(workedHours, "HH:mm").asMinutes() - 300;
-          //si resultado es menor a cero es un retraso.
-          if (result < 0) {
-            return this.handleNegative(result);
-          }
-          //si no es un retraso retorna null
-          return null;
-        } else {
-          workedHours = this.handleWorkedHours(entryTime, exitTime);
-
-          if (!workedHours.localeCompare("00:00")) {
-            return "-" + workingHours;
-          }
-          extraHours =
-            moment.duration(workedHours, "HH:mm").asMinutes() -
-            moment.duration(workingHours, "HH:mm").asMinutes();
-
-          if (extraHours < 0) {
-            return this.handleNegative(extraHours);
-          }
-
-          return null;
-        }
-      } else {
-        if (formatDate.getDay() === 0 || holiday !== -1) {
-          extraHours = null;
-
-          return extraHours;
-        } else {
-          var workedHours = this.handleWorkedHours(entryTime, exitTime);
-
-          if (!workedHours.localeCompare("00:00")) {
-            return "-" + workingHours;
-          }
-          var extraHours =
-            moment.duration(workedHours, "HH:mm").asMinutes() -
-            moment.duration(workingHours, "HH:mm").asMinutes();
-
-          if (extraHours < 0) {
-            return this.handleNegative(extraHours);
-          }
-
-          return null;
-        }
+      //Calculo Delay basado en el horario de Apertura del local horaApertura - HoraEntrada
+      entryTime = moment(entryTime, "HH:mm").format();
+      result = moment(openHours).diff(entryTime, "minutes");
+      if(result < 0){
+        return this.handleNegative(result);
+      }else{
+        return null
       }
+      // //si es dia sabado verificar si funcionario posee medio tiempo
+      // if (formatDate.getDay() === 6) {
+      //   if (saturdayHalfTime) {
+      //     //calcula las horas trabajadas en formato HH:mm trabajados ese dia
+      //     workedHours = this.handleWorkedHours(entryTime, exitTime);
+      //     //cuando el valor es
+      //     if (!workedHours.localeCompare("00:00")) {
+      //       return "-" + moment.utc(300 * 1000 * 60).format("HH:mm");
+      //     }
+      //     //convierte las hora trabajadas HH:MM en minutos y descuenta 300 lo que vendria a ser la mitad de la jornada
+      //     result = moment.duration(workedHours, "HH:mm").asMinutes() - 300;
+      //     //si resultado es menor a cero es un retraso.
+      //     if (result < 0) {
+      //       return this.handleNegative(result);
+      //     }
+      //     //si no es un retraso retorna null
+      //     return null;
+      //   } else {
+      //     workedHours = this.handleWorkedHours(entryTime, exitTime);
+
+      //     if (!workedHours.localeCompare("00:00")) {
+      //       return "-" + workingHours;
+      //     }
+      //     extraHours =
+      //       moment.duration(workedHours, "HH:mm").asMinutes() -
+      //       moment.duration(workingHours, "HH:mm").asMinutes();
+
+      //     if (extraHours < 0) {
+      //       return this.handleNegative(extraHours);
+      //     }
+
+      //     return null;
+      //   }
+      // } else {
+      //   if (formatDate.getDay() === 0 || holiday !== -1) {
+      //     extraHours = null;
+
+      //     return extraHours;
+      //   } else {
+      //     var workedHours = this.handleWorkedHours(entryTime, exitTime);
+
+      //     if (!workedHours.localeCompare("00:00")) {
+      //       return "-" + workingHours;
+      //     }
+      //     var extraHours =
+      //       moment.duration(workedHours, "HH:mm").asMinutes() -
+      //       moment.duration(workingHours, "HH:mm").asMinutes();
+
+      //     if (extraHours < 0) {
+      //       return this.handleNegative(extraHours);
+      //     }
+
+      //     return null;
+      //   }
+      // }
     },
     //verifica si es domingo o no para insertar texto en observacion
     handleRemark(date) {

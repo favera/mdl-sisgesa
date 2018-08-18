@@ -206,8 +206,8 @@ export default {
     },
     //calcula el retraso del funcionario en caso de que haya uno.
     getDelay(employeeId, attEntry, attExit, date) {
-      var workingHours, workedHours, result, entryTime, exitTime, holiday;
-
+      var workingHours, workedHours, result, entryTime, exitTime, holiday, openHours, closeHours;
+      //si la fecha es string format a date
       if (typeof date === "string") {
         date = new Date(date);
       }
@@ -221,21 +221,37 @@ export default {
           return (workingHours = employee.workingHours);
         }
       });
-      console.log(date);
-      console.log("Verificando si es Domingo", date.getDay === 0);
+      // console.log(date);
+      // console.log("Verificando si es Domingo", date.getDay === 0);
+      //calculo basado en el horario de apertura del local, horaApertura - horaEntrada
+      this.employees.filter(employee=> {
+        if(employee._id === employeeId){
+          openHours = employee.subsidiary.startingTime;
+          closeHours = employee.subsidiary.endTime;
+        }
+      })
+      console.log("Horario Sucursal", openHours, closeHours);
       //verifica si la fecha pasada es domingo
       if (date.getDay() === 0 || holiday !== -1) {
         result = "00:00";
         return result;
       } else {
-        workedHours = moment(exitTime).diff(entryTime, "minutes");
-        result =
-          workedHours - moment.duration(workingHours, "HH:mm").asMinutes();
-        if (result < 0) {
+        //calculo basado en el horario de entrada 
+        result = moment(openHours).diff(entryTime, "minutes");
+        if(result < 0){
           return this.convertToHours(result);
-        } else {
-          return null;
+        }else{
+          return null
         }
+        //Calculo basado en la cantidad de horas que debe trabajar
+        // workedHours = moment(exitTime).diff(entryTime, "minutes");
+        // result =
+        //   workedHours - moment.duration(workingHours, "HH:mm").asMinutes();
+        // if (result < 0) {
+        //   return this.convertToHours(result);
+        // } else {
+        //   return null;
+        // }
       }
     },
     //calcula las horas trabajadas del funcionario
