@@ -6,7 +6,7 @@
         <div class="four column row">
             <div class="right floated column">
                 <div class="segment">
-                    <button style="margin-top: 10px" class="ui teal active button" @click="printReport">
+                    <button style="margin-top: 10px" class="ui teal active button" @click="testLibrary">
                     <i class="print icon"></i>
                     Imprimir Informe
                 </button>
@@ -61,6 +61,7 @@
     </div>
 </template>
 <script>
+import moment from "moment";
 export default {
   data() {
     return {
@@ -68,19 +69,49 @@ export default {
     };
   },
   methods: {
-      printReport(){
-        printJS({
-            printable: "att-report",
-            type: "html",
-            targetStyles: ["*"]
-        });
-      }
+    printReport() {
+      printJS({
+        printable: "att-report",
+        type: "html",
+        targetStyles: ["*"]
+      });
+    },
+    testLibrary() {
+      var body = [
+        [
+          "Empleado",
+          "Fecha",
+          "Hora Entrada",
+          "Hora Salida",
+          "Atrasos",
+          "Banco de Horas",
+          "Observacion"
+        ]
+      ];
+      this.attendances.forEach(element => {
+        var data = [
+          element.employeeName,
+          moment(element.date).format("L"),
+          element.entryTime,
+          element.exitTime,
+          element.delay,
+          element.extraHours,
+          element.remark
+        ];
+        body.push(data);
+      });
+      var docDefinition = {
+        content: [{ text: "Listado de Asistencia" }, { table: { body: body } }]
+      };
+      pdfMake.createPdf(docDefinition).open();
+    }
   },
-  created(){
- 
-    this.$http.get(`attendances/full-list?fechaPlanilla=${this.$route.query.date}`).then((response) => {
+  created() {
+    this.$http
+      .get(`attendances/full-list?fechaPlanilla=${this.$route.query.date}`)
+      .then(response => {
         this.attendances = response.data;
-    })
+      });
   }
 };
 </script>

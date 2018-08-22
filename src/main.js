@@ -30,6 +30,10 @@ import { routes } from "./routes";
 import vueXlsxTable from "vue-xlsx-table";
 import moment from "moment";
 import axios from "./config/vue-axios";
+var pdfMake = require('pdfmake/build/pdfmake.js');
+var pdfFonts = require('pdfmake/build/vfs_fonts.js');
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 Validator.localize("es", es);
 
 const config = {
