@@ -5,9 +5,21 @@
 
       <div class="right menu">
         <a href="#" class="item" @click="logout()">Logout</a>
-        <a href="#" class="item">Help</a>
+        <a href="#" class="item"><i class="question circle outline icon"></i></a>
+        <a href="#" class="browse item"><i class="cogs icon"></i></a>
+       
+       
       </div>
     </div>
+     <div class="ui fluid popup bottom left transition hidden">
+            <div class="ui four column relaxed equal height divided grid">
+              <div class="column">
+                <div class="ui link list">
+                  <a class="item">Usuarios</a>
+                </div>
+              </div>
+            </div>
+      </div>
     <div class="ui left inverted vertical menu visible sidebar">
       <div class="header item">
         <h4>

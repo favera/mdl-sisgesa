@@ -6,7 +6,7 @@
         <div class="four column row">
             <div class="right floated column">
                 <div class="segment">
-                    <button style="margin-top: 10px" class="ui teal active button" @click="testLibrary">
+                    <button style="margin-top: 10px" class="ui teal active button" @click="testLibrarycd ">
                     <i class="print icon"></i>
                     Imprimir Informe
                 </button>

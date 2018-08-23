@@ -94,13 +94,13 @@
               </span>
             </a>
 
-            <router-link :to="{name: 'AttendanceReport', query: {date: this.query.startDate}}" target="_blank">
-              <a class="icon item">
+            <!-- <router-link :to="{name: 'AttendanceReport', query: {date: this.query.startDate}}" target="_blank"> -->
+              <a class="icon item" @click="generateReport">
                 <span data-tooltip="Generar informe">
                   <i class="file icon"></i>
                 </span>
               </a>
-            </router-link>
+            <!-- </router-link> -->
 
           </div>
 
@@ -256,6 +256,7 @@ export default {
       attendancesToSend: [],
       attendances: [],
       attendanceSheet: [],
+      attendancesReport: [],
       absence: false,
       modal: null,
       isSaturday: null,
@@ -284,7 +285,55 @@ export default {
     appPagination: Pagination
   },
   methods: {
-    
+    generateReport() {
+      this.$http
+        .get(`attendances/full-list?fechaPlanilla=${this.query.startDate}`)
+        .then(response => {
+          this.attendancesReport = response.data;
+          var body = [
+            [
+              { text: "Empleado", style: "tableHeader" },
+              { text: "Fecha", style: "tableHeader" },
+              { text: "Hora Entrada", style: "tableHeader" },
+              { text: "Hora Salida", style: "tableHeader" },
+              { text: "Atrasos", style: "tableHeader" },
+              { text: "Banco de Horas", style: "tableHeader" },
+              { text: "Observacion", style: "tableHeader" }
+            ]
+          ];
+          this.attendancesReport.forEach(element => {
+            var data = [
+              element.employeeName,
+              moment(element.date).format("L"),
+              element.entryTime,
+              element.exitTime,
+              element.delay,
+              element.extraHours,
+              element.remark
+            ];
+            body.push(data);
+          });
+          var docDefinition = {
+            content: [
+              { text: "Listado de Asistencia", style: "header" },
+              { table: { body: body } }
+            ],
+            styles: {
+              header: {
+                fontSize: 18,
+                bold: true,
+                margin: [0, 0, 0, 10],
+                alignment: "center"
+              },
+              tableHeader: {
+                bold: true,
+                fillColor: "#eeeeee"
+              }
+            }
+          };
+          pdfMake.createPdf(docDefinition).open();
+        });
+    },
     pageOneChanged(pageNum) {
       this.pageOne.currentPage = pageNum;
       this.queryData();
@@ -519,7 +568,8 @@ export default {
         result,
         extraHours,
         formatDate,
-        holiday, openHours;
+        holiday,
+        openHours;
 
       holiday = this.returnHoliday(date);
       formatDate = new Date(date);
@@ -539,10 +589,10 @@ export default {
       //Calculo Delay basado en el horario de Apertura del local horaApertura - HoraEntrada
       entryTime = moment(entryTime, "HH:mm").format();
       result = moment(openHours).diff(entryTime, "minutes");
-      if(result < 0){
+      if (result < 0) {
         return this.handleNegative(result);
-      }else{
-        return null
+      } else {
+        return null;
       }
       // //si es dia sabado verificar si funcionario posee medio tiempo
       // if (formatDate.getDay() === 6) {
