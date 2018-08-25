@@ -1,5 +1,4 @@
 import Vue from "vue";
-import JsonExcel from "vue-json-excel";
 import VueRouter from "vue-router";
 import es from "./../node_modules/vee-validate/dist/locale/es";
 import VeeValidate, { Validator } from "vee-validate";
@@ -48,7 +47,6 @@ Vue.use(DatePicker);
 Vue.use(InputNumber);
 Vue.use(Switch);
 Vue.use(VeeValidate, config);
-Vue.component("downloadExcel", JsonExcel);
 
 Vue.prototype.moment = moment;
 moment.locale("es");
