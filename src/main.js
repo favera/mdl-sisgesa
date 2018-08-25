@@ -11,9 +11,9 @@ import {
   InputNumber,
   MessageBox,
   Message,
-  Notification
+  Notification,
+  Switch
 } from "element-ui";
-
 
 import "../semantic/dist/semantic.css";
 import "../semantic/dist/semantic.js";
@@ -30,8 +30,8 @@ import { routes } from "./routes";
 import vueXlsxTable from "vue-xlsx-table";
 import moment from "moment";
 import axios from "./config/vue-axios";
-var pdfMake = require('pdfmake/build/pdfmake.js');
-var pdfFonts = require('pdfmake/build/vfs_fonts.js');
+var pdfMake = require("pdfmake/build/pdfmake.js");
+var pdfFonts = require("pdfmake/build/vfs_fonts.js");
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 Validator.localize("es", es);
@@ -46,6 +46,7 @@ Vue.use(TimePicker);
 Vue.use(TimeSelect);
 Vue.use(DatePicker);
 Vue.use(InputNumber);
+Vue.use(Switch);
 Vue.use(VeeValidate, config);
 Vue.component("downloadExcel", JsonExcel);
 

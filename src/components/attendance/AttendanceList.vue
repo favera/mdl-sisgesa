@@ -95,11 +95,11 @@
             </a>
 
             <!-- <router-link :to="{name: 'AttendanceReport', query: {date: this.query.startDate}}" target="_blank"> -->
-              <a class="icon item" @click="generateReport">
-                <span data-tooltip="Generar informe">
-                  <i class="file icon"></i>
-                </span>
-              </a>
+            <a class="icon item" @click="generateReport">
+              <span data-tooltip="Generar informe">
+                <i class="file icon"></i>
+              </span>
+            </a>
             <!-- </router-link> -->
 
           </div>
@@ -918,6 +918,7 @@ export default {
         attSend.employeeName = attModal.employeeName;
         attSend.entryTime = attModal.entryTime;
         attSend.exitTime = attModal.exitTime;
+        attSend.secondShift = false;
         //calculo de Horas trabajadas
         attSend.workedHours = this.handleWorkedHours(
           attModal.entryTime,

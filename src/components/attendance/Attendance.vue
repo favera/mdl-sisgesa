@@ -46,6 +46,29 @@
             <div class="info-error" v-show="errors.has('attExit')">{{errors.first('attExit')}}</div>
           </div>
         </div>
+
+        <div class="required field">
+          <label for="">Segundo Turno
+
+          </label>
+
+          <div class="field">
+            <div class="inline fields">
+              <div class="field">
+                <el-switch v-model="attendance.secondShift" on-text="Si" off-text="No">
+                </el-switch>
+              </div>
+              <div class="field">
+                <el-time-picker v-model="attendance.delay" value-format="HH:mm" format="HH:mm" :picker-options="{
+                    format: 'HH:mm'
+                    }" placeholder="Ingresar retraso">
+                </el-time-picker>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
 
       <div class="ten wide field">
@@ -73,7 +96,8 @@ export default {
         extraHours: null,
         delay: null,
         status: {},
-        remark: null
+        remark: null,
+        secondShift: false
       },
       employeeSelected: null,
       holidaysPerYear: [],
