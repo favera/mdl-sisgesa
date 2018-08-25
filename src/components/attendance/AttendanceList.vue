@@ -177,7 +177,7 @@
               <th>M. Entrada</th>
               <th>M. Salida</th>
               <th>Horas Trabajadas</th>
-              <th>Horas Faltantes</th>
+              <th>Atrasos</th>
               <th>Banco de Horas</th>
               <th>Observacion</th>
               <th class="center aligned">Opciones</th>
@@ -191,7 +191,7 @@
               <td>{{(attendance.entryTime || "--") + " hs"}}</td>
               <td>{{(attendance.exitTime || "--") + " hs"}}</td>
               <td>{{(attendance.workedHours || "--") + " hs"}}</td>
-              <td>{{(attendance.delay || "--") + " hs"}}</td>
+              <td v-bind:class="{warning:applyWarningDelay(attendance.delay)}">{{(attendance.delay || "--") + " hs"}}</td>
               <td>{{(attendance.extraHours || "--") + " hs"}}</td>
               <td>{{attendance.remark || "--"}}</td>
 
@@ -285,6 +285,14 @@ export default {
     appPagination: Pagination
   },
   methods: {
+    applyWarningDelay(value){
+      // debugger;
+      var valueFormat = moment.duration(value, "HH:mm").asMinutes() * -1;
+      if(valueFormat > 120){
+        return true;
+      }
+      return false;
+    },
     generateReport() {
       this.$http
         .get(`attendances/full-list?fechaPlanilla=${this.query.startDate}`)

@@ -55,11 +55,11 @@
           <div class="field">
             <div class="inline fields">
               <div class="field">
-                <el-switch v-model="attendance.secondShift" on-text="Si" off-text="No">
+                <el-switch v-model="attendance.secondShift" >
                 </el-switch>
               </div>
               <div class="field">
-                <el-time-picker v-model="attendance.delay" value-format="HH:mm" format="HH:mm" :picker-options="{
+                <el-time-picker v-model="attendance.delaySecondShift" value-format="HH:mm" :disabled="!attendance.secondShift" format="HH:mm" :picker-options="{
                     format: 'HH:mm'
                     }" placeholder="Ingresar retraso">
                 </el-time-picker>
@@ -97,7 +97,8 @@ export default {
         delay: null,
         status: {},
         remark: null,
-        secondShift: false
+        secondShift: false,
+        delaySecondShift: null
       },
       employeeSelected: null,
       holidaysPerYear: [],
@@ -122,7 +123,8 @@ export default {
               this.attendance.employee,
               this.attendance.entryTime,
               this.attendance.exitTime,
-              this.attendance.date
+              this.attendance.date,
+              this.attendance.secondShift
             );
             this.attendance.extraHours = this.getExtraHours(
               this.attendance.employee,
@@ -133,6 +135,7 @@ export default {
             this.attendance.status.absent = false;
             this.attendance.status.vacation = false;
             this.attendance.status.incomplete = false;
+          
 
             console.log(JSON.stringify(this.attendance));
 
@@ -171,7 +174,8 @@ export default {
               this.attendance.employee,
               this.attendance.entryTime,
               this.attendance.exitTime,
-              this.attendance.date
+              this.attendance.date,
+              this.attendance.secondShift
             );
             this.attendance.extraHours = this.getExtraHours(
               this.attendance.employee,
@@ -229,21 +233,21 @@ export default {
       });
     },
     //calcula el retraso del funcionario en caso de que haya uno.
-    getDelay(employeeId, attEntry, attExit, date) {
+    getDelay(employeeId, attEntry, attExit, date, secondShift) {
       var workingHours,
         workedHours,
         result,
         entryTime,
         exitTime,
-        holiday,
+        verifySecondShiftDelay,
         openHours,
         closeHours;
       //si la fecha es string format a date
-      if (typeof date === "string") {
-        date = new Date(date);
-      }
+      // if (typeof date === "string") {
+      //   date = new Date(date);
+      // }
       //verifica que la fecha sea feriado
-      holiday = this.returnHoliday(date);
+      // holiday = this.returnHoliday(date);
       entryTime = moment(attEntry, "HH:mm").format();
       exitTime = moment(attExit, "HH:mm").format();
       //retorna la carga horaria del funcionario
@@ -265,10 +269,16 @@ export default {
         }
       });
       console.log("Horario Sucursal", openHours, closeHours);
-      //verifica si la fecha pasada es domingo
-      // debugger;
-      if (date.getDay() === 0 || holiday !== -1) {
-        result = "00:00";
+      //Anteriormente se verificaba si la fecha era domingo para no calcular retrasos, sin embargo al ser feriado o domingo igual se calcula el retraso en ese caso solo verifica si el registro tiene activo el segundo turno para poder hacer la carga del retraso manualmente.
+      if (secondShift) {
+        verifySecondShiftDelay = moment.duration(this.attendance.delaySecondShift, "HH:mm").asMinutes();
+
+        if(verifySecondShiftDelay > 0){
+          result = `-${this.attendance.delaySecondShift}`
+        }else{
+          result = this.attendance.delaySecondShift;
+        }
+        
         return result;
       } else {
         //calculo basado en el horario de entrada
@@ -290,14 +300,15 @@ export default {
       }
     },
     //calcula las horas trabajadas del funcionario
+    
     getWorkedHours(attEntry, attExit) {
       var entryTime, exitTime;
       entryTime = moment(attEntry, "HH:mm").format();
       exitTime = moment(attExit, "HH:mm").format();
 
+      // debugger;
       var workedHours = moment(exitTime).diff(entryTime, "minutes");
       console.log("Horas Trabajadas", workedHours);
-      console.log(this.convertToHours(workedHours));
       //convierte a formato HH:mm
       return this.convertToHours(workedHours);
     },
@@ -377,6 +388,8 @@ export default {
           this.attendance.exitTime = response.data.exitTime;
           this.employeeSelected = response.data.employee;
           this.attendance.remark = response.data.remark;
+          this.attendance.secondShift = response.data.secondShift;
+          this.attendance.delaySecondShift = response.data.delay;
           $(this.$el)
             .find(".ui.dropdown")
             .dropdown("refresh")
