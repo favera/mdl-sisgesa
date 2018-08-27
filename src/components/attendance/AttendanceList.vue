@@ -285,10 +285,10 @@ export default {
     appPagination: Pagination
   },
   methods: {
-    applyWarningDelay(value){
+    applyWarningDelay(value) {
       // debugger;
       var valueFormat = moment.duration(value, "HH:mm").asMinutes() * -1;
-      if(valueFormat > 120){
+      if (valueFormat > 120) {
         return true;
       }
       return false;
@@ -448,7 +448,8 @@ export default {
     },
     //retorna las horas que trabajo en el dia (horaSalida - horaEntrada)
     handleWorkedHours(entryTime, exitTime) {
-      var result = moment("00:00", "hh:mm").format("00:00");
+      // var result = moment("00:00", "hh:mm").format("00:00");
+      var result = null;
       if (entryTime !== null && exitTime !== null) {
         result =
           moment.duration(exitTime, "HH:mm").asMinutes() -
@@ -504,43 +505,52 @@ export default {
 
           console.log("Resultado Horas Trabajadas", workedHours);
 
-          if (!workedHours.localeCompare("00:00")) {
-            console.log("ENTRO al COMPARE");
+          // if (!workedHours.localeCompare("00:00")) {
+          //   console.log("ENTRO al COMPARE");
+          //   return null;
+          // }
+          if (workedHours) {
+            extraHours =
+              moment.duration(workedHours, "HH:mm").asMinutes() - 300;
+            console.log("Resultado Horas Extras", extraHours);
+            if (extraHours > 0) {
+              return this.handleNegative(extraHours);
+            }
+            return null;
+          } else {
             return null;
           }
-          extraHours = moment.duration(workedHours, "HH:mm").asMinutes() - 300;
-          console.log("Resultado Horas Extras", extraHours);
-          if (extraHours > 0) {
-            return this.handleNegative(extraHours);
-          }
-          return null;
 
           //else del no tiene sabado habilitado
         } else {
           workedHours = this.handleWorkedHours(entryTime, exitTime);
 
           console.log("Resultado Horas Trabajadas", workedHours);
-
-          if (!workedHours.localeCompare("00:00")) {
-            return null;
-          }
-
           console.log("Carga Laboral", workingHours);
 
-          extraHours =
-            moment.duration(workedHours, "HH:mm").asMinutes() -
-            moment.duration(workingHours, "HH:mm").asMinutes();
-          console.log(moment.duration(workingHours, "HH:mm").asMinutes());
-          console.log("Resultado Horas Extras", extraHours);
+          // if (!workedHours.localeCompare("00:00")) {
+          //   return null;
+          // }
+          //el metodo handleWorkedHours retorna null si el horario es incompleto, por lo que si es falso retorna null, si tiene alguna cantidad de horas calcula las horas trabajadas - las horas que debe trabajar y se obtiene en horas las horas extras
+          if (workedHours) {
+            extraHours =
+              moment.duration(workedHours, "HH:mm").asMinutes() -
+              moment.duration(workingHours, "HH:mm").asMinutes();
+            console.log(moment.duration(workingHours, "HH:mm").asMinutes());
+            console.log("Resultado Horas Extras", extraHours);
 
-          if (extraHours > 0) {
-            return this.handleNegative(extraHours);
+            if (extraHours > 0) {
+              return this.handleNegative(extraHours);
+            }
+
+            return null;
+          } else {
+            return null;
           }
-
-          return null;
         }
         //else del verificar si es dia sabado
       } else {
+        //verifica si es domingo o feriado para sumar como hora extra.
         if (formatDate.getDay() === 0 || holiday !== -1) {
           extraHours = this.handleWorkedHours(entryTime, exitTime);
           console.log(extraHours);
@@ -550,20 +560,24 @@ export default {
 
           console.log("Resultado Horas Trabajadas", workedHours);
 
-          if (!workedHours.localeCompare("00:00")) {
+          // if (!workedHours.localeCompare("00:00")) {
+          //   return null;
+          // }
+          if (workedHours) {
+            extraHours =
+              moment.duration(workedHours, "HH:mm").asMinutes() -
+              moment.duration(workingHours, "HH:mm").asMinutes();
+
+            console.log("Resultado Horas Extras", extraHours);
+
+            if (extraHours > 0) {
+              return this.handleNegative(extraHours);
+            }
+
+            return null;
+          } else {
             return null;
           }
-          extraHours =
-            moment.duration(workedHours, "HH:mm").asMinutes() -
-            moment.duration(workingHours, "HH:mm").asMinutes();
-
-          console.log("Resultado Horas Extras", extraHours);
-
-          if (extraHours > 0) {
-            return this.handleNegative(extraHours);
-          }
-
-          return null;
         }
       }
     },
