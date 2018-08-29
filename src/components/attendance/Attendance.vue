@@ -135,7 +135,6 @@ export default {
             this.attendance.status.absent = false;
             this.attendance.status.vacation = false;
             this.attendance.status.incomplete = false;
-          
 
             console.log(JSON.stringify(this.attendance));
 
@@ -271,14 +270,16 @@ export default {
       console.log("Horario Sucursal", openHours, closeHours);
       //Anteriormente se verificaba si la fecha era domingo para no calcular retrasos, sin embargo al ser feriado o domingo igual se calcula el retraso en ese caso solo verifica si el registro tiene activo el segundo turno para poder hacer la carga del retraso manualmente.
       if (secondShift) {
-        verifySecondShiftDelay = moment.duration(this.attendance.delaySecondShift, "HH:mm").asMinutes();
+        verifySecondShiftDelay = moment
+          .duration(this.attendance.delaySecondShift, "HH:mm")
+          .asMinutes();
 
-        if(verifySecondShiftDelay > 0){
-          result = `-${this.attendance.delaySecondShift}`
-        }else{
+        if (verifySecondShiftDelay > 0) {
+          result = `-${this.attendance.delaySecondShift}`;
+        } else {
           result = this.attendance.delaySecondShift;
         }
-        
+
         return result;
       } else {
         //calculo basado en el horario de entrada
@@ -300,7 +301,7 @@ export default {
       }
     },
     //calcula las horas trabajadas del funcionario
-    
+
     getWorkedHours(attEntry, attExit) {
       var entryTime, exitTime;
       entryTime = moment(attEntry, "HH:mm").format();

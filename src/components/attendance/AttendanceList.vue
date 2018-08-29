@@ -1056,9 +1056,15 @@ export default {
       this.$http
         .post(`/attendances/add-data`, this.attendancesToSend)
         .then(response => {
+          var message;
+          if (response.data.nModified > 0) {
+            message = "Registros actualizados correctamente";
+          } else {
+            message = "Registros insertados correctamente";
+          }
           this.$message({
             type: "success",
-            message: "Registro insertado exitosamente"
+            message: message
           });
           this.attendancesToSend.length = 0;
           this.queryData();
