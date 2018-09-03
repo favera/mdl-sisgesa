@@ -6,12 +6,34 @@
       <div class="right menu">
         <a href="#" class="item" @click="logout()">Logout</a>
         <a href="#" class="item"><i class="question circle outline icon"></i></a>
-        <a href="#" class="browse item"><i class="cogs icon"></i></a>
+        
+        <div class="item">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+            <i class="cogs icon"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              
+              <el-dropdown-item>
+                <router-link :to="{name: 'userList'}">Usuarios</router-link></el-dropdown-item> -->
+              <el-dropdown-item divided>Test</el-dropdown-item>
+            </el-dropdown-menu>
+      
+    </el-dropdown>
+        </div>
+        
+        <!-- <div id="settings" class="ui dropdown link item">
+        <span><i class="cogs icon"></i></span>
+          <div class="menu">
+            <div class="item">Usuarios</div>
+          </div>
+
+        </div> -->
        
        
       </div>
     </div>
-     <div class="ui fluid popup bottom left transition hidden">
+     <!-- <div class="ui fluid popup bottom left transition hidden">
             <div class="ui four column relaxed equal height divided grid">
               <div class="column">
                 <div class="ui link list">
@@ -19,7 +41,7 @@
                 </div>
               </div>
             </div>
-      </div>
+      </div> -->
     <div class="ui left inverted vertical menu visible sidebar">
       <div class="header item">
         <h4>
@@ -63,12 +85,13 @@ export default {
         this.$router.push({ name: "Login" });
       });
     },
-    updated() {
-      if (!localStorage.token && this.$route.path !== "/") {
-        this.$router.push("/?redirect=" + this.$route.path);
+    handleCommand(command) {
+      if (command === "goUser") {
+        this.$router.push({ name: "userList" });
       }
     }
   },
+
   components: {
     appDash: Dashboard
   }

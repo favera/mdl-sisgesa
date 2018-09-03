@@ -16,6 +16,8 @@ import SalarySummary from "./components/payroll/SalarySummary.vue";
 import BankHoursSummary from "./components/payroll/BankHoursSummary.vue";
 import Subsidiary from "./components/subsidiary/Subsidiary.vue";
 import SubsidiaryList from "./components/subsidiary/SubsidiaryList.vue";
+import UserList from "./components/user/UserList.vue";
+import User from "./components/user/User.vue";
 //Future feature
 // import Feriado from "./components/feriados/Feriado.vue";
 // import FeriadoList from "./components/feriados/FeriadoList.vue";
@@ -155,7 +157,18 @@ export const routes = [
         component: BankHoursSummary,
         name: "bankHoursSummary",
         props: true
+      },
+      {
+        path: "/usuarios",
+        component: UserList,
+        name: "userList"
+      },
+      {
+        path: "/incluir-usuario",
+        component: User,
+        name: "includeUser"
       }
+
       // {
       //   path: "/feriados",
       //   component: FeriadoList,

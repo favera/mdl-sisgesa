@@ -402,13 +402,23 @@ export default {
             }&parameter=${this.query.parameter}&status=${this.query.status}`
           )
           .then(response => {
-            if (response.data.docs.length === 0) {
-              this.attendances.length = 0;
-              this.showMessage = true;
+            console.log(response);
+            if (response.status === 401) {
+              this.$router.go("/");
             } else {
-              this.showMessage = false;
-              this.attendances = response.data.docs;
-              this.pageOne.totalItems = response.data.total;
+              if (response.data.docs.length === 0) {
+                this.attendances.length = 0;
+                this.showMessage = true;
+              } else {
+                this.showMessage = false;
+                this.attendances = response.data.docs;
+                this.pageOne.totalItems = response.data.total;
+              }
+            }
+          })
+          .catch(err => {
+            if (err.response.status === 401) {
+              this.$router.push({ name: "Login" });
             }
           });
       } else {
