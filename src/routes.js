@@ -167,6 +167,11 @@ export const routes = [
         path: "/incluir-usuario",
         component: User,
         name: "includeUser"
+      },
+      {
+        path: "/editar-usuario",
+        component: User,
+        name: "editUser"
       }
 
       // {

@@ -1,7 +1,7 @@
 <template>
 <div class="ui twelve wide column">
     <form class="ui form" @submit.prevent="saveUser">
-        <div class="ui dividing header">Incluir Usuario</div>
+        <div class="ui dividing header">Registrar Usuario</div>
         <div class="ui ten wide required field">
             <label for="">Nombre y Apellido</label>
             <div class="field">
@@ -36,11 +36,19 @@
             
         </div>
 
-        <div class="ui ten wide required field">
+
+        <div class="ui five wide required field">
             <label for="">Contraseña</label>
-            <div class="field">
-                <input type="password" name="" id="" v-model="user.password">
+            <div class="ui input" :class="{'action': true}">
+                <input class="ui disabled input" type="password" >
+                <button class="ui icon button" v-show="true">
+                        <i class="refresh icon"></i>
+                </button>
             </div>
+
+            <!-- <div class="field">
+                <input type="password" name="" id="" v-model="user.password">
+            </div> -->
         </div>
 
         <div class="field">
@@ -62,10 +70,28 @@ export default {
         email: null,
         profile: null,
         password: null
-      }
+      },
+      edit: false
     };
   },
   methods: {
+    getUser() {
+      if (this.$route.params.id) {
+        this.$http
+          .get(`/users/edit/${this.$route.params.id}`)
+          .then(response => {
+            console.log(response);
+            this.user.name = response.data.name;
+            this.user.username = response.data.username;
+            this.user.email = response.data.email;
+            this.user.profile = response.data.profile;
+            $(this.$el)
+              .find(".ui.fluid.selection.dropdown")
+              .dropdown("refresh")
+              .dropdown("set selected", response.data.profile);
+          });
+      }
+    },
     cancel() {
       this.$router.push({ name: "userList" });
     },
@@ -79,6 +105,9 @@ export default {
     $(this.$el)
       .find(".ui.fluid.selection.dropdown")
       .dropdown();
+  },
+  created() {
+    this.getUser();
   }
 };
 </script>

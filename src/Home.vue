@@ -13,10 +13,7 @@
             <i class="cogs icon"></i>
             </span>
             <el-dropdown-menu slot="dropdown">
-              
-              <el-dropdown-item>
-                <router-link :to="{name: 'userList'}">Usuarios</router-link></el-dropdown-item> -->
-              <el-dropdown-item divided>Test</el-dropdown-item>
+              <el-dropdown-item><router-link :to="{name: 'userList'}">Usuarios</router-link></el-dropdown-item>
             </el-dropdown-menu>
       
     </el-dropdown>

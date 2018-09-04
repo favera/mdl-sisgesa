@@ -40,21 +40,23 @@
                     Nombre y Apellido
                     </th>
                     <th>Nombre de Usuario</th>
+                    <th>Perfil</th>
                     <th>Email</th>
                     <th class="center aligned">Opciones</th>
                 </tr>
                 </thead>
                 <tbody>
-                <!-- <tr v-for="(employee, index) in employees" :key="employee._id">
-                    <td> {{employee.name}}</td>
-                    <td> {{employee.subsidiary.name}}</td>
-                    <td> {{employee.workingHours}}</td>
-                    <td> {{formatSalary(employee.salary)}}{{employee.coin}}</td>
-                    <td class="center aligned">
-                    <i class="edit row link icon" @click="savePage(employee._id)"></i>
-                    <i class="trash link icon" @click="deleteEmployee(employee._id, index)"></i>
-                    </td>
-                </tr> -->
+                    <tr v-for="(user, index) in users" :key="user._id">
+                        <td>{{user.name}}</td>
+                        <td>{{user.username}}</td>
+                        <td>{{user.profile}}</td>
+                        <td>{{user.email}}</td>
+                        <td class="center aligned">
+                            <i class="edit icon" @click="editUser(user._id)"></i>
+                            <i class="trash icon"></i>
+                        </td>
+                    </tr>
+             
 
                 </tbody>
 
@@ -74,12 +76,31 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      users: []
+    };
   },
   methods: {
     newUser() {
       this.$router.push({ name: "includeUser" });
+    },
+    editUser(userId) {
+      this.$router.push({
+        name: "editUser",
+        params: {
+          id: userId,
+          edit: true
+        }
+      });
+    },
+    getUsers() {
+      this.$http.get(`/users/users-list`).then(response => {
+        this.users = response.data;
+      });
     }
+  },
+  created() {
+    this.getUsers();
   }
 };
 </script>
