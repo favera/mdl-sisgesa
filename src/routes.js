@@ -18,6 +18,7 @@ import Subsidiary from "./components/subsidiary/Subsidiary.vue";
 import SubsidiaryList from "./components/subsidiary/SubsidiaryList.vue";
 import UserList from "./components/user/UserList.vue";
 import User from "./components/user/User.vue";
+import Password from "./components/user/Password.vue";
 //Future feature
 // import Feriado from "./components/feriados/Feriado.vue";
 // import FeriadoList from "./components/feriados/FeriadoList.vue";
@@ -172,6 +173,11 @@ export const routes = [
         path: "/editar-usuario",
         component: User,
         name: "editUser"
+      },
+      {
+        path: "/actualizar-contraseña",
+        component: Password,
+        name: "editPassword"
       }
 
       // {

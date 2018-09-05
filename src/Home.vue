@@ -4,19 +4,47 @@
     <div class="ui menu">
 
       <div class="right menu">
-        <a href="#" class="item" @click="logout()">Logout</a>
+        <a class="item">
+
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              <img class="ui avatar image" src="./assets/user-avatar.png">
+              <span>{{username}}</span>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item ><span @click="logout()">Salir</span></el-dropdown-item>
+              <el-dropdown-item divided> <router-link :to="{name: 'editPassword'}">Cambiar contraseña</router-link></el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          
+          <!-- <el-dropdown trigger="click">
+            
+            <span class="el-dropdown-link">
+              <img class="ui avatar image" src="./assets/user-avatar.png">
+              <span>{{username}}</span>
+            </span>
+            <el-dropdown-menu>
+              <el-dropdwon-item @click="logout">
+                Salir
+              </el-dropdwon-item>
+              <el-dropdwon-item>
+                cambiar contraseña
+              </el-dropdwon-item>
+            </el-dropdown-menu>
+          </el-dropdown> -->
+          
+        </a>
         <a href="#" class="item"><i class="question circle outline icon"></i></a>
         
         <div class="item">
           <el-dropdown trigger="click">
             <span class="el-dropdown-link">
-            <i class="cogs icon"></i>
+              <i class="cogs icon"></i>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item><router-link :to="{name: 'userList'}">Usuarios</router-link></el-dropdown-item>
             </el-dropdown-menu>
-      
-    </el-dropdown>
+          </el-dropdown>
         </div>
         
         <!-- <div id="settings" class="ui dropdown link item">
@@ -72,7 +100,9 @@ import Dashboard from "./Dashboard.vue";
 export default {
   name: "home",
   data() {
-    return {};
+    return {
+      username: null
+    };
   },
   methods: {
     logout() {
@@ -88,7 +118,9 @@ export default {
       }
     }
   },
-
+  created() {
+    this.username = localStorage.username;
+  },
   components: {
     appDash: Dashboard
   }
