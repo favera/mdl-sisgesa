@@ -64,13 +64,14 @@ export default {
         .catch(() => this.loginFailed());
     },
     loginSuccessful(req) {
-      console.log(req.headers["x-auth"]);
+      console.log(req);
       if (!req.headers["x-auth"]) {
         this.loginFailed();
         return;
       }
 
       localStorage.token = req.headers["x-auth"];
+      localStorage.username = req.data.username;
       this.error = false;
 
       this.$router.replace(this.$route.query.redirect || "/dashboard");
