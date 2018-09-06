@@ -13,7 +13,7 @@
       <div class="ten wide required field">
         <label for="">Seleccionar Funcionario</label>
         <div class="field" :class="{'error': errors.has('employee')}">
-          <select name="employee" v-model="employeeSelected" class="ui dropdown" v-validate="'required'">
+          <select name="employee" v-model="employeeSelected" class="ui fluid search selection dropdown" v-validate="'required'">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
           </select>
@@ -120,7 +120,7 @@ export default {
             this.advance.employee = response.data.employee;
             this.disabledInput = true;
             $(this.$el)
-              .find(".ui.dropdown")
+              .find(".ui.fluid.search.selection.dropdown")
               .dropdown("refresh")
               .dropdown("set selected", response.data.employee);
             // $(this.$el)
@@ -210,7 +210,7 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.dropdown")
+      .find(".ui.fluid.search.selection.dropdown")
       .dropdown();
   },
   created() {

@@ -15,7 +15,7 @@
         <div class="six wide required field">
           <label for="">Funcionario</label>
           <div class="field" :class="{error: errors.has('attEmployee')}">
-            <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="employeeSelected" class="ui dropdown" id="funcionarioSelector">
+            <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="employeeSelected" class="ui fluid search selection dropdown" id="funcionarioSelector">
               <option disabled value="">Seleccionar Funcionario..</option>
               <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
             </select>
@@ -392,7 +392,7 @@ export default {
           this.attendance.secondShift = response.data.secondShift;
           this.attendance.delaySecondShift = response.data.delay;
           $(this.$el)
-            .find(".ui.dropdown")
+            .find(".ui.fluid.search.selection.dropdown")
             .dropdown("refresh")
             .dropdown("set selected", response.data.employee);
         });
@@ -444,7 +444,7 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.dropdown")
+      .find(".ui.fluid.search.selection.dropdown")
       .dropdown();
   },
   created() {
@@ -456,7 +456,7 @@ export default {
     $route: "getAttendance",
     employeeSelected: function() {
       $(this.$el)
-        .find(".ui.dropdown")
+        .find(".ui.fluid.search.selection.dropdown")
         .dropdown("refresh")
         .dropdown("set selected", this.employeeSelected);
     }

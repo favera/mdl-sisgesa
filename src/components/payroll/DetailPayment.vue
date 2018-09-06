@@ -87,7 +87,7 @@
               <i class="refresh icon"></i>
             </a>
 
-            <a class="icon item">
+            <a class="icon item" @click="printPayrollReport">
               <i class="print icon"></i>
             </a>
 
@@ -247,6 +247,59 @@ export default {
         .modal("setting", { observeChanges: true })
         .modal("show")
         .modal("refresh");
+    },
+    printPayrollReport(){
+      var body = [
+            [
+              { text: "Empleado", style: "tableHeader" },
+              { text: "Hs. Extras", style: "tableHeader" },
+              { text: "Retrasos", style: "tableHeader" },
+              { text: "Ausencias", style: "tableHeader" },
+              { text: "Salario Base", style: "tableHeader" },
+              { text: "IPS", style: "tableHeader" },
+              { text: "Adelantos", style: "tableHeader" },
+              { text: "Prestamos", style: "tableHeader" },
+              { text: "Descuentos (Ausencias y Retrasos)", style: "tableHeader" },
+              { text: "Pago Horas Extras", style: "tableHeader" },
+              { text: "Salario Neto", style: "tableHeader" }
+            ]
+          ];
+          this.payrollDetail.forEach(element => {
+            var data = [
+              element.name,
+              element.extraHourMinutes,
+              element.delay,
+              element.absence,
+              element.salary,
+              element.ips,
+              element.salaryAdvance,
+              element.lending,
+              element.discount,
+              element.extraHourValue,
+              element.salaryBalance
+            ];
+            body.push(data);
+          });
+          var docDefinition = {
+            content: [
+              { text: "Planilla de Salarios", style: "header" },
+              { table: { body: body } }
+            ],
+            styles: {
+              header: {
+                fontSize: 18,
+                bold: true,
+                margin: [0, 0, 0, 10],
+                alignment: "center"
+              },
+              tableHeader: {
+                bold: true,
+                fillColor: "#eeeeee"
+              }
+            },
+            pageOrientation: 'landscape'
+          };
+          pdfMake.createPdf(docDefinition).open();
     },
     deleteOutsourcedEmployee(index, id) {
       console.log("ID DETALLE", id);

@@ -1023,7 +1023,7 @@ export default {
               attendance.workedHours = null;
               attendance.extraHours = null;
               attendance.delay = null;
-              attendance.remark = "Vacaciones";
+              attendance.remark = "vacaciones";
               attendance.status.absence = false;
               attendance.status.incomplete = false;
               attendance.status.vacations = true;

@@ -30,7 +30,7 @@
           <label for="">Seleccionar Funcionario</label>
 
           <div class="field" :class="{error: errors.has('employee')}">
-            <select class="ui dropdown" name="employee" v-model="employeeSelected" data-vv-as="funcionario" v-validate="'required'">
+            <select class="ui fluid search selection dropdown" name="employee" v-model="employeeSelected" data-vv-as="funcionario" v-validate="'required'">
               <option disabled value="">Seleccionar Funcionario..</option>
               <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
             </select>
@@ -127,7 +127,7 @@ export default {
               this.event.employee = response.data.employee;
               this.employeeSelected = response.data.employee;
               $(this.$el)
-                .find(".ui.dropdown")
+                .find(".ui.fluid.search.selection.dropdown")
                 .dropdown("refresh")
                 .dropdown("set selected", response.data.employee);
             } else {
@@ -289,7 +289,7 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.dropdown")
+      .find(".ui.fluid.search.selection.dropdown")
       .dropdown();
   },
   updated() {
