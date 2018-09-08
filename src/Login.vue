@@ -36,7 +36,7 @@
 
             <div class="ui message">
                 Si olvido la contrasena pongase en contacto con el administrador
-                <p class="err" v-show="error">{{error}}</p>
+                <p class="error" v-show="error">{{error}}</p>
             </div>
         </div>
     </div>
