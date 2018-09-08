@@ -36,6 +36,7 @@
 
             <div class="ui message">
                 Si olvido la contrasena pongase en contacto con el administrador
+                <p class="err" v-show="error">{{error}}</p>
             </div>
         </div>
     </div>
@@ -48,7 +49,7 @@ export default {
     return {
       email: "",
       password: "",
-      error: ""
+      error: null
     };
   },
   methods: {
@@ -61,7 +62,7 @@ export default {
         .then(response => {
           this.loginSuccessful(response);
         })
-        .catch(() => this.loginFailed());
+        .catch((err) => this.loginFailed(err));
     },
     loginSuccessful(req) {
       console.log(req);
@@ -77,8 +78,8 @@ export default {
       this.$router.replace(this.$route.query.redirect || "/dashboard");
     },
 
-    loginFailed() {
-      this.error = "Login failed!";
+    loginFailed(err) {
+      this.error = err;
       delete localStorage.token;
     }
   }
