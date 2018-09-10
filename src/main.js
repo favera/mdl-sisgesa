@@ -69,10 +69,10 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
     if (!localStorage.token && to.fullPath !== '/') {
-      next({ name: 'Login'})
+        next({ name: 'Login' })
 
     } else {
-      next()
+        next()
 
     }
 
@@ -81,7 +81,8 @@ router.beforeEach((to, from, next) => {
 Validator.extend("validar_monto", {
     getMessage: field => `El ${field} debe ser superior a 0`,
     validate: value => {
-        return value.split(".").join("") > 0;
+        debugger
+        return parseInt(value.split(".").join("")) > 0;
     }
 });
 

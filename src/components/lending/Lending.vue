@@ -3,7 +3,7 @@
     <form class="ui form" @submit.prevent="saveLending()">
       <div class="ui dividing header">Incluir Prestamo</div>
 
-      <div class="ten wide required field">
+       <div class="ten wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{error: errors.has('fechaPrestamo')}">
           <el-date-picker name="fechaPrestamo" v-model="lending.date" format="dd/MM/yyyy" type="date" v-validate="'required'"></el-date-picker>
@@ -24,6 +24,8 @@
 
       </div>
 
+      
+
       <div class="fifteen wide field">
         <div class="two fields">
           <div class="sixteen wide field">
@@ -35,7 +37,7 @@
 
               <div class="five wide field" :class="{error: errors.has('amount')}">
                 <div class="ui input">
-                  <input name="amount" v-model.lazy="lending.amount" v-money="money" v-validate="'required|validar_monto'">
+                  <input name="amount" v-model.lazy="lending.amount" v-money="money">
                 </div>
                 <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
               </div>
@@ -45,25 +47,14 @@
                   <input type="text" v-model="lending.coin">
                 </div>
               </div>
-
-              <!-- <div class="five wide field" :class="{error: errors.has('coin')}">
-
-                <select name="coin" v-model="lending.coin" class="ui dropdown" id="coinSelector" v-validate="'required'">
-                  <option disbled value="">Seleccionar Moneda..</option>
-                  <option value="Gs">Guaranies - Gs.</option>
-                  <option value="Us">Dolares - Us.</option>
-                  <option value="Rs">Reales - Rs.</option>
-                </select>
-                <span class="info-error" v-show="errors.has('coin')">{{errors.first('coin')}}</span>
-              </div> -->
-
+             
             </div>
 
             <div class="two fields">
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
                 <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="lending.startMonth" type="month" placeholder="Seleccionar mes" v-validate="{required: true}">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="lending.startMonth" type="month" placeholder="Seleccionar mes" v-validate="'required'">
                   </el-date-picker>
                 </div>
                 <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
@@ -74,7 +65,7 @@
                 <div class="inline fields">
                   <div class="field">
                     <div class="field" :class="{error: errors.has('installmentNumber')}">
-                      <el-input-number name="installmentNumber" v-model="lending.installmentNumber" @change="handleChange" :min="1" data-vv-as="cuotas" v-validate="'required|min_value:1'"></el-input-number>
+                      <el-input-number name="installmentNumber" v-model="lending.installmentNumber" @change="handleChange" :min="1" data-vv-as="cuotas" v-validate="'required'"></el-input-number>
                     </div>
                     <span class="info-error" v-show="errors.has('installmentNumber')">{{errors.first('installmentNumber')}}</span>
                   </div>
@@ -128,7 +119,7 @@
           </div>
         </div>
 
-      </div>
+      </div> 
 
       <div class="field">
         <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>

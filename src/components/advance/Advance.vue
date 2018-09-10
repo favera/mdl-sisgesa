@@ -10,6 +10,7 @@
           <div v-show="errors.has('date')" class="info-error">{{errors.first('date')}}</div>
         </div>
       </div>
+
       <div class="ten wide required field">
         <label for="">Seleccionar Funcionario</label>
         <div class="field" :class="{'error': errors.has('employee')}">
@@ -19,8 +20,8 @@
           </select>
           <span v-show="errors.has('employee')" class="info-error">{{errors.first('employee')}}</span>
         </div>
-
       </div>
+
       <div class="ten wide field">
         <div class=" required field">
           <label for="">Tipo de Adelanto</label>
@@ -42,7 +43,7 @@
           </div>
           <div class="four wide field" :class="{'error': errors.has('amount')}">
             <div class="ui input">
-              <input type="text" v-model.lazy="advance.amount" v-money="money" name="amount" v-validate="'validar_monto'" v-bind:class="{'disabled': disabledInput}">
+              <input type="text" v-model.lazy="advance.amount" v-money="money" name="amount"  v-bind:class="{'disabled': disabledInput}">
             </div>
             <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
 
@@ -52,17 +53,6 @@
               <input type="text" v-model="advance.coin">
             </div>
           </div>
-
-          <!-- <div class="four wide field" :class="{'error': errors.has('coin')}">
-            <select v-model="advance.coin" class="ui dropdown" id="coinSelector" name="coin" v-validate="'required'">
-              <option disbled value="">Seleccionar Moneda..</option>
-              <option value="Gs">Guaranies - Gs.</option>
-              <option value="Us">Dolares - Us.</option>
-              <option value="Rs">Reales - Rs.</option>
-            </select>
-            <span class="info-error" v-show="errors.has('coin')">{{errors.first('coin')}}</span>
-          </div> -->
-
         </div>
       </div>
 
@@ -178,8 +168,14 @@ export default {
             this.success();
             this.cancel();
           })
-          .catch(e => {
-            console.log(e);
+          .catch(err => {
+            console.log("el error", err.response);
+            if (err.response.data.errors.amount.$isValidatorError) {
+              this.errors.add(
+                "amount",
+                err.response.data.errors.amount.message
+              );
+            }
             this.fail();
           });
       }

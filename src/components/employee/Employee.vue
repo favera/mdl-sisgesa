@@ -107,7 +107,7 @@
         <div class="five wide required field">
           <label for="">Salario Base</label>
           <div class="field" :class="{error: errors.has('salario')}">
-            <input name="salary" v-validate="'validar_monto'" v-model.lazy="employee.salary" v-money="money">
+            <input name="salary"  v-model.lazy="employee.salary" v-money="money">
             <span class="info-error" v-show="errors.has('salario')">{{errors.first('salario')}}</span>
           </div>
         </div>
