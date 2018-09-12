@@ -601,6 +601,9 @@ export default {
         extraHours,
         formatDate,
         holiday,
+        closeHours,
+        delayOpen,
+        delayClosed,
         openHours;
 
       holiday = this.returnHoliday(date);
@@ -617,12 +620,21 @@ export default {
         saturdayHalfTime = employee.halfTime;
         workingHours = employee.workingHours;
         openHours = moment(employee.subsidiary.startingTime, "HH:mm").format();
+        closeHours = moment(employee.subsidiary.endTime, "HH:mm").format();
       }
       //Calculo Delay basado en el horario de Apertura del local horaApertura - HoraEntrada
       entryTime = moment(entryTime, "HH:mm").format();
-      result = moment(openHours).diff(entryTime, "minutes");
-      if (result < 0) {
+      exitTime = moment(exitTime, "HH:mm").format();
+
+      delayOpen = moment(openHours).diff(entryTime, "minutes");
+      delayClosed = moment(exitTime).diff(closeHours, "minutes");
+      if (delayOpen < 0 && delayClosed < 0) {
+        result = delayOpen + delayClosed;
         return this.handleNegative(result);
+      } else if (delayOpen < 0) {
+        return this.handleNegative(delayOpen);
+      } else if (delayClosed < 0) {
+        return this.handleNegative(delayClosed);
       } else {
         return null;
       }

@@ -55,7 +55,7 @@
           <div class="field">
             <div class="inline fields">
               <div class="field">
-                <el-switch v-model="attendance.secondShift" >
+                <el-switch v-model="attendance.secondShift">
                 </el-switch>
               </div>
               <div class="field">
@@ -240,7 +240,9 @@ export default {
         exitTime,
         verifySecondShiftDelay,
         openHours,
-        closeHours;
+        closeHours,
+        delayOpen,
+        delayClosed;
       //si la fecha es string format a date
       // if (typeof date === "string") {
       //   date = new Date(date);
@@ -282,10 +284,16 @@ export default {
 
         return result;
       } else {
-        //calculo basado en el horario de entrada
-        result = moment(openHours).diff(entryTime, "minutes");
-        if (result < 0) {
+        //calculo basado en el horario de entrada y de salida, todo los que entran despues de la entrada o salen antes de la salida sera considerado como descuentos
+        delayOpen = moment(openHours).diff(entryTime, "minutes");
+        delayClosed = moment(exitTime).diff(closeHours, "minutes");
+        if (delayOpen < 0 && delayClosed < 0) {
+          result = delayOpen + delayClosed;
           return this.convertToHours(result);
+        } else if (delayOpen < 0) {
+          return this.convertToHours(delayOpen);
+        } else if (delayClosed < 0) {
+          return this.convertToHours(delayClosed);
         } else {
           return null;
         }
