@@ -472,14 +472,14 @@ export default {
     },
     //verifica que la fecha pasada se encuentra en el array de holidays anuales y retorna el indice
     returnHoliday(date) {
-      return this.holidaysPerYear.findIndex(holiday => {
-        console.log(
-          "Fecha Recibida en returnHoliday",
-          date,
-          holiday.holidayDate
-        );
-        return moment(holiday.holidayDate).isSame(date);
+      var index = this.holidaysPerYear.findIndex(holiday => {
+        if (moment(holiday.holidayDate).isSame(date)) {
+          return true;
+        }
+
+        return false;
       });
+      return index;
     },
     //retorna el valor en horas de horas extras para el banco de horas
     calculateExtraHour(entryTime, exitTime, employeeId, date) {
@@ -682,16 +682,24 @@ export default {
       //   }
       // }
     },
+    //verifica si el funcionario trabajo en dia feriado y coloca a true el valor de payHoliday
+    payForHoliday(date) {
+      var checkHoliday = this.returnHoliday(new Date(date));
+      if (checkHoliday !== -1) {
+        return true;
+      }
+      return false;
+    },
     //verifica si es domingo o no para insertar texto en observacion
     handleRemark(date) {
       var isSunday = new Date(date);
       var holiday = this.returnHoliday(new Date(date));
       if (isSunday.getDay() === 0) {
-        return "Hora Extra Domingo";
+        return "Trabajo en dia Domingo";
       }
 
       if (holiday !== -1) {
-        return "Hora Extra por Dia Feriado";
+        return "Trabajo en dia Feriado";
       }
 
       return "";
@@ -976,6 +984,7 @@ export default {
           attModal.entryTime,
           attModal.exitTime
         );
+        attSend.payHoliday = this.payForHoliday(attModal.date);
 
         this.attendancesToSend.push(attSend);
       });
@@ -984,6 +993,7 @@ export default {
     },
     async validateVacationsAndAbsences() {
       var attDate = new Date(this.attendanceModal[0].date);
+      debugger;
       var holiday = this.returnHoliday(attDate);
       //si no es domingo verificar si esta de vacaciones o ausente
       if (attDate.getDay() !== 0 && holiday === -1) {
