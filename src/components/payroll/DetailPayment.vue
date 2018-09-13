@@ -110,8 +110,8 @@
               <th>IPS</th>
               <th>Adelantos</th>
               <th>Prestamos</th>
-              <th>Descuentos Ausencias + Retrasos</th>
-              <th>Hs. Extras</th>
+              <th>Descuentos Ausencias y Retrasos</th>
+              <th>Hs. Extras y Feriados</th>
               <th>Salario Neto</th>
               <th>Opciones</th>
 
@@ -248,58 +248,58 @@ export default {
         .modal("show")
         .modal("refresh");
     },
-    printPayrollReport(){
+    printPayrollReport() {
       var body = [
-            [
-              { text: "Empleado", style: "tableHeader" },
-              { text: "Hs. Extras", style: "tableHeader" },
-              { text: "Retrasos", style: "tableHeader" },
-              { text: "Ausencias", style: "tableHeader" },
-              { text: "Salario Base", style: "tableHeader" },
-              { text: "IPS", style: "tableHeader" },
-              { text: "Adelantos", style: "tableHeader" },
-              { text: "Prestamos", style: "tableHeader" },
-              { text: "Descuentos (Ausencias y Retrasos)", style: "tableHeader" },
-              { text: "Pago Horas Extras", style: "tableHeader" },
-              { text: "Salario Neto", style: "tableHeader" }
-            ]
-          ];
-          this.payrollDetail.forEach(element => {
-            var data = [
-              element.name,
-              element.extraHourMinutes,
-              element.delay,
-              element.absence,
-              element.salary,
-              element.ips,
-              element.salaryAdvance,
-              element.lending,
-              element.discount,
-              element.extraHourValue,
-              element.salaryBalance
-            ];
-            body.push(data);
-          });
-          var docDefinition = {
-            content: [
-              { text: "Planilla de Salarios", style: "header" },
-              { table: { body: body } }
-            ],
-            styles: {
-              header: {
-                fontSize: 18,
-                bold: true,
-                margin: [0, 0, 0, 10],
-                alignment: "center"
-              },
-              tableHeader: {
-                bold: true,
-                fillColor: "#eeeeee"
-              }
-            },
-            pageOrientation: 'landscape'
-          };
-          pdfMake.createPdf(docDefinition).open();
+        [
+          { text: "Empleado", style: "tableHeader" },
+          { text: "Hs. Extras", style: "tableHeader" },
+          { text: "Retrasos", style: "tableHeader" },
+          { text: "Ausencias", style: "tableHeader" },
+          { text: "Salario Base", style: "tableHeader" },
+          { text: "IPS", style: "tableHeader" },
+          { text: "Adelantos", style: "tableHeader" },
+          { text: "Prestamos", style: "tableHeader" },
+          { text: "Descuentos (Ausencias y Retrasos)", style: "tableHeader" },
+          { text: "Pago Horas Extras", style: "tableHeader" },
+          { text: "Salario Neto", style: "tableHeader" }
+        ]
+      ];
+      this.payrollDetail.forEach(element => {
+        var data = [
+          element.name,
+          element.extraHourMinutes,
+          element.delay,
+          element.absence,
+          element.salary,
+          element.ips,
+          element.salaryAdvance,
+          element.lending,
+          element.discount,
+          element.extraHourValue,
+          element.salaryBalance
+        ];
+        body.push(data);
+      });
+      var docDefinition = {
+        content: [
+          { text: "Planilla de Salarios", style: "header" },
+          { table: { body: body } }
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            margin: [0, 0, 0, 10],
+            alignment: "center"
+          },
+          tableHeader: {
+            bold: true,
+            fillColor: "#eeeeee"
+          }
+        },
+        pageOrientation: "landscape"
+      };
+      pdfMake.createPdf(docDefinition).open();
     },
     deleteOutsourcedEmployee(index, id) {
       console.log("ID DETALLE", id);
@@ -489,23 +489,36 @@ export default {
         var salarySummary = {};
 
         if (employeeExists) {
+          //si el funcionario estuvo ausente
           if (attendance.status.absence) {
             this.payrollDetail[index].absence += 1;
 
             this.payrollDetail[index].discount += Math.round(
-              attendance.employee.salary / 26
+              attendance.employee.salary / 30
             );
             salarySummary.date = attendance.date;
             salarySummary.description = attendance.remark;
-            salarySummary.amount = Math.round(attendance.employee.salary / 26);
+            salarySummary.amount = Math.round(attendance.employee.salary / 30);
             salarySummary.coin = attendance.employee.coin;
             this.payrollDetail[index].salarySummary.push(salarySummary);
+          }
+          //Pago de jornal diario por trabajo en dia feriado
+          if (attendance.payHoliday) {
+            this.payrollDetail[index].extraHourValue += Math.round(
+              attendance.employee.salary / 30
+            );
+            salarySummary.date = attendance.date;
+            salarySummary.description = attendance.remark;
+            salarySummary.amount = Math.round(attendance.employee.salary / 30);
+            salarySummary.coin = attendance.employee.coin;
+            this.payrollDetail[index].salarySummary.push(salarySummary);
+            salarySummary = {};
           }
 
           // if (attendance.status.incompleto) {
           //   this.payrollDetail[index].incompleto += 1;
           // }
-
+          //si el funcionario estuvo de vacaciones
           if (attendance.status.vacations) {
             this.payrollDetail[index].daysInVacations += 1;
           }
@@ -543,10 +556,14 @@ export default {
 
             salarySummary.date = attendance.date;
             salarySummary.description = attendance.remark;
+            console.log("Delay before", attendance.delay);
+            debugger;
             salarySummary.amount = Math.round(
               moment.duration(attendance.delay, "HH:mm").asMinutes() *
                 attendance.employee.salaryPerMinute
             );
+            // console.log()
+            console.log("Delay After", salarySummary.amount, attendance.remark);
             salarySummary.coin = attendance.employee.coin;
             this.payrollDetail[index].salarySummary.push(salarySummary);
           }
@@ -573,18 +590,31 @@ export default {
           totalPayment.salaryPerMinute = attendance.employee.salaryPerMinute;
           totalPayment.coin = attendance.employee.coin;
 
+          //Pago de jornal diario por trabajo en dia feriado
+          if (attendance.payHoliday) {
+            totalPayment.extraHourValue += Math.round(
+              attendance.employee.salary / 30
+            );
+            salarySummary.date = attendance.date;
+            salarySummary.description = attendance.remark;
+            salarySummary.amount = Math.round(attendance.employee.salary / 30);
+            salarySummary.coin = attendance.employee.coin;
+            totalPayment.salarySummary.push(salarySummary);
+            salarySummary = {};
+          }
+
           if (attendance.status.absence) {
             //Dias ausentes
             totalPayment.absence = 1;
             //calculo del descuento por dia ausente
             totalPayment.discount += Math.round(
-              attendance.employee.salary / 26
+              attendance.employee.salary / 30
             );
             //datos para el resumen salarial
             salarySummary.date = attendance.date;
             salarySummary.description = attendance.remark;
             salarySummary.amount =
-              Math.round(attendance.employee.salary / 26) * -1;
+              Math.round(attendance.employee.salary / 30) * -1;
             salarySummary.coin = attendance.employee.coin;
             //array que contendra los datos del detalle de los movimientos del salario
             totalPayment.salarySummary.push(salarySummary);
@@ -641,8 +671,8 @@ export default {
             salarySummary.date = attendance.date;
             salarySummary.description = attendance.remark;
             salarySummary.amount =
-              moment.duration(attendance.extraHours, "HH:mm").asMinutes() *
-              extraHourValuePerMinute;
+              moment.duration(attendance.delay, "HH:mm").asMinutes() *
+              attendance.employee.salaryPerMinute;
             salarySummary.coin = attendance.employee.coin;
             //array que contiene los movimientos detallados del pago de salario
             totalPayment.salarySummary.push(salarySummary);

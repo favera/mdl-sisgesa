@@ -561,34 +561,34 @@ export default {
         //else del verificar si es dia sabado
       } else {
         //verifica si es domingo o feriado para sumar como hora extra.
-        if (formatDate.getDay() === 0 || holiday !== -1) {
-          extraHours = this.handleWorkedHours(entryTime, exitTime);
-          console.log(extraHours);
-          return extraHours;
-        } else {
-          workedHours = this.handleWorkedHours(entryTime, exitTime);
+        // if (formatDate.getDay() === 0 || holiday !== -1) {
+        //   extraHours = this.handleWorkedHours(entryTime, exitTime);
+        //   console.log(extraHours);
+        //   return extraHours;
+        // } else {
+        workedHours = this.handleWorkedHours(entryTime, exitTime);
 
-          console.log("Resultado Horas Trabajadas", workedHours);
+        console.log("Resultado Horas Trabajadas", workedHours);
 
-          // if (!workedHours.localeCompare("00:00")) {
-          //   return null;
-          // }
-          if (workedHours) {
-            extraHours =
-              moment.duration(workedHours, "HH:mm").asMinutes() -
-              moment.duration(workingHours, "HH:mm").asMinutes();
+        // if (!workedHours.localeCompare("00:00")) {
+        //   return null;
+        // }
+        if (workedHours) {
+          extraHours =
+            moment.duration(workedHours, "HH:mm").asMinutes() -
+            moment.duration(workingHours, "HH:mm").asMinutes();
 
-            console.log("Resultado Horas Extras", extraHours);
+          console.log("Resultado Horas Extras", extraHours);
 
-            if (extraHours > 0) {
-              return this.handleNegative(extraHours);
-            }
-
-            return null;
-          } else {
-            return null;
+          if (extraHours > 0) {
+            return this.handleNegative(extraHours);
           }
+
+          return null;
+        } else {
+          return null;
         }
+        // }
       }
     },
     //Retorna el valor en horas de las horas faltantes del funcionario
@@ -1005,7 +1005,7 @@ export default {
     },
     async validateVacationsAndAbsences() {
       var attDate = new Date(this.attendanceModal[0].date);
-      debugger;
+      // debugger;
       var holiday = this.returnHoliday(attDate);
       //si no es domingo verificar si esta de vacaciones o ausente
       if (attDate.getDay() !== 0 && holiday === -1) {

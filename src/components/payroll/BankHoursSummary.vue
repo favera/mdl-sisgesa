@@ -83,16 +83,34 @@
           <tr>
             <th>Fecha</th>
             <th class="center aligned">Motivo</th>
+            <th class="center aligned">Horas Faltantes</th>
             <th class="center aligned">Horas Acumuladas</th>
-            <th class="center aligned" v-show="this.showOptions">Opciones</th>
+            <!-- <th class="center aligned" v-show="this.showOptions">Opciones</th> -->
           </tr>
         </thead>
         <tbody>
           <tr v-for="(data, index) in bankHoursData" v-bind:key="data._id" v-if="!data.payExtraHours">
             <td>{{moment(data.date).format("DD/MM/YYYY")}}</td>
             <td class="center aligned">{{getRemark(data.remark, data.delay)}}</td>
-            <td class="center aligned">{{data.delay || data.extraHours}} Hs.</td>
-            <td class="center aligned" v-show="!this.showOptions">
+            <td class="center aligned">
+              <span v-if="data.delay">
+                <span>{{data.delay}} Hs.</span> |
+                <span><i class="clock outline link icon"></i></span>
+              </span>
+              
+            </td>
+            <td class="center aligned">
+              <span v-if="data.extraHours">
+                <span>{{ data.extraHours}} Hs.</span> |
+                <span>
+                  <i class="checkmark box link icon" @click="saveBankHours(data.extraHours, data.employee._id, data._id, index)"></i>
+                  <i class="remove link icon" @click="undoBankHour(data._id, data.extraHours, index)"></i>
+                  <i class="money bill alternate outline link icon" @click="payOverTime(data._id, index)"></i>
+                </span>
+              </span>
+              
+            </td>
+            <!-- <td class="center aligned" v-show="!this.showOptions">
               <span v-if="data.bankHours">
                 <i class="undo link icon"></i>
               </span>
@@ -103,7 +121,7 @@
               </span>
 
               <i class="clock outline link icon" v-if="data.delay" @click="amendDelay(data._id, data.employee._id, data.delay, index)"></i>
-            </td>
+            </td> -->
           </tr>
         </tbody>
       </table>
@@ -267,7 +285,8 @@ export default {
             this.monthlyBankHours.extraHoursInMinutes =
               this.monthlyBankHours.totalExtraHours % 60;
 
-            this.bankHoursData.splice(index, 1);
+            // this.bankHoursData.splice(index, 1);
+            this.$set(this.bankHoursData, index, response.data);
           });
       });
     },

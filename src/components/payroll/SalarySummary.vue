@@ -118,6 +118,12 @@ export default {
     returnDescription(description, amount) {
       if (!description && amount < 0) {
         return "Retraso";
+      } else if (
+        (description === "Trabajo en dia Domingo" ||
+          description === "Trabajo en dia Feriado") &&
+        amount < 0
+      ) {
+        return description + " (retraso)";
       }
       return description;
     },
