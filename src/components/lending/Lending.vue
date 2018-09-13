@@ -37,7 +37,7 @@
 
               <div class="five wide field" :class="{error: errors.has('amount')}">
                 <div class="ui input">
-                  <input name="amount" v-model.lazy="lending.amount" v-money="money">
+                  <input name="amount" v-model.lazy="lending.amount" v-money="money" >
                 </div>
                 <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
               </div>
@@ -183,7 +183,7 @@ export default {
       this.lending.installments.length = 0;
       console.log("Al editar", this.lending.installments);
 
-      if (this.lending.amount && this.lending.startMonth) {
+      if ((parseInt(this.lending.amount.split(".").join("")))>0  && this.lending.startMonth) {
         var i = 0;
         do {
           var installment = {};
@@ -200,6 +200,8 @@ export default {
           this.lending.installments.push(installment);
           i++;
         } while (i < value);
+      }else{
+
       }
     },
     findEmployee(id) {
