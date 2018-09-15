@@ -10,7 +10,7 @@
             <div class="column">
               <div class="ui inverted statistic">
                 <div class="value">
-                  {{this.queryResults.absence.length}}
+                  {{this.queryResults.absence.total}}
                 </div>
                 <div class="label">
                   Ausencias
@@ -29,7 +29,7 @@
             <div class="column">
               <div class="ui inverted statistic">
                 <div class="value">
-                  <!-- {{this.queryResults.delay.length}} -->
+                  {{this.queryResults.delay.length}}
                 </div>
                 <div class="label">
                   Retrasos
@@ -67,7 +67,7 @@
             <div class="column">
               <div class="ui inverted statistic">
                 <div class="value">
-                  {{this.queryResults.incomplete.length}}
+                  {{this.queryResults.incomplete.total}}
                 </div>
                 <div class="label">
                   Incompletos
@@ -139,6 +139,15 @@
               </a>
             </div>
           </div>
+      
+          <div class="ui olive progress">
+            <div class="bar"></div>
+            <div class="label">320.000.000 Gs.</div>
+          </div>
+          <div class="ui green progress">
+            <div class="bar"></div>
+            <div class="label">110.000 Rs.</div>
+          </div>
 
         </div>
       </div>
@@ -153,14 +162,16 @@ import moment from "moment";
 
 export default {
   name: "dashboard",
-  data() {
+  data() {    
     return {
-      dateStart: moment(new Date())
-        .startOf("month")
-        .format(),
-      dateEnd: moment(new Date())
-        .endOf("month")
-        .format(),
+      // dateStart: moment(new Date())
+      //   .startOf("month")
+      //   .format(),
+      // dateEnd: moment(new Date())
+      //   .endOf("month")
+      //   .format(),
+      dateStart: "2018-08-01T00:00:00-04:00",
+      dateEnd: "2018-08-30T00:00:00-04:00",
       queryResults: {
         absence: null,
         incomplete: null,
@@ -173,25 +184,27 @@ export default {
       let absencePromise = this.$http.get(
         `/attendances/query-data?page=1&limit=10&startDate=${
           this.dateStart
-        }&endDate=${this.dateEnd}&estado=ausentes&busqueda=null`
+        }&endDate=${this.dateEnd}&status=ausentes&parameter=null`
       );
       let incompletePromise = this.$http.get(
         `/attendances/query-data?page=1&limit=10&startDate=${
           this.dateStart
-        }&endDate=${this.dateEnd}&estado=incompletos&busqueda=null`
+        }&endDate=${this.dateEnd}&status=incompletos&parameter=null`
       );
-      // let delayPromise = this.$http.get(
-      //   `/attendances/all-delays?startDate=${this.dateStart}&endDate=${
-      //     this.dateEnd
-      //   }`
-      // );
-      const [absence, incomplete] = await Promise.all([
+      let delayPromise = this.$http.get(
+        `/attendances/all-delays?startDate=${this.dateStart}&endDate=${
+          this.dateEnd
+        }`
+      );
+      const [absence, incomplete, delay] = await Promise.all([
         absencePromise,
-        incompletePromise
+        incompletePromise,
+        delayPromise
       ]);
+      
       this.queryResults.absence = absence.data;
       this.queryResults.incomplete = incomplete.data;
-      // this.queryResults.delay = delay.data;
+      this.queryResults.delay = delay.data;
     }
   },
   created() {
