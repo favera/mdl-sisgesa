@@ -75,13 +75,14 @@
         <label for="">Observacion</label>
         <textarea name="" id="" rows="2" v-model="attendance.remark"></textarea>
       </div>
-      <button class="ui teal button">Guardar</button>
+      <button class="ui teal button" type="submit" :class="{disabled: errors.any()}">Guardar</button>
       <div class="ui button" @click="cancel">Cancelar</div>
     </form>
   </div>
 </template>
 <script>
 import moment from "moment";
+import { Validator } from "vee-validate";
 export default {
   name: "attendance",
   data() {
@@ -389,21 +390,23 @@ export default {
     },
     //obtiene la asistencia para la edicion
     getAttendance() {
-      this.$http
-        .get(`/attendances/edit/${this.$route.params.id}`)
-        .then(response => {
-          this.attendance.date = response.data.date;
-          this.attendance.entryTime = response.data.entryTime;
-          this.attendance.exitTime = response.data.exitTime;
-          this.employeeSelected = response.data.employee;
-          this.attendance.remark = response.data.remark;
-          this.attendance.secondShift = response.data.secondShift;
-          this.attendance.delaySecondShift = response.data.delay;
-          $(this.$el)
-            .find(".ui.fluid.search.selection.dropdown")
-            .dropdown("refresh")
-            .dropdown("set selected", response.data.employee);
-        });
+      if (this.$route.params.id) {
+        this.$http
+          .get(`/attendances/edit/${this.$route.params.id}`)
+          .then(response => {
+            this.attendance.date = response.data.date;
+            this.attendance.entryTime = response.data.entryTime;
+            this.attendance.exitTime = response.data.exitTime;
+            this.employeeSelected = response.data.employee;
+            this.attendance.remark = response.data.remark;
+            this.attendance.secondShift = response.data.secondShift;
+            this.attendance.delaySecondShift = response.data.delay;
+            $(this.$el)
+              .find(".ui.fluid.search.selection.dropdown")
+              .dropdown("refresh")
+              .dropdown("set selected", response.data.employee);
+          });
+      }
     },
     //obtiene los feriados registrados en el año
     getHolidays() {
@@ -456,9 +459,9 @@ export default {
       .dropdown();
   },
   created() {
+    this.getHolidays();
     this.getEmployees();
     this.getAttendance();
-    this.getHolidays();
   },
   watch: {
     $route: "getAttendance",

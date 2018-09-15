@@ -43,7 +43,7 @@
           </div>
           <div class="four wide field" :class="{'error': errors.has('amount')}">
             <div class="ui input">
-              <input type="text" v-model.lazy="advance.amount" v-money="money" name="amount"  v-bind:class="{'disabled': disabledInput}">
+              <input type="text" v-model.lazy="advance.amount" v-money="money" name="amount" v-bind:class="{'disabled': disabledInput}" v-validate="'required|validar_monto'" data-vv-as="monto">
             </div>
             <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
 
@@ -113,10 +113,6 @@ export default {
               .find(".ui.fluid.search.selection.dropdown")
               .dropdown("refresh")
               .dropdown("set selected", response.data.employee);
-            // $(this.$el)
-            //   .find("#coinSelector")
-            //   .dropdown("refresh")
-            //   .dropdown("set selected", response.data.coin);
           });
       }
     },
@@ -141,44 +137,48 @@ export default {
       return name;
     },
     saveAdvance() {
-      this.$validator.validateAll();
-      if (this.$route.params.id) {
-        this.advance.employee = this.employeeSelected;
-        this.advance.employeeName = this.getEmployeeName(this.employeeSelected);
-        this.advance.amount = parseInt(this.advance.amount.split(".").join(""));
-        this.$http
-          .put(`/advances/update/${this.$route.params.id}`, this.advance)
-          .then(response => {
-            console.log(response);
-            this.editSuccess();
-            this.cancel();
-          })
-          .catch(e => {
-            console.log(e);
-            this.fail();
-          });
-      } else {
-        this.advance.employee = this.employeeSelected;
-        this.advance.employeeName = this.getEmployeeName(this.employeeSelected);
-        this.advance.amount = parseInt(this.advance.amount.split(".").join(""));
-        this.$http
-          .post(`/advances/add`, this.advance)
-          .then(response => {
-            console.log(response);
-            this.success();
-            this.cancel();
-          })
-          .catch(err => {
-            console.log("el error", err.response);
-            if (err.response.data.errors.amount.$isValidatorError) {
-              this.errors.add(
-                "amount",
-                err.response.data.errors.amount.message
-              );
-            }
-            this.fail();
-          });
-      }
+      this.$validator.validateAll().then(() => {
+        if (this.$route.params.id) {
+          this.advance.employee = this.employeeSelected;
+          this.advance.employeeName = this.getEmployeeName(
+            this.employeeSelected
+          );
+          this.advance.amount = parseInt(
+            this.advance.amount.split(".").join("")
+          );
+          this.$http
+            .put(`/advances/update/${this.$route.params.id}`, this.advance)
+            .then(response => {
+              console.log(response);
+              this.editSuccess();
+              this.cancel();
+            })
+            .catch(e => {
+              console.log(e);
+              this.fail();
+            });
+        } else {
+          this.advance.employee = this.employeeSelected;
+          this.advance.employeeName = this.getEmployeeName(
+            this.employeeSelected
+          );
+          this.advance.amount = parseInt(
+            this.advance.amount.split(".").join("")
+          );
+          this.$http
+            .post(`/advances/add`, this.advance)
+            .then(response => {
+              console.log(response);
+              this.success();
+              this.cancel();
+            })
+            .catch(err => {
+              console.log("el error", err.response);
+
+              this.fail();
+            });
+        }
+      });
     },
     cancel() {
       this.$router.push({ name: "advanceList" });
@@ -226,18 +226,9 @@ export default {
             this.advance.amount = Math.floor(
               employee.salary / 2
             ).toLocaleString();
-            // $(this.$el)
-            //   .find("#coinSelector")
-            //   .dropdown("refresh")
-            //   .dropdown("set selected", employee.coin);
           }
         }
       });
-
-      // $(this.$el)
-      //   .find("#coinSelector")
-      //   .dropdown("refresh")
-      //   .dropdown("set selected", this.advance.coin);
     }
   }
 };

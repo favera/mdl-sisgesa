@@ -3,7 +3,7 @@
     <form class="ui form" @submit.prevent="saveLending()">
       <div class="ui dividing header">Incluir Prestamo</div>
 
-       <div class="ten wide required field">
+      <div class="ten wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{error: errors.has('fechaPrestamo')}">
           <el-date-picker name="fechaPrestamo" v-model="lending.date" format="dd/MM/yyyy" type="date" v-validate="'required'"></el-date-picker>
@@ -24,8 +24,6 @@
 
       </div>
 
-      
-
       <div class="fifteen wide field">
         <div class="two fields">
           <div class="sixteen wide field">
@@ -37,7 +35,7 @@
 
               <div class="five wide field" :class="{error: errors.has('amount')}">
                 <div class="ui input">
-                  <input name="amount" v-model.lazy="lending.amount" v-money="money" >
+                  <input name="amount" v-model.lazy="lending.amount" v-money="money" v-validate="'required|validar_monto'">
                 </div>
                 <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
               </div>
@@ -47,7 +45,7 @@
                   <input type="text" v-model="lending.coin">
                 </div>
               </div>
-             
+
             </div>
 
             <div class="two fields">
@@ -119,7 +117,7 @@
           </div>
         </div>
 
-      </div> 
+      </div>
 
       <div class="field">
         <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
@@ -183,7 +181,10 @@ export default {
       this.lending.installments.length = 0;
       console.log("Al editar", this.lending.installments);
 
-      if ((parseInt(this.lending.amount.split(".").join("")))>0  && this.lending.startMonth) {
+      if (
+        parseInt(this.lending.amount.split(".").join("")) > 0 &&
+        this.lending.startMonth
+      ) {
         var i = 0;
         do {
           var installment = {};
@@ -200,8 +201,7 @@ export default {
           this.lending.installments.push(installment);
           i++;
         } while (i < value);
-      }else{
-
+      } else {
       }
     },
     findEmployee(id) {
@@ -247,8 +247,13 @@ export default {
               this.cancel();
               console.log(response);
             })
-            .catch(e => {
-              console.log(e);
+            .catch(err => {
+              // if (err.response.data.errors.amount.$isValidatorError) {
+              //   this.errors.add(
+              //     "amount",
+              //     err.response.data.errors.amount.message
+              //   );
+              // }
               this.fail();
             });
         } else {
@@ -267,8 +272,13 @@ export default {
               this.cancel();
               console.log(response);
             })
-            .catch(e => {
-              console.log(e);
+            .catch(err => {
+              // if (err.response.data.errors.amount.$isValidatorError) {
+              //   this.errors.add(
+              //     "amount",
+              //     err.response.data.errors.amount.message
+              //   );
+              // }
               this.fail();
             });
         }
@@ -319,6 +329,11 @@ export default {
   },
   watch: {
     $route: "getLending",
+    // "lending.amount": function(value) {
+    //   if (value > 0) {
+    //     this.errors.remove("amount");
+    //   }
+    // },
     employeeSelected: function() {
       this.employees.find(employee => {
         if (employee._id === this.employeeSelected) {

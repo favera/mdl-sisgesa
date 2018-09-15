@@ -106,9 +106,9 @@
       <div class="two fields">
         <div class="five wide required field">
           <label for="">Salario Base</label>
-          <div class="field" :class="{error: errors.has('salario')}">
-            <input name="salary"  v-model.lazy="employee.salary" v-money="money">
-            <span class="info-error" v-show="errors.has('salario')">{{errors.first('salario')}}</span>
+          <div class="field" :class="{error: errors.has('salary')}">
+            <input name="salary" v-model.lazy="employee.salary" v-money="money" v-validate="'required|validar_monto'" data-vv-as="salario">
+            <span class="info-error" v-show="errors.has('salary')">{{errors.first('salary')}}</span>
           </div>
         </div>
         <div class="five wide required field">
@@ -234,6 +234,12 @@ export default {
                 this.errors.add(
                   "acnro",
                   "El numero identificador ingresado ya existe"
+                );
+              }
+              if (err.response.data.errors.salary.$isValidatorError) {
+                this.errors.add(
+                  "salary",
+                  err.response.data.errors.amount.message
                 );
               }
               this.fail();
