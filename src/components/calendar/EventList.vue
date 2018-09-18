@@ -16,23 +16,23 @@
                 <i class="search icon"></i>
               </button>
             </div>
-            <div class="four wide field">
+            <!-- <div class="four wide field">
               <label>Tipo de Evento:</label>
-            </div>
+            </div> -->
 
-            <div class="three wide field">
+            <!-- <div class="three wide field">
               <div class="ui radio checkbox">
                 <input type="radio" name="vacaciones" value="vacaciones" v-model="listType">
                 <label>Vacaciones</label>
               </div>
-            </div>
+            </div> -->
 
-            <div class="two wide field">
+            <!-- <div class="two wide field">
               <div class="ui radio checkbox">
                 <input type="radio" name="feriado" value="feriado" v-model="listType">
                 <label>Feriados</label>
               </div>
-            </div>
+            </div> -->
 
           </div>
         </div>
@@ -50,21 +50,25 @@
 
     </div>
 
-    <div class="field" v-if="listType==='feriado'">
+    <div class="field" >
       <table class="ui teal celled table">
         <thead>
           <tr>
             <th>Tipo de Evento</th>
-            <th>Motivo del Feriado</th>
-            <th>Fecha del Feriado</th>
+            <th>Funcionario / Motivo Feriado</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th>Observacion</th>
             <th class="center aligned">Opciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="event in events" :key="event._id" v-if="event.eventType==='feriado'">
+          <tr v-for="event in events" :key="event._id" >
             <td class="capital">{{event.eventType}}</td>
-            <td>{{event.holidayDescription}}</td>
-            <td>{{moment(event.holidayDate).format("L")}}</td>
+            <td>{{event.holidayDescription || event.employeeName}}</td>
+            <td>{{moment(event.holidayDate).format("L") || moment(event.startDate).format("L") }}</td>
+            <td>{{moment(event.holidayDate).format("L") || moment(event.endDate).format("L")}}</td>
+            <td></td>
             <td class="center aligned">
               <i class="edit row link icon" @click="editEvent(event.active, event._id)"></i>
               <i class="trash link icon" @click="confirm(event._id)"></i>
@@ -74,7 +78,7 @@
         </tbody>
         <tfoot v-show="pageOne.totalItems > 10">
           <tr>
-            <th colspan="4">
+            <th colspan="6">
               <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
               </app-pagination>
             </th>
@@ -84,7 +88,7 @@
 
     </div>
 
-    <div class="field" v-else>
+    <!-- <div class="field" v-else>
       <table class="ui teal celled table">
         <thead>
           <tr>
@@ -119,7 +123,7 @@
           </tr>
         </tfoot>
       </table>
-    </div>
+    </div> -->
 
   </div>
 </template>
@@ -234,7 +238,7 @@ export default {
         .get(
           `/events?page=${this.pageOne.currentPage}&limit=${
             this.pageOne.itemsPerPage
-          }&eventType=${this.listType}&parameter=${this.query.parameter}`
+          }&parameter=${this.query.parameter}`
         )
         .then(response => {
           console.log(response);
