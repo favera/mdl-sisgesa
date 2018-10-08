@@ -66,8 +66,8 @@
           <tr v-for="event in events" :key="event._id" >
             <td class="capital">{{event.eventType}}</td>
             <td>{{event.holidayDescription || event.employeeName}}</td>
-            <td>{{moment(event.holidayDate).format("L") || moment(event.startDate).format("L") }}</td>
-            <td>{{moment(event.holidayDate).format("L") || moment(event.endDate).format("L")}}</td>
+            <td>{{moment(event.holidayDate || event.startDate).format("L")}}</td>
+            <td>{{moment(event.holidayDate || event.endDate).format("L")}}</td>
             <td></td>
             <td class="center aligned">
               <i class="edit row link icon" @click="editEvent(event.active, event._id)"></i>

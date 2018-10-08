@@ -1017,7 +1017,7 @@ export default {
           if (absenceIndex === -1) {
             var attendance = {};
             attendance.status = {};
-            var getVacations, attDateFormat, isVacationDate;
+            var getVacations, attDateFormat, isVacationDate, eventRemark;
             // debugger;
             getVacations = await this.$http.get(
               `/events/employee-vacation/${employee._id}`
@@ -1027,12 +1027,24 @@ export default {
             if (getVacations.data.length > 0) {
               attDateFormat = moment(this.attendanceModal[0].date).format();
               isVacationDate = getVacations.data.find(event => {
-                return moment(attDateFormat).isBetween(
-                  event.startDate,
-                  event.endDate,
-                  null,
-                  "[]"
-                );
+                if (
+                  moment(attDateFormat).isBetween(
+                    event.startDate,
+                    event.endDate,
+                    null,
+                    "[]"
+                  )
+                ) {
+                  eventRemark = event.eventType;
+                  return true;
+                }
+                return false;
+                // return moment(attDateFormat).isBetween(
+                //   event.startDate,
+                //   event.endDate,
+                //   null,
+                //   "[]"
+                // );
               });
             }
 
@@ -1045,7 +1057,7 @@ export default {
               attendance.workedHours = null;
               attendance.extraHours = null;
               attendance.delay = null;
-              attendance.remark = "vacaciones";
+              attendance.remark = eventRemark;
               attendance.status.absence = false;
               attendance.status.incomplete = false;
               attendance.status.vacations = true;
