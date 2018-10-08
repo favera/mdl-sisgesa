@@ -8,19 +8,19 @@
           <label for="">Tipo de Evento</label>
         </div>
 
-         <div class="field" :class="{error: errors.has('tipoEvento')}">
-            <select v-model="event.eventType" name="tipoEvento" v-validate="'required'" class="ui dropdown">
-              <option disbled value="">Seleccionar Evento..</option>
-              <option value="feriado">Feriado</option>
-              <option value="permiso maternidad">Permiso Maternidad</option>
-              <option value="vacaciones">Vacaciones</option>
-              <option value="dia libre">Día Libre</option>
-              <option value="reposo">Reposo</option>
-              <option value="consulta medica">Consulta Medica</option>
-              <option value="permiso">Permiso</option>
-            </select>
-            <span class="info-error" v-show="errors.has('tipoEvento')">{{errors.first('tipoEvento')}}</span>
-          </div>
+        <div class="field" :class="{error: errors.has('tipoEvento')}">
+          <select v-model="event.eventType" name="tipoEvento" v-validate="'required'" class="ui dropdown" @change="changeViewFields(event.eventType)">
+            <option disbled value="">Seleccionar Evento..</option>
+            <option value="feriado">Feriado</option>
+            <option value="permiso maternidad">Permiso Maternidad</option>
+            <option value="vacaciones">Vacaciones</option>
+            <option value="dia libre">Día Libre</option>
+            <option value="reposo">Reposo</option>
+            <option value="consulta medica">Consulta Medica</option>
+            <option value="permiso">Permiso</option>
+          </select>
+          <span class="info-error" v-show="errors.has('tipoEvento')">{{errors.first('tipoEvento')}}</span>
+        </div>
 
         <!-- <div class="inline fields">
           <div class="four wide field">
@@ -39,7 +39,7 @@
         </div> -->
       </div>
 
-      <div class="ten wide field" v-if="event.eventType ==='vacaciones'">
+      <div class="ten wide field" v-show="showViewStatus">
         <div class="ten wide required field">
           <label for="">Fecha del Feriado</label>
           <div class="field" :class="{error: errors.has('holidayDate')}">
@@ -59,7 +59,7 @@
         </div>
       </div>
 
-      <div class="ten wide field" v-else>
+      <div class="ten wide field" v-show="!showViewStatus">
         <div class="required field">
           <label for="">Seleccionar Funcionario</label>
 
@@ -98,8 +98,6 @@
         </div>
       </div>
 
-
-
       <!-- si es vacaciones -->
       <!-- <div class="ten wide field" v-show="event.eventType ==='vacaciones'">
         <div class="required field">
@@ -133,7 +131,7 @@
         </div>
       </div> -->
 
-  <!-- si es feriado -->
+      <!-- si es feriado -->
       <!-- <div class="ten wide field" v-show="event.eventType === 'feriado'">
         <div class="ten wide required field">
           <label for="">Seleccionar Fecha del Feriado</label>
@@ -173,7 +171,8 @@ export default {
   data() {
     return {
       event: {
-        eventType: "vacaciones",
+        eventType: "feriado",
+
         holidayDate: null,
         startDate: moment()
           .startOf("week")
@@ -186,6 +185,7 @@ export default {
         holidayDescription: null,
         remark: null
       },
+      showViewStatus: true,
       employees: [],
       employeeSelected: null
     };
@@ -214,6 +214,13 @@ export default {
               this.event.remark = response.data.remark;
             }
           });
+      }
+    },
+    changeViewFields(eventType) {
+      if (eventType !== "feriado") {
+        this.showViewStatus = false;
+      } else {
+        this.showViewStatus = true;
       }
     },
     saveEvent() {
@@ -390,16 +397,22 @@ export default {
         return moment(fecha).isAfter(event[0].event.startDate);
       }
     });
-    $(this.$el)
-      .find(".ui.fluid.search.selection.dropdown")
-      .dropdown();
+    // $(this.$el)
+    //   .find(".ui.fluid.search.selection.dropdown")
+    //   .dropdown();
   },
   created() {
     this.getEmployees();
     this.getEvent();
   },
   watch: {
-    $route: "getEvent"
+    $route: "getEvent",
+    employeeSelected: function() {
+      $(this.$el)
+        .find(".ui.fluid.search.selection.dropdown")
+        .dropdown("refresh")
+        .dropdown("set selected", this.employeeSelected);
+    }
   }
 };
 </script>
