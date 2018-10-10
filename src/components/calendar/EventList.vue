@@ -50,7 +50,7 @@
 
     </div>
 
-    <div class="field" >
+    <div class="field">
       <table class="ui teal celled table">
         <thead>
           <tr>
@@ -63,15 +63,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="event in events" :key="event._id" >
+          <tr v-for="event in events" :key="event._id">
             <td class="capital">{{event.eventType}}</td>
             <td>{{event.holidayDescription || event.employeeName}}</td>
             <td>{{moment(event.holidayDate || event.startDate).format("L")}}</td>
             <td>{{moment(event.holidayDate || event.endDate).format("L")}}</td>
             <td></td>
             <td class="center aligned">
-              <i class="edit row link icon" @click="editEvent(event.active, event._id)"></i>
-              <i class="trash link icon" @click="confirm(event._id)"></i>
+              <i class="edit row link icon" :class="{disabled:!event.active}" @click="editEvent(event.active, event._id)"></i>
+              <i class="trash link icon" :class="{disabled:!event.active}" @click="confirm(event._id, event.employee, event.active)"></i>
+              <i class="archive link icon" :class="{disabled:!event.active}" @click="closeVacations(event._id, event.employee, event.active)"></i>
             </td>
           </tr>
 

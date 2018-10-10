@@ -30,7 +30,7 @@ locale.use(lang);
 /*utitlities*/
 import { routes } from "./routes";
 import vueXlsxTable from "vue-xlsx-table";
-import moment from "moment";
+import moment from "moment-timezone";
 import axios from "./config/vue-axios";
 var pdfMake = require("pdfmake/build/pdfmake.js");
 var pdfFonts = require("pdfmake/build/vfs_fonts.js");
@@ -56,6 +56,7 @@ Vue.use(VeeValidate, config);
 
 Vue.prototype.moment = moment;
 moment.locale("es");
+moment.tz.setDefault("America/Asuncion");
 Vue.prototype.$msgbox = MessageBox;
 Vue.prototype.$alert = MessageBox.alert;
 Vue.prototype.$confirm = MessageBox.confirm;

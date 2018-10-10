@@ -199,19 +199,20 @@ export default {
           .then(response => {
             this.event.eventType = response.data.eventType;
 
-            if (response.data.eventType === "vacaciones") {
+            if (response.data.eventType === "feriado") {
+              this.showViewStatus = true;
+              this.event.holidayDate = response.data.holidayDate;
+              this.event.holidayDescription = response.data.holidayDescription;
+              this.event.remark = response.data.remark;
+            } else {
+              this.showViewStatus = false;
               this.event.endDate = response.data.endDate;
               this.event.startDate = response.data.startDate;
               this.event.employee = response.data.employee;
-              this.employeeSelected = response.data.employee;
               $(this.$el)
                 .find(".ui.fluid.search.selection.dropdown")
                 .dropdown("refresh")
                 .dropdown("set selected", response.data.employee);
-            } else {
-              this.event.holidayDate = response.data.holidayDate;
-              this.event.holidayDescription = response.data.holidayDescription;
-              this.event.remark = response.data.remark;
             }
           });
       }
