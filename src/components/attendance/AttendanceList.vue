@@ -58,9 +58,9 @@
                 <!-- <i @click="searchAttendance" class="inverted teal circular search link icon" v-else></i> -->
 
               </div>
-              <button class="ui circular teal icon button" @click="searchAttendance">
+              <!-- <button class="ui circular teal icon button" @click="searchAttendance">
                 <i class="search icon"></i>
-              </button>
+              </button> -->
 
             </div>
 
@@ -157,6 +157,9 @@
             <div class="field" style="margin-left: 20px">
               <button @click="searchAttendance" class="ui circular teal icon button">
                 <i class="search icon"></i>
+              </button>
+              <button @click="deleteQueryParameters" class="ui circular icon button">
+                <i class="eraser icon"></i>
               </button>
 
             </div>
@@ -352,6 +355,7 @@ export default {
       page.currentPage = this.pageOne.currentPage;
       page.totalItems = this.pageOne.totalItems;
       localStorage.setItem("page", JSON.stringify(page));
+      localStorage.setItem("query", JSON.stringify(this.query));
 
       this.$router.push({
         name: "editAttendance",
@@ -455,6 +459,14 @@ export default {
         .modal("setting", { observeChanges: true })
         .modal("show")
         .modal("refresh");
+    },
+    deleteQueryParameters() {
+      localStorage.removeItem("query");
+      this.query.parameter = null;
+      this.query.startDate = null;
+      this.query.endDate = null;
+      this.query.status = "todos";
+      this.queryData();
     },
     //retorna las horas que trabajo en el dia (horaSalida - horaEntrada)
     handleWorkedHours(entryTime, exitTime) {
@@ -1121,11 +1133,23 @@ export default {
     this.getEmployees();
     this.getHolidays();
   },
+
   mounted() {
     this.modal = $(this.$el).find(".ui.longer.modal");
     $(this.$el)
       .find(".ui.dropdown")
       .dropdown();
+
+    var existQuery = JSON.parse(localStorage.getItem("query")) || false;
+    if (existQuery) {
+      console.log(existQuery.parameter);
+      this.query.status = existQuery.status;
+      this.query.startDate = existQuery.startDate;
+      this.query.endDate = existQuery.endDate;
+      this.query.parameter = existQuery.parameter;
+      this.advancedSearch = true;
+      this.queryData();
+    }
   }
 };
 </script>
