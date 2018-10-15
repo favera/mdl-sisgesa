@@ -14,7 +14,7 @@
       <div class="six wide required field">
         <label for="">Seleccionar Funcionario</label>
         <div class="field" :class="{error: errors.has('employee')}">
-          <select name="employee" v-model="employeeSelected" class="ui dropdown" v-validate="'required'">
+          <select name="employee" v-model="employeeSelected" class="ui fluid search selection dropdown" v-validate="'required'">
             <option disabled value="">Seleccionar Funcionario..</option>
             <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
           </select>
@@ -223,7 +223,7 @@ export default {
             this.lending.startMonth = response.data.startMonth;
             this.lending.installments = response.data.installments;
             $(this.$el)
-              .find(".ui.dropdown")
+              .find(".ui.fluid.search.selection.dropdown")
               .dropdown("refresh")
               .dropdown("set selected", response.data.employee);
 
@@ -310,7 +310,7 @@ export default {
   },
   mounted() {
     $(this.$el)
-      .find(".ui.dropdown")
+      .find(".ui.fluid.search.selection.dropdown")
       .dropdown();
   },
   created() {

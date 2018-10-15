@@ -73,14 +73,17 @@
                         <th>Fecha</th>
                         <th>Movimiento</th>
                         <th>Monto</th>
-                        <!-- <th>Opciones</th> -->
+                        <th class="center aligned">Opciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="item in payment.salarySummary" :key="item._id">
+                    <tr v-for="(item, index) in payment.salarySummary" :key="item._id">
                         <td>{{moment(item.date).format("L")}}</td>
                         <td>{{returnDescription(item.description, item.amount)}}</td>
                         <td>{{Math.round(item.amount).toLocaleString()}} {{ item.coin}}</td>
+                        <td class="center aligned">
+                            <i class="trash link icon" v-show="item.description==='prestamo'" @click="deleteItem(item, index)"></i>
+                        </td>
                     </tr>
 
                 </tbody>
@@ -114,6 +117,37 @@ export default {
   methods: {
     returnList() {
       this.$router.push({ name: "payrollList" });
+    },
+    deleteItem(item, index) {
+      this.$confirm(
+        "Esta seguro que desea eliminar la cuota de los detalles?",
+        "Atencion!",
+        {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancelar",
+          type: "warning"
+        }
+      )
+        .then(() => {
+          if (item._id) {
+            //hacer delete
+          } else {
+            this.payment.salaryBalance += item.amount * -1;
+            this.payment.salarySummary.splice(index, 1);
+
+            this.$message({
+              type: "success",
+              message: "Registro Eliminado"
+            });
+          }
+        })
+        .catch(e => {
+          console.log(e);
+          this.$message({
+            type: "info",
+            message: "Proceso Cancelado"
+          });
+        });
     },
     returnDescription(description, amount) {
       if (!description && amount < 0) {

@@ -159,7 +159,7 @@
                 <i class="search icon"></i>
               </button>
               <button @click="deleteQueryParameters" class="ui circular icon button">
-                <i class="eraser icon"></i>
+                <i class="close icon"></i>
               </button>
 
             </div>
@@ -298,7 +298,13 @@ export default {
     },
     generateReport() {
       this.$http
-        .get(`attendances/full-list?fechaPlanilla=${this.query.startDate}`)
+        .get(
+          `attendances/query-data?report=${true}&startDate=${
+            this.query.startDate
+          }&endDate=${this.query.endDate}&status=${
+            this.query.status
+          }&parameter=${this.query.parameter}`
+        )
         .then(response => {
           this.attendancesReport = response.data;
           var body = [

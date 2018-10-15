@@ -557,7 +557,7 @@ export default {
             salarySummary.date = attendance.date;
             salarySummary.description = attendance.remark;
             console.log("Delay before", attendance.delay);
-            debugger;
+            // debugger;
             salarySummary.amount = Math.round(
               moment.duration(attendance.delay, "HH:mm").asMinutes() *
                 attendance.employee.salaryPerMinute
@@ -584,6 +584,7 @@ export default {
           totalPayment.extraHourValue = 0;
           totalPayment.employee = attendance.employee._id;
           totalPayment.salaryBalance = 0;
+          totalPayment.lending = 0;
           totalPayment.salarySummary = [];
           totalPayment.name = attendance.employee.name;
           totalPayment.salary = attendance.employee.salary;
@@ -738,13 +739,15 @@ export default {
             if (lending.employee === attendance.employee._id) {
               lending.installments.forEach(fee => {
                 if (
-                  moment(fee.dueDate).isBetween(
+                  (moment(fee.dueDate).isBetween(
                     this.startDate,
                     this.endDate,
                     null,
                     []
                   ) &&
-                  fee.state === "pendiente"
+                    fee.state === "pendiente") ||
+                  (moment(fee.dueDate).isBefore(this.endDate) &&
+                    fee.state === "pendiente")
                 ) {
                   salarySummary.date = fee.dueDate;
                   salarySummary.description = "prestamo";
@@ -752,8 +755,9 @@ export default {
                   salarySummary.coin = attendance.employee.coin;
                   totalPayment.salarySummary.push(salarySummary);
                   salarySummary = {};
+                  // debugger
                   console.log("Valor prestamo", fee.amount);
-                  totalPayment.lending = fee.amount;
+                  totalPayment.lending += fee.amount;
                   this.lendingIdentifiers.push(fee._id);
                 }
               });

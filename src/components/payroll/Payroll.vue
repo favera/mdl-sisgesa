@@ -87,7 +87,7 @@
           <tbody>
 
             <tr v-for="(payment, index) in payroll" :key="payment._id">
-              <td>{{moment(payment.month).format('MMMM Do YYYY, h:mm:ss a')}} - {{payment.month}} - {{payment.year}}</td>
+              <td>{{moment(payment.month).format("MMMM")}} - {{moment(payment.year).format("YYYY")}}</td>
               <td>{{payment.status}}</td>
               <td class="center aligned">
                 <span v-if="!payment.detail">
