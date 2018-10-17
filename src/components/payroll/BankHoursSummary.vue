@@ -95,17 +95,18 @@
             <td class="center aligned">
               <span v-if="data.delay">
                 <span>{{data.delay}} Hs.</span> |
-                <span><i class="clock outline link icon" @click="amendDelay(data, index)"></i></span>
+                <span data-tooltip="Descontar de Banco de Hora"><i class="clock outline link icon" @click="amendDelay(data, index)"></i></span>
               </span>
               
             </td>
             <td class="center aligned">
               <span v-if="data.extraHours">
                 <span>{{ data.extraHours}} Hs.</span> |
-                <span>
-                  <i class="checkmark box link icon" @click="saveBankHours(data, index)"></i>
-                  <i class="remove link icon" @click="undoBankHour(data._id, data.extraHours, index)"></i>
-                  <i class="money bill alternate outline link icon" @click="payOverTime(data._id, index)"></i>
+                <span v-show="!data.hourBank">
+                  <span data-tooltip="Acumular a Banco de Hora"><i class="checkmark box link icon" @click="saveBankHours(data, index)"></i></span>
+                  <span data-tooltip="Eliminar Hora extra"><i class="remove link icon" @click="undoBankHour(data._id, data.extraHours, index)"></i></span>
+                  <span data-tooltip="Pagar Hora extra"><i class="money bill alternate outline link icon" @click="payOverTime(data._id, index)"></i></span>
+                  
                 </span>
               </span>
               
@@ -333,13 +334,15 @@ export default {
                 .put(`attendances/update-banktime/${attHistoric._id}`)
                 .then(response => {
                   console.log(response);
+                  attHistoric.hourBank = true;
+                  this.$set(this.bankHoursData, index, attHistoric);
 
-                  if (attHistoric.delay) {
-                    attHistoric.extraHours = null;
-                    this.$set(this.bankHoursData, index, attHistoric);
-                  } else {
-                    this.bankHoursData.splice(index, 1);
-                  }
+                  // if (attHistoric.delay) {
+                  //   attHistoric.hourBank = true;
+                  //   this.$set(this.bankHoursData, index, attHistoric);
+                  // } else {
+                  //   this.bankHoursData.splice(index, 1);
+                  // }
                 });
             });
         })

@@ -989,6 +989,8 @@ export default {
         attSend.entryTime = attModal.entryTime;
         attSend.exitTime = attModal.exitTime;
         attSend.secondShift = false;
+        attSend.hourBank = false;
+        attSend.payExtraHours = false;
         //calculo de Horas trabajadas
         attSend.workedHours = this.handleWorkedHours(
           attModal.entryTime,

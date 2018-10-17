@@ -99,6 +99,8 @@ export default {
         status: {},
         remark: null,
         secondShift: false,
+        payExtraHours: false,
+        hourBank: false,
         delaySecondShift: null
       },
       employeeSelected: null,

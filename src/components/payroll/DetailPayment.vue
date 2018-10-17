@@ -76,19 +76,19 @@
 
           <div class="ui right floated main menu">
             <a class="icon item">
-              <i class="user plus icon" @click="openModal"></i>
+              <span data-tooltip="Agregar funcionario a la planilla"><i class="user plus icon" @click="openModal"></i></span>
             </a>
 
             <a class="icon item">
-              <i class="save icon" @click="saveSalaryResume(id)"></i>
+              <span data-tooltip="Guardar planilla de salario"><i class="save icon" @click="saveSalaryResume(id)"></i></span>
             </a>
 
             <a class="icon item" @click="updatePaymentDetail">
-              <i class="refresh icon"></i>
+              <span data-tooltip="Actualizar datos de la planilla"><i class="refresh icon"></i></span>
             </a>
 
             <a class="icon item" @click="printPayrollReport">
-              <i class="print icon"></i>
+              <span data-tooltip="Imprimir planilla de salario"><i class="print icon"></i></span>
             </a>
 
           </div>
@@ -134,11 +134,14 @@
               <td>{{calculateNetSalary(payment.salary, payment.ips, payment.salaryAdvance, payment.lending, payment.discount, payment.extraHourValue, index)}} {{payment.coin}}</td>
               <td>
                 <div v-if="payment.employee">
-                  <i class="history link icon" @click="goToBankHourSummary(payment.employee, payment.name)"></i>
-                  <i class="icons" @click="goToPaymentSummary(payment)">
+                  <span data-tooltip="Ver resumen de horas"><i class="history link icon" @click="goToBankHourSummary(payment.employee, payment.name)"></i></span>
+                  <span data-tooltip="Ver resumen de salario">
+                    <i class="icons" @click="goToPaymentSummary(payment)">
                     <i class="file outline link icon"></i>
                     <i class="bottom left corner dollar sign icon"></i>
                   </i>
+                  </span>
+                  
                 </div>
                 <div v-else>
                   <i class="trash icon" @click="deleteOutsourcedEmployee(index, payment._id)"></i>
@@ -267,19 +270,20 @@ export default {
       this.payrollDetail.forEach(element => {
         var data = [
           element.name,
-          element.extraHourMinutes,
+          `${element.extraHourMinutes} Minutos`,
           element.delay,
           element.absence,
           element.salary,
-          element.ips,
+          element.ips || "--",
           element.salaryAdvance,
           element.lending,
-          element.discount,
+          Math.round(element.discount),
           element.extraHourValue,
           element.salaryBalance
         ];
         body.push(data);
       });
+      console.log("Datos Informe", body);
       var docDefinition = {
         content: [
           { text: "Planilla de Salarios", style: "header" },
