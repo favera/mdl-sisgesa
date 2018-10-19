@@ -137,11 +137,11 @@
                   <span data-tooltip="Ver resumen de horas"><i class="history link icon" @click="goToBankHourSummary(payment.employee, payment.name)"></i></span>
                   <span data-tooltip="Ver resumen de salario">
                     <i class="icons" @click="goToPaymentSummary(payment)">
-                    <i class="file outline link icon"></i>
-                    <i class="bottom left corner dollar sign icon"></i>
-                  </i>
+                      <i class="file outline link icon"></i>
+                      <i class="bottom left corner dollar sign icon"></i>
+                    </i>
                   </span>
-                  
+
                 </div>
                 <div v-else>
                   <i class="trash icon" @click="deleteOutsourcedEmployee(index, payment._id)"></i>
@@ -262,7 +262,7 @@ export default {
           { text: "IPS", style: "tableHeader" },
           { text: "Adelantos", style: "tableHeader" },
           { text: "Prestamos", style: "tableHeader" },
-          { text: "Descuentos (Ausencias y Retrasos)", style: "tableHeader" },
+          { text: "Descuentos", style: "tableHeader" },
           { text: "Pago Horas Extras", style: "tableHeader" },
           { text: "Salario Neto", style: "tableHeader" }
         ]
@@ -270,28 +270,37 @@ export default {
       this.payrollDetail.forEach(element => {
         var data = [
           element.name,
-          `${element.extraHourMinutes} Minutos`,
-          element.delay,
-          element.absence,
-          element.salary,
-          element.ips || "--",
-          element.salaryAdvance,
-          element.lending,
-          Math.round(element.discount),
-          element.extraHourValue,
-          element.salaryBalance
+          `${element.extraHourMinutes} Min`,
+          `${element.delay} Min`,
+          `${element.absence} Dias`,
+          `${element.salary.toLocaleString()} ${element.coin}`,
+          element.ips
+            ? `${element.ips.toLocaleString()} ${element.coin}`
+            : "--",
+          element.salaryAdvance
+            ? `${element.salaryAdvance.toLocaleString()} ${element.coin}`
+            : "--",
+          `${element.lending.toLocaleString()} ${element.coin}`,
+          `${Math.round(element.discount).toLocaleString()} ${element.coin}`,
+          `${element.extraHourValue.toLocaleString()} ${element.coin}`,
+          `${element.salaryBalance.toLocaleString()} ${element.coin}`
         ];
         body.push(data);
       });
       console.log("Datos Informe", body);
       var docDefinition = {
         content: [
-          { text: "Planilla de Salarios", style: "header" },
-          { table: { body: body } }
+          {
+            text: `Planilla de Salarios ${moment(this.startDate).format(
+              "MMMM"
+            )} ${moment(this.startDate).format("YYYY")}`,
+            style: "header"
+          },
+          { table: { body: body }, fontSize: 8 }
         ],
         styles: {
           header: {
-            fontSize: 18,
+            fontSize: 16,
             bold: true,
             margin: [0, 0, 0, 10],
             alignment: "center"

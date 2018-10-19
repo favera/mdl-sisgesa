@@ -143,9 +143,9 @@ export default {
           this.advance.employeeName = this.getEmployeeName(
             this.employeeSelected
           );
-          this.advance.amount = parseInt(
-            this.advance.amount.split(".").join("")
-          );
+          // this.advance.amount = parseInt(
+          //   this.advance.amount.split(".").join("")
+          // );
           this.$http
             .put(`/advances/update/${this.$route.params.id}`, this.advance)
             .then(response => {
@@ -162,9 +162,10 @@ export default {
           this.advance.employeeName = this.getEmployeeName(
             this.employeeSelected
           );
-          this.advance.amount = parseInt(
-            this.advance.amount.split(".").join("")
-          );
+          // debugger;
+          // this.advance.amount = parseInt(
+          //   this.advance.amount.split(".").join("")
+          // );
           this.$http
             .post(`/advances/add`, this.advance)
             .then(response => {
