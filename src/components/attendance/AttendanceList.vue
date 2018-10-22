@@ -383,16 +383,17 @@ export default {
 
       if (!this.query.startDate && !this.query.endDate) {
         this.query.startDate = moment()
+          
           .startOf("month")
           .format();
         this.query.endDate = moment()
+          
           .endOf("month")
           .format();
       }
 
       if (!this.query.startDate && this.query.endDate) {
-        this.query.startDate = moment()
-          .startOf("month")
+        this.query.startDate = moment().startOf("month")
           .format();
       }
 
@@ -491,7 +492,11 @@ export default {
     //verifica que la fecha pasada se encuentra en el array de holidays anuales y retorna el indice
     returnHoliday(date) {
       var index = this.holidaysPerYear.findIndex(holiday => {
-        if (moment(holiday.holidayDate).isSame(date)) {
+        // debugger;
+        if (
+          moment(holiday.holidayDate).isSame(date, "day") &&
+          moment(holiday.holidayDate).isSame(date, "month")
+        ) {
           return true;
         }
 

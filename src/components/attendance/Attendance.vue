@@ -5,7 +5,7 @@
       <div class="five wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{error:errors.has('attDate')}">
-          <el-date-picker name="attDate" data-vv-as="fecha" v-validate="'required'" v-model="attendance.date" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy">
+          <el-date-picker name="attDate" data-vv-as="fecha" v-validate="'required'" v-model="attendance.date" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy" value-format="yyyy-MM-dd">
           </el-date-picker>
           <div class="info-error" v-show="errors.has('attDate')">{{errors.first('attDate')}}</div>
         </div>
@@ -163,7 +163,6 @@ export default {
                 }
               });
           } else {
-            console.log(this.attendance.date);
             this.attendance.employee = this.employeeSelected;
             this.attendance.employeeName = this.getEmployeeName(
               this.employeeSelected
@@ -185,6 +184,10 @@ export default {
               this.attendance.exitTime,
               this.attendance.date
             );
+
+            // this.attendance.date = moment(this.attendance.date, "YYYY-MM-DD")
+            //   .startOf("day")
+            //   .format();
 
             this.attendance.status.absent = false;
             this.attendance.status.vacation = false;
