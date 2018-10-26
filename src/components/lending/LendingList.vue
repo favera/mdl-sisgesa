@@ -21,12 +21,12 @@
 
               <div class="inline fields">
                 <div class="field" :class="{error: error.startDate}">
-                  <el-date-picker v-model="query.startDate" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy">
+                  <el-date-picker v-model="query.startDate" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" value-format="yyyy-MM-dd">
                   </el-date-picker>
                 </div>
 
                 <div class="field" :class="{error: error.endDate}">
-                  <el-date-picker v-model="query.endDate" type="date" placeholder="Fecha fin" format="dd/MM/yyyy">
+                  <el-date-picker v-model="query.endDate" type="date" placeholder="Fecha fin" format="dd/MM/yyyy" value-format="yyyy-MM-dd">
                   </el-date-picker>
                 </div>
 

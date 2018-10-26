@@ -113,12 +113,12 @@
           <label for="">Rango de Fechas:</label>
           <div class="inline fields">
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" v-model="query.startDate">
+              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" value-format="yyyy-MM-dd" v-model="query.startDate">
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy" v-model="query.endDate">
+              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy" value-format="yyyy-MM-dd" v-model="query.endDate">
               </el-date-picker>
             </div>
 

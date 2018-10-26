@@ -6,7 +6,7 @@
       <div class="ten wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{'error': errors.has('date')}">
-          <el-date-picker v-model="advance.date" format="dd/MM/yyyy" type="date" name="date" v-validate="'required'"></el-date-picker>
+          <el-date-picker v-model="advance.date" format="dd/MM/yyyy" type="date" name="date" v-validate="'required'" value-format="yyyy-MM-dd"></el-date-picker>
           <div v-show="errors.has('date')" class="info-error">{{errors.first('date')}}</div>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default {
   data() {
     return {
       advance: {
-        date: new Date(),
+        date: moment(new Date()).format("YYYY-MM-DD"),
         employee: null,
         employeeName: null,
         advanceType: "quincena",
@@ -82,7 +82,6 @@ export default {
       },
       disabledInput: true,
       employeeSelected: null,
-      setDate: new Date(),
       employees: [],
       salary: null,
       money: {

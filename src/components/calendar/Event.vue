@@ -43,7 +43,7 @@
         <div class="ten wide required field">
           <label for="">Fecha del Feriado</label>
           <div class="field" :class="{error: errors.has('holidayDate')}">
-            <el-date-picker name="holidayDate" v-model="event.holidayDate" format="dd/MM/yyyy" data-vv-as="fecha del feriado" v-validate="'required'" placeholder="Seleccionar fecha"></el-date-picker>
+            <el-date-picker name="holidayDate" v-model="event.holidayDate" format="dd/MM/yyyy" value-format="yyyy-MM-dd" data-vv-as="fecha del feriado" v-validate="'required'" placeholder="Seleccionar fecha"></el-date-picker>
             <div class="info-error" v-show="errors.has('holidayDate')">{{this.errors.first('holidayDate')}}</div>
           </div>
 
@@ -78,13 +78,13 @@
           <div class="inline fields">
             <label>Fecha Inicio</label>
             <div class="field" :class="{error: errors.has('startDate')}">
-              <el-date-picker name="startDate" v-model="event.startDate" type="date" format="dd/MM/yyyy" v-validate="{required: true}" data-vv-as="fecha inicio" placeholder="Seleccionar Fecha"></el-date-picker>
+              <el-date-picker name="startDate" v-model="event.startDate" type="date" format="dd/MM/yyyy" value-format="yyyy-MM-dd" v-validate="{required: true}" data-vv-as="fecha inicio" placeholder="Seleccionar Fecha"></el-date-picker>
               <div class="info-error" v-show="errors.has('startDate')">{{errors.first('startDate')}}</div>
             </div>
 
             <label>Fecha Fin</label>
             <div class="field" :class="{error: errors.has('endDate')}">
-              <el-date-picker name="endDate" v-model="event.endDate" type="date" format="dd/MM/yyyy" data-vv-as="fecha fin" v-validate="{required:true}" placeholder="Seleccionar Fecha"></el-date-picker>
+              <el-date-picker name="endDate" v-model="event.endDate" type="date" format="dd/MM/yyyy" value-format="yyyy-MM-dd" data-vv-as="fecha fin" v-validate="{required:true}" placeholder="Seleccionar Fecha"></el-date-picker>
               <div class="info-error" v-show="errors.has('endDate')">{{errors.first('endDate')}}</div>
             </div>
           </div>
