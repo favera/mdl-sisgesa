@@ -9,7 +9,7 @@
           <div class="required field">
             <label>Seleccione Mes</label>
             <div class="field" :class="{error: errors.has('monthPeriod')}">
-              <el-date-picker name="monthPeriod" data-vv-as="mes" v-validate="'required'" type="month" placeholder="Seleccionar Mes" v-model="salaryData.month" format="MMMM">
+              <el-date-picker name="monthPeriod" data-vv-as="mes" v-validate="'required'" type="month" placeholder="Seleccionar Mes" v-model="salaryData.month" format="MMMM" value-format="yyyy-MM-dd">
               </el-date-picker>
               <div class="info-error" v-show="errors.has('monthPeriod')">{{errors.first('monthPeriod')}}</div>
             </div>
@@ -17,7 +17,7 @@
           <div class="required field">
             <label>Seleccione Año</label>
             <div class="field" :class="{error: errors.has('yearPeriod')}">
-              <el-date-picker name="yearPeriod" data-vv-as="año" v-validate="'required'" type="year" placeholder="Seleccionar Año" v-model="salaryData.year" format="yyyy"></el-date-picker>
+              <el-date-picker name="yearPeriod" data-vv-as="año" v-validate="'required'" type="year" placeholder="Seleccionar Año" v-model="salaryData.year" format="yyyy" value-format="yyyy-MM-dd"></el-date-picker>
               <div class="info-error" v-show="errors.has('yearPeriod')">{{errors.first('yearPeriod')}}</div>
             </div>
           </div>
@@ -44,13 +44,13 @@
             <label for="">Mes:</label>
 
             <div class="field">
-              <el-date-picker type="month" placeholder="Seleccionar Mes" v-model="query.month" format="MMMM">
+              <el-date-picker type="month" placeholder="Seleccionar Mes" v-model="query.month" format="MMMM" value-format="yyyy-MM-dd">
               </el-date-picker>
             </div>
             <label for="">Año:</label>
 
             <div class="field">
-              <el-date-picker type="year" placeholder="Seleccionar Año" format="yyyy" v-model="query.year">
+              <el-date-picker type="year" placeholder="Seleccionar Año" format="yyyy" v-model="query.year" value-format="yyyy-MM-dd">
               </el-date-picker>
             </div>
 

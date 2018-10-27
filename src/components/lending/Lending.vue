@@ -6,7 +6,7 @@
       <div class="ten wide required field">
         <label for="">Fecha</label>
         <div class="field" :class="{error: errors.has('fechaPrestamo')}">
-          <el-date-picker name="fechaPrestamo" v-model="lending.date" format="dd/MM/yyyy" type="date" v-validate="'required'"></el-date-picker>
+          <el-date-picker name="fechaPrestamo" v-model="lending.date" format="dd/MM/yyyy" value-format="yyyy-MM-dd" type="date" v-validate="'required'"></el-date-picker>
           <span class="info-error" v-show="errors.has('fechaPrestamo')">{{errors.first('fechaPrestamo')}}</span>
         </div>
       </div>
