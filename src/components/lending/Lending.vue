@@ -52,7 +52,7 @@
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
                 <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="lending.startMonth" type="month" placeholder="Seleccionar mes" v-validate="'required'">
+                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="lending.startMonth" value-format="yyyy-MM-dd" type="month" placeholder="Seleccionar mes" v-validate="'required'">
                   </el-date-picker>
                 </div>
                 <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
@@ -99,7 +99,7 @@
 
                   <div class="item" :key="installment.dueDate" v-for="installment in lending.installments">
                     <div class="middle aligned content">
-                      <p>{{moment(installment.dueDate).format("L")}}</p>
+                      <p>{{moment(installment.dueDate, "YYYY-MM-DD").utc(-4).format()}}</p>
                     </div>
                     <div class="middle aligned content">
                       <p>{{installment.amount.toLocaleString()}}-{{installment.coin}}</p>
