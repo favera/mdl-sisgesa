@@ -99,7 +99,7 @@
 
                   <div class="item" :key="installment.dueDate" v-for="installment in lending.installments">
                     <div class="middle aligned content">
-                      <p>{{moment(installment.dueDate, "YYYY-MM-DD").utc(-4).format()}}</p>
+                      <p>{{moment.utc(installment.dueDate).format("L")}}</p>
                     </div>
                     <div class="middle aligned content">
                       <p>{{installment.amount.toLocaleString()}}-{{installment.coin}}</p>
@@ -140,7 +140,7 @@ export default {
     return {
       lending: {
         id: null,
-        date: new Date(),
+        date: moment(new Date()).format("YYYY-MM-DD"),
         employee: null,
         employeeName: null,
         coin: null,
@@ -194,9 +194,12 @@ export default {
           );
           installment.coin = this.lending.coin;
           installment.state = "pendiente";
+          
           installment.dueDate = moment(this.lending.startMonth)
-            .add(i, "months")
+            .add(i, "months").utcOffset(-4)
             .format();
+
+         
 
           this.lending.installments.push(installment);
           i++;

@@ -135,7 +135,7 @@
             <div class="four wide column">
               <a class="ui large purple label">
                 <i class="calendar inverted icon"></i>
-                JUNIO
+                {{moment().format("MMMM").toUpperCase()}}
               </a>
             </div>
           </div>
@@ -170,8 +170,8 @@ export default {
       // dateEnd: moment(new Date())
       //   .endOf("month")
       //   .format(),
-      dateStart: "2018-08-01T00:00:00-04:00",
-      dateEnd: "2018-08-30T00:00:00-04:00",
+      dateStart: "2018-08-01",
+      dateEnd: "2018-08-30",
       queryResults: {
         absence: null,
         incomplete: null,
