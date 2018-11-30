@@ -35,7 +35,7 @@
 
               <div class="five wide field" :class="{error: errors.has('amount')}">
                 <div class="ui input">
-                  <input name="amount" v-model.lazy="lending.amount" v-money="money" v-validate="'required|validar_monto'">
+                  <input name="amount" data-vv-as="monto" v-model.lazy="lending.amount" v-money="money" v-validate="'required|validar_monto'">
                 </div>
                 <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
               </div>
@@ -194,12 +194,11 @@ export default {
           );
           installment.coin = this.lending.coin;
           installment.state = "pendiente";
-          
-          installment.dueDate = moment(this.lending.startMonth)
-            .add(i, "months").utcOffset(-4)
-            .format();
 
-         
+          installment.dueDate = moment(this.lending.startMonth)
+            .add(i, "months")
+            .utcOffset(-4)
+            .format();
 
           this.lending.installments.push(installment);
           i++;

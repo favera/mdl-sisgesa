@@ -153,6 +153,15 @@
             </tr>
 
           </tbody>
+
+          <tfoot>
+            <tr>
+              <th colspan="12">
+                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+                </app-pagination>
+              </th>
+            </tr>
+          </tfoot>
         </table>
         <div v-show="loading" class="ui segment large">
           <div class="ui active inverted dimmer">
@@ -170,6 +179,7 @@
 <script>
 import moment from "moment";
 import { VMoney } from "v-money";
+import Pagination from ".././shared/Pagination.vue";
 
 export default {
   props: {
@@ -194,6 +204,11 @@ export default {
       attendances: [],
       lendingIdentifiers: [],
       modal: null,
+      pageOne: {
+        currentPage: 1,
+        totalItems: 0,
+        itemsPerPage: 10
+      },
       outsourcedEmployee: {
         name: "",
         salary: "",
@@ -209,6 +224,7 @@ export default {
       //ver si realmente se usa
       events: [],
       payrollDetail: [],
+      payrollDetailResponse: [],
       // marcacionesEmpleado: [],
       advances: [],
       money: {
@@ -320,6 +336,19 @@ export default {
     },
     formatDelay(valor) {
       return Math.round(valor * -1).toLocaleString();
+    },
+    pageOneChanged(page) {
+      console.log(page);
+      var indexStart =
+        this.pageOne.itemsPerPage * page - this.pageOne.itemsPerPage;
+      var indexFinal = indexStart + this.pageOne.itemsPerPage;
+
+      this.payrollDetail = this.payrollDetailResponse.slice(
+        indexStart,
+        indexFinal
+      );
+
+      this.pageOne.currentPage = page;
     },
     updatePaymentDetail() {
       this.loading = true;
@@ -836,6 +865,9 @@ export default {
         });
     }
   },
+  components: {
+    appPagination: Pagination
+  },
   mounted() {
     this.modal = $(this.$el).find(".ui.small.modal");
   },
@@ -843,7 +875,10 @@ export default {
     this.loading = true;
     if (this.detail) {
       this.$http.get(`/payrolls/salary-detail/${this.id}`).then(response => {
-        this.payrollDetail = response.data.salaryDetail;
+        this.payrollDetailResponse = response.data.salaryDetail;
+        this.payrollDetail = response.data.salaryDetail.slice(0, 10);
+        this.pageOne.totalItems = response.data.salaryDetail.length;
+        console.log("Total items", this.pageOne.totalItems);
         this.loading = false;
       });
     } else {
