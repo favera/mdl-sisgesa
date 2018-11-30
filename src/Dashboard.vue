@@ -142,11 +142,11 @@
       
           <div class="ui olive progress">
             <div class="bar"></div>
-            <div class="label">320.000.000 Gs.</div>
+            <div class="label">{{this.salaries[0].totalSalary - this.salaries[0]._id}}</div>
           </div>
           <div class="ui green progress">
             <div class="bar"></div>
-            <div class="label">110.000 Rs.</div>
+            <div class="label">{{this.salaries[1].totalSalary - this.salaries[1]._id}}</div>
           </div>
 
         </div>
@@ -162,7 +162,7 @@ import moment from "moment";
 
 export default {
   name: "dashboard",
-  data() {    
+  data() {
     return {
       // dateStart: moment(new Date())
       //   .startOf("month")
@@ -176,7 +176,8 @@ export default {
         absence: null,
         incomplete: null,
         delay: null
-      }
+      },
+      salaries: []
     };
   },
   methods: {
@@ -196,15 +197,19 @@ export default {
           this.dateEnd
         }`
       );
-      const [absence, incomplete, delay] = await Promise.all([
+
+      let salariesPromise = this.$http.get(`/employees/get-salaries`);
+      const [absence, incomplete, delay, salaries] = await Promise.all([
         absencePromise,
         incompletePromise,
-        delayPromise
+        delayPromise,
+        salaries
       ]);
-      
+
       this.queryResults.absence = absence.data;
       this.queryResults.incomplete = incomplete.data;
       this.queryResults.delay = delay.data;
+      this.salaries = salaries.data;
     }
   },
   created() {
