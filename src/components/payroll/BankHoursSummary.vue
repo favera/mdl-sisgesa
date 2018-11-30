@@ -31,10 +31,10 @@
 
       </div>
 
-      <div class="ui two cards">
+      <div class="ui three cards">
         <div class="teal card">
           <div class="middle aligned content">
-            <div class="header">Total de Horas Acumuladas:</div>
+            <div class="header">Banco de Horas:</div>
             <div class="ui basic segment">
               <div class="ui horizontal statistic">
                 <div class="value">
@@ -52,11 +52,33 @@
               </div>
             </div>
           </div>
-
         </div>
+
+        <div class="red card">
+          <div class="middle aligned content">
+            <div class="header">Total Retrasos:</div>
+            <div class="ui basic segment">
+              <div class="ui horizontal statistic">
+                <div class="value">
+                  {{moment(this.monthlyDelay.delayHour, "HH").format("HH")}}
+                </div>
+                <div class="label">
+                  horas
+                </div>
+                <div class="value">
+                  {{moment(this.monthlyDelay.delayMinutes, "mm").format("mm")}}
+                </div>
+                <div class="label">
+                  minutos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="blue card">
           <div class="middle aligned content">
-            <div class="header">Banco de Horas acumuladas del mes:</div>
+            <div class="header">Horas acumuladas del mes:</div>
             <div class="ui basic segment">
               <div class="ui horizontal statistic">
                 <div class="value">
@@ -160,6 +182,11 @@ export default {
         totalMinutes: null,
         employee: null
       },
+      monthlyDelay: {
+        totalDelay: 0,
+        delayMinutes: null,
+        delayHour: null
+      },
       monthlyBankHours: {
         totalExtraHours: 0,
         extraHoursInMinutes: null,
@@ -183,8 +210,9 @@ export default {
         totalBankHoursPromise,
         attendanceHistoricPromise
       ]);
-
+      //se pasa los datos del historico de marcacion a bankHoursData
       this.bankHoursData = attendanceHistoric.data;
+      //aca verifica el retorno de banco de hora para mostrar en el resumen
       if (totalBankHours.data.length > 0) {
         this.totalBankHours.totalMinutes = totalBankHours.data[0].totalMinutes;
         this.totalBankHours.employee = totalBankHours.data[0].employee;
@@ -194,9 +222,17 @@ export default {
       //Obtener el total de las Horas extras para desplegar
       if (this.bankHoursData.length > 0) {
         this.bankHoursData.forEach(attEmployee => {
+          //total minutos horas extras
           if (attEmployee.extraHours && !attEmployee.payExtraHours) {
             this.monthlyBankHours.totalExtraHours += moment
               .duration(attEmployee.extraHours, "HH:mm")
+              .asMinutes();
+          }
+          //total minutos retrasos
+          if (attEmployee.delay) {
+            console.log("Retraso", attEmployee.delay);
+            this.monthlyDelay.totalDelay += moment
+              .duration(attEmployee.delay, "HH:mm")
               .asMinutes();
           }
         });
@@ -204,8 +240,17 @@ export default {
         var h, m;
         h = Math.floor(this.monthlyBankHours.totalExtraHours / 60);
         m = this.monthlyBankHours.totalExtraHours % 60;
-        this.monthlyBankHours.extraHoursInHour = h;
-        this.monthlyBankHours.extraHoursInMinutes = m;
+        this.monthlyBankHours.extraHoursInHour = Math.floor(
+          this.monthlyBankHours.totalExtraHours / 60
+        );
+        this.monthlyBankHours.extraHoursInMinutes =
+          this.monthlyBankHours.totalExtraHours % 60;
+        this.monthlyDelay.delayHour = Math.ceil(
+          this.monthlyDelay.totalDelay / 60
+        );
+        this.monthlyDelay.delayMinutes = this.getMinutes(
+          this.monthlyDelay.totalDelay
+        );
       }
     },
     getHours(value) {

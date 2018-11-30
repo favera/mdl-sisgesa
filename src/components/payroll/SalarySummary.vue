@@ -33,14 +33,14 @@
 
       </div>
 
-      <div class="ui two cards">
+      <div class="ui three cards">
         <div class="teal card">
           <div class="middle aligned content">
-            <div class="header">Salario Base:</div>
+            <div class="header">Salario Base + Horas Extras:</div>
             <div class="ui basic segment">
               <div class="ui horizontal statistic">
                 <div class="value">
-                  {{this.payment.salary.toLocaleString()}}
+                  {{this.totalIncome.toLocaleString()}}
                 </div>
                 <div class="label">
                   {{this.payment.coin}}
@@ -48,7 +48,21 @@
               </div>
             </div>
           </div>
-
+        </div>
+        <div class="red card">
+          <div class="middle aligned content">
+            <div class="header">Total Descuentos:</div>
+            <div class="ui basic segment">
+              <div class="ui horizontal statistic">
+                <div class="value">
+                  {{this.totalDiscount}}
+                </div>
+                <div class="label">
+                  {{this.payment.coin}}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="blue card">
           <div class="middle aligned content">
@@ -82,7 +96,7 @@
             <td>{{returnDescription(item.description, item.amount)}}</td>
             <td>{{Math.round(item.amount).toLocaleString()}} {{ item.coin}}</td>
             <td class="center aligned">
-              <i class="trash link icon" v-show="item.description==='prestamo'" @click="deleteItem(item, index)"></i>
+              <i class="trash link icon" v-if="(payment.status === 'pendiente')" @click="deleteItem(item, index)"></i>
             </td>
           </tr>
 
@@ -112,11 +126,28 @@ export default {
     }
   },
   data() {
-    return {};
+    return {
+      totalDiscount: 0,
+      totalIncome: 0
+    };
   },
   methods: {
     returnList() {
       this.$router.push({ name: "payrollList" });
+    },
+    getDiscount() {
+      this.payment.salarySummary.forEach(summary => {
+        if (summary.amount < 0) {
+          this.totalDiscount += summary.amount;
+        }
+        if (summary.amount > 0) {
+          this.totalIncome += summary.amount;
+        }
+      });
+
+      this.totalIncome += this.payment.salary;
+
+      this.totalDiscount = Math.floor(this.totalDiscount).toLocaleString();
     },
     deleteItem(item, index) {
       this.$confirm(
@@ -147,6 +178,8 @@ export default {
                 );
               });
           } else {
+            this.payment.salaryBalance += item.amount * -1;
+            this.payment.salarySummary.splice(index, 1);
             this.$message({
               type: "success",
               message: "Registro Eliminado"
@@ -198,7 +231,9 @@ export default {
       }
     }
   },
-  created() {}
+  created() {
+    this.getDiscount();
+  }
 };
 </script>
 
