@@ -91,35 +91,26 @@
                 <h5>Nombre</h5>
               </div>
               <div class="middle aligned content">
-                <h5>Fecha</h5>
+                <h5>Vencimiento</h5>
               </div>
               <div class="middle aligned content">
                 <h5>Valor</h5>
               </div>
             </div>
-            <div class="item">
+            <div
+              class="item"
+              v-for="loan in lendings"
+              :key="loan._id"
+            >
 
               <div class="middle aligned content">
-                <p>Fulano de Tal</p>
+                <p>{{loan.employeeName}}</p>
               </div>
               <div class="middle aligned content">
-                <p>26/06/2018</p>
+                <p>{{loan.installment.dueDate}}</p>
               </div>
               <div class="middle aligned content">
-                <p>220.000 Gs</p>
-              </div>
-            </div>
-
-            <div class="item">
-
-              <div class="middle aligned content">
-                <p>Fulano de Tal</p>
-              </div>
-              <div class="middle aligned content">
-                <p>26/06/2018</p>
-              </div>
-              <div class="middle aligned content">
-                <p>220.000 Gs</p>
+                <p>{{loan.installment.amount }}{{loan.installment.coin}}</p>
               </div>
             </div>
 
@@ -139,14 +130,14 @@
               </a>
             </div>
           </div>
-      
+
           <div class="ui olive progress">
             <div class="bar"></div>
-            <div class="label">{{this.salaries[0].totalSalary - this.salaries[0]._id}}</div>
+            <div class="label">{{this.salaries[0].totalSalary.toLocaleString()}} {{this.salaries[0]._id}}</div>
           </div>
           <div class="ui green progress">
             <div class="bar"></div>
-            <div class="label">{{this.salaries[1].totalSalary - this.salaries[1]._id}}</div>
+            <div class="label">{{this.salaries[1].totalSalary.toLocaleString()}} {{this.salaries[1]._id}}</div>
           </div>
 
         </div>
@@ -177,7 +168,8 @@ export default {
         incomplete: null,
         delay: null
       },
-      salaries: []
+      salaries: [],
+      lendings: []
     };
   },
   methods: {
@@ -199,17 +191,22 @@ export default {
       );
 
       let salariesPromise = this.$http.get(`/employees/get-salaries`);
-      const [absence, incomplete, delay, salaries] = await Promise.all([
+
+      let loanPromise = this.$http.get(`/lendings/all-lendings/state-pendent`);
+
+      const [absence, incomplete, delay, salaries, loans] = await Promise.all([
         absencePromise,
         incompletePromise,
         delayPromise,
-        salaries
+        salariesPromise,
+        loanPromise
       ]);
 
       this.queryResults.absence = absence.data;
       this.queryResults.incomplete = incomplete.data;
       this.queryResults.delay = delay.data;
       this.salaries = salaries.data;
+      this.lendings = loans.data;
     }
   },
   created() {
