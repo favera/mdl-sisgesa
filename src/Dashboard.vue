@@ -86,35 +86,38 @@
           <h3>Prestamos a Cobrar</h3>
 
           <div class="ui relaxed divided items">
-            <div class="item">
-              <div class="middle aligned content">
-                <h5>Nombre</h5>
-              </div>
-              <div class="middle aligned content">
-                <h5>Vencimiento</h5>
-              </div>
-              <div class="middle aligned content">
-                <h5>Valor</h5>
+            <div class="item" v-for="loan in lendings" :key="loan._id">
+              <div class="content">
+                <h5 class="ui header">{{loan.employeeName}}</h5>
+
+                 <div class="ui relaxed divided items">
+                    <div class="item">
+                      <div class="middle aligned content">
+                        <h5>Vencimiento</h5>
+                      </div>
+                      <div class="middle aligned content">
+                        <h5>Valor</h5>
+                      </div>
+                    </div>
+                    <div
+                      class="item"
+                    v-for="installment in loan.installments" :key="installment._key"
+                    >
+
+                    
+                      <div class="middle aligned content">
+                        <p>{{moment(installment.dueDate).format("DD/MM/YYYY")}}</p>
+                      </div>
+                      <div class="middle aligned content">
+                        <p>{{installment.amount.toLocaleString()}} {{installment.coin}}</p>
+                      </div>
+                    </div>
+                  </div>
               </div>
             </div>
-            <div
-              class="item"
-              v-for="loan in lendings"
-              :key="loan._id"
-            >
-
-              <div class="middle aligned content">
-                <p>{{loan.employeeName}}</p>
-              </div>
-              <div class="middle aligned content">
-                <p>{{loan.installment.dueDate}}</p>
-              </div>
-              <div class="middle aligned content">
-                <p>{{loan.installment.amount }}{{loan.installment.coin}}</p>
-              </div>
-            </div>
-
           </div>
+
+         
         </div>
       </div>
       <div class="column">
@@ -131,11 +134,13 @@
             </div>
           </div>
 
-          <div class="ui olive progress">
-            <div class="bar"></div>
+          <div class="ui teal progress" data-value="15" data-total="20" id="salary">
+            <div class="bar">
+              <div class="progress"></div>
+            </div>
             <div class="label">{{this.salaries[0].totalSalary.toLocaleString()}} {{this.salaries[0]._id}}</div>
           </div>
-          <div class="ui green progress">
+          <div class="ui blue progress">
             <div class="bar"></div>
             <div class="label">{{this.salaries[1].totalSalary.toLocaleString()}} {{this.salaries[1]._id}}</div>
           </div>
@@ -209,8 +214,10 @@ export default {
       this.lendings = loans.data;
     }
   },
+
   created() {
     this.getDataDashboard();
+    
   }
 };
 </script>
