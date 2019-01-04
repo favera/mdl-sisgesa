@@ -1,25 +1,63 @@
 <template>
   <div class="ui twelve wide column">
-    <form class="ui form" @submit.prevent="saveAttendance">
+    <form
+      class="ui form"
+      @submit.prevent="saveAttendance"
+    >
       <div class="ui dividing header">Registrar Asistencia</div>
       <div class="five wide required field">
         <label for="">Fecha</label>
-        <div class="field" :class="{error:errors.has('attDate')}">
-          <el-date-picker name="attDate" data-vv-as="fecha" v-validate="'required'" v-model="attendance.date" type="date" placeholder="Seleccionar fecha" format="dd/MM/yyyy" value-format="yyyy-MM-dd">
+        <div
+          class="field"
+          :class="{error:errors.has('attDate')}"
+        >
+          <el-date-picker
+            name="attDate"
+            data-vv-as="fecha"
+            v-validate="'required'"
+            v-model="attendance.date"
+            type="date"
+            placeholder="Seleccionar fecha"
+            format="dd/MM/yyyy"
+            value-format="yyyy-MM-dd"
+          >
           </el-date-picker>
-          <div class="info-error" v-show="errors.has('attDate')">{{errors.first('attDate')}}</div>
+          <div
+            class="info-error"
+            v-show="errors.has('attDate')"
+          >{{errors.first('attDate')}}</div>
         </div>
       </div>
 
       <div class="two fields">
         <div class="six wide required field">
           <label for="">Funcionario</label>
-          <div class="field" :class="{error: errors.has('attEmployee')}">
-            <select name="attEmployee" data-vv-as="funcionario" v-validate="'required'" v-model="employeeSelected" class="ui fluid search selection dropdown" id="funcionarioSelector">
-              <option disabled value="">Seleccionar Funcionario..</option>
-              <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
+          <div
+            class="field"
+            :class="{error: errors.has('attEmployee')}"
+          >
+            <select
+              name="attEmployee"
+              data-vv-as="funcionario"
+              v-validate="'required'"
+              v-model="employeeSelected"
+              class="ui fluid search selection dropdown"
+              id="funcionarioSelector"
+            >
+              <option
+                disabled
+                value=""
+              >Seleccionar Funcionario..</option>
+              <option
+                v-for="employee in employees"
+                :key="employee._id"
+                v-bind:value="employee._id"
+              >{{employee.name}}</option>
             </select>
-            <span class="info-error" v-show="errors.has('attEmployee')">{{errors.first('attEmployee')}}</span>
+            <span
+              class="info-error"
+              v-show="errors.has('attEmployee')"
+            >{{errors.first('attEmployee')}}</span>
           </div>
         </div>
       </div>
@@ -27,23 +65,53 @@
       <div class="fields">
         <div class="required field">
           <label for="">Marcacion Entrada</label>
-          <div class="field" :class="{error: errors.has('attEntry')}">
-            <el-time-picker name="attEntry" data-vv-as="marcación entrada" v-validate="'required'" v-model="attendance.entryTime" value-format="HH:mm" format="HH:mm" :picker-options="{
+          <div
+            class="field"
+            :class="{error: errors.has('attEntry')}"
+          >
+            <el-time-picker
+              name="attEntry"
+              data-vv-as="marcación entrada"
+              v-validate="'required'"
+              v-model="attendance.entryTime"
+              value-format="HH:mm"
+              format="HH:mm"
+              :picker-options="{
                     format: 'HH:mm'
-                    }" placeholder="Seleccionar hora">
+                    }"
+              placeholder="Seleccionar hora"
+            >
             </el-time-picker>
-            <div class="info-error" v-show="errors.has('attEntry')">{{errors.first('attEntry')}}</div>
+            <div
+              class="info-error"
+              v-show="errors.has('attEntry')"
+            >{{errors.first('attEntry')}}</div>
           </div>
         </div>
 
         <div class="required field">
           <label for="">Marcacion Salida</label>
-          <div class="field" :class="{error: errors.has('attExit')}">
-            <el-time-picker name="attExit" data-vv-as="marcación salida" v-validate="'required'" v-model="attendance.exitTime" value-format="HH:mm" format="HH:mm" :picker-options="{
+          <div
+            class="field"
+            :class="{error: errors.has('attExit')}"
+          >
+            <el-time-picker
+              name="attExit"
+              data-vv-as="marcación salida"
+              v-validate="'required'"
+              v-model="attendance.exitTime"
+              value-format="HH:mm"
+              format="HH:mm"
+              :picker-options="{
                     format: 'HH:mm'
-                    }" placeholder="Seleccionar hora">
+                    }"
+              placeholder="Seleccionar hora"
+            >
             </el-time-picker>
-            <div class="info-error" v-show="errors.has('attExit')">{{errors.first('attExit')}}</div>
+            <div
+              class="info-error"
+              v-show="errors.has('attExit')"
+            >{{errors.first('attExit')}}</div>
           </div>
         </div>
 
@@ -59,9 +127,16 @@
                 </el-switch>
               </div>
               <div class="field">
-                <el-time-picker v-model="attendance.delaySecondShift" value-format="HH:mm" :disabled="!attendance.secondShift" format="HH:mm" :picker-options="{
+                <el-time-picker
+                  v-model="attendance.delaySecondShift"
+                  value-format="HH:mm"
+                  :disabled="!attendance.secondShift"
+                  format="HH:mm"
+                  :picker-options="{
                     format: 'HH:mm'
-                    }" placeholder="Ingresar retraso">
+                    }"
+                  placeholder="Ingresar retraso"
+                >
                 </el-time-picker>
 
               </div>
@@ -73,10 +148,22 @@
 
       <div class="ten wide field">
         <label for="">Observacion</label>
-        <textarea name="" id="" rows="2" v-model="attendance.remark"></textarea>
+        <textarea
+          name=""
+          id=""
+          rows="2"
+          v-model="attendance.remark"
+        ></textarea>
       </div>
-      <button class="ui teal button" type="submit" :class="{disabled: errors.any()}">Guardar</button>
-      <div class="ui button" @click="cancel">Cancelar</div>
+      <button
+        class="ui teal button"
+        type="submit"
+        :class="{disabled: errors.any()}"
+      >Guardar</button>
+      <div
+        class="ui button"
+        @click="cancel"
+      >Cancelar</div>
     </form>
   </div>
 </template>
@@ -406,10 +493,10 @@ export default {
             this.attendance.remark = response.data.remark;
             this.attendance.secondShift = response.data.secondShift;
             this.attendance.delaySecondShift = response.data.delay;
-            $(this.$el)
-              .find(".ui.fluid.search.selection.dropdown")
-              .dropdown("refresh")
-              .dropdown("set selected", response.data.employee);
+            // $(this.$el)
+            //   .find(".ui.fluid.search.selection.dropdown")
+            //   .dropdown("refresh")
+            //   .dropdown("set selected", response.data.employee);
           });
       }
     },

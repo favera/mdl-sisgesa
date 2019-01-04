@@ -9,10 +9,22 @@
           <div class="inline fields">
             <div class="ten wide field">
               <div class="ui icon input">
-                <input type="text" v-model="query.parameter" @keydown="searchEvents" placeholder="Buscar Evento...">
-                <i class="close link icon" v-show="query.parameter" @click="cleanField()"></i>
+                <input
+                  type="text"
+                  v-model="query.parameter"
+                  @keydown="searchEvents"
+                  placeholder="Buscar Evento..."
+                >
+                <i
+                  class="close link icon"
+                  v-show="query.parameter"
+                  @click="cleanField()"
+                ></i>
               </div>
-              <button class="ui circular teal icon button" @click="searchEvents">
+              <button
+                class="ui circular teal icon button"
+                @click="searchEvents"
+              >
                 <i class="search icon"></i>
               </button>
             </div>
@@ -39,7 +51,10 @@
 
         <div class="field">
           <div class="ui right floated main menu">
-            <a class="icon item" @click="addEvent">
+            <a
+              class="icon item"
+              @click="addEvent"
+            >
               <i class="plus icon"></i>
             </a>
 
@@ -63,16 +78,31 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="event in events" :key="event._id">
+          <tr
+            v-for="event in events"
+            :key="event._id"
+          >
             <td class="capital">{{event.eventType}}</td>
             <td>{{event.holidayDescription || event.employeeName}}</td>
             <td>{{moment(event.holidayDate || event.startDate).format("L")}}</td>
             <td>{{moment(event.holidayDate || event.endDate).format("L")}}</td>
-            <td></td>
+            <td>{{event.remark}}</td>
             <td class="center aligned">
-              <i class="edit row link icon" :class="{disabled:!event.active}" @click="editEvent(event.active, event._id)"></i>
-              <i class="trash link icon" :class="{disabled:!event.active}" @click="confirm(event._id, event.employee, event.active)"></i>
-              <i class="archive link icon" :class="{disabled:!event.active}" @click="closeVacations(event._id, event.employee, event.active)"></i>
+              <i
+                class="edit row link icon"
+                :class="{disabled:!event.active}"
+                @click="editEvent(event.active, event._id)"
+              ></i>
+              <i
+                class="trash link icon"
+                :class="{disabled:!event.active}"
+                @click="confirm(event._id, event.employee, event.active)"
+              ></i>
+              <i
+                class="archive link icon"
+                :class="{disabled:!event.active}"
+                @click="closeVacations(event._id, event.employee, event.active)"
+              ></i>
             </td>
           </tr>
 
@@ -80,7 +110,12 @@
         <tfoot v-show="pageOne.totalItems > 10">
           <tr>
             <th colspan="6">
-              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              <app-pagination
+                :current-page="pageOne.currentPage"
+                :total-items="pageOne.totalItems"
+                :items-per-page="pageOne.itemsPerPage"
+                @page-changed="pageOneChanged"
+              >
               </app-pagination>
             </th>
           </tr>

@@ -1,24 +1,58 @@
 <template>
   <div class="ui twelve wide column">
-    <form class="ui form" @submit.prevent="saveAdvance">
+    <form
+      class="ui form"
+      @submit.prevent="saveAdvance"
+    >
       <div class="ui dividing header">Incluir Adelanto</div>
 
       <div class="ten wide required field">
         <label for="">Fecha</label>
-        <div class="field" :class="{'error': errors.has('date')}">
-          <el-date-picker v-model="advance.date" format="dd/MM/yyyy" type="date" name="date" v-validate="'required'" value-format="yyyy-MM-dd"></el-date-picker>
-          <div v-show="errors.has('date')" class="info-error">{{errors.first('date')}}</div>
+        <div
+          class="field"
+          :class="{'error': errors.has('date')}"
+        >
+          <el-date-picker
+            v-model="advance.date"
+            format="dd/MM/yyyy"
+            type="date"
+            name="date"
+            v-validate="'required'"
+            value-format="yyyy-MM-dd"
+          ></el-date-picker>
+          <div
+            v-show="errors.has('date')"
+            class="info-error"
+          >{{errors.first('date')}}</div>
         </div>
       </div>
 
       <div class="ten wide required field">
         <label for="">Seleccionar Funcionario</label>
-        <div class="field" :class="{'error': errors.has('employee')}">
-          <select name="employee" v-model="employeeSelected" class="ui fluid search selection dropdown" v-validate="'required'">
-            <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
+        <div
+          class="field"
+          :class="{'error': errors.has('employee')}"
+        >
+          <select
+            name="employee"
+            v-model="employeeSelected"
+            class="ui fluid search selection dropdown"
+            v-validate="'required'"
+          >
+            <option
+              disabled
+              value=""
+            >Seleccionar Funcionario..</option>
+            <option
+              v-for="employee in employees"
+              :key="employee._id"
+              v-bind:value="employee._id"
+            >{{employee.name}}</option>
           </select>
-          <span v-show="errors.has('employee')" class="info-error">{{errors.first('employee')}}</span>
+          <span
+            v-show="errors.has('employee')"
+            class="info-error"
+          >{{errors.first('employee')}}</span>
         </div>
       </div>
 
@@ -30,34 +64,68 @@
         <div class="inline fields">
           <div class="three wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="advance.advanceType" value="quincena" @click="disabledInput = true">
+              <input
+                type="radio"
+                v-model="advance.advanceType"
+                value="quincena"
+                @click="disabledInput = true"
+              >
               <label>Quincena</label>
             </div>
           </div>
 
           <div class="four wide field">
             <div class="ui radio checkbox">
-              <input type="radio" v-model="advance.advanceType" value="especificado" @click="disabledInput = false">
+              <input
+                type="radio"
+                v-model="advance.advanceType"
+                value="especificado"
+                @click="disabledInput = false"
+              >
               <label>Especificar monto</label>
             </div>
           </div>
-          <div class="four wide field" :class="{'error': errors.has('amount')}">
+          <div
+            class="four wide field"
+            :class="{'error': errors.has('amount')}"
+          >
             <div class="ui input">
-              <input type="text" v-model.lazy="advance.amount" v-money="money" name="amount" v-bind:class="{'disabled': disabledInput}" v-validate="'required|validar_monto'" data-vv-as="monto">
+              <input
+                type="text"
+                v-model.lazy="advance.amount"
+                v-money="money"
+                name="amount"
+                v-bind:class="{'disabled': disabledInput}"
+                v-validate="'required|validar_monto'"
+                data-vv-as="monto"
+              >
             </div>
-            <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
+            <span
+              class="info-error"
+              v-show="errors.has('amount')"
+            >{{errors.first('amount')}}</span>
 
           </div>
           <div class="two wide field">
             <div class="ui disabled input">
-              <input type="text" v-model="advance.coin">
+              <input
+                type="text"
+                v-model="advance.coin"
+              >
             </div>
           </div>
         </div>
       </div>
 
-      <button class="ui teal button" :class="{disabled: errors.any()}" type="submit">Guardar</button>
-      <div class="ui button" @click="cancel()">Cancelar</div>
+      <button
+        class="ui teal button"
+        :class="{disabled: errors.any()}"
+        type="submit"
+      >Guardar</button>
+      <div
+        class="ui button"
+        @click="cancel()"
+      >Cancelar</div>
     </form>
 
   </div>
@@ -107,11 +175,8 @@ export default {
             this.advance.amount = response.data.amount;
             this.advance.coin = response.data.coin;
             this.advance.employee = response.data.employee;
+            this.employeeSelected = response.data.employee;
             this.disabledInput = true;
-            $(this.$el)
-              .find(".ui.fluid.search.selection.dropdown")
-              .dropdown("refresh")
-              .dropdown("set selected", response.data.employee);
           });
       }
     },
@@ -142,9 +207,7 @@ export default {
           this.advance.employeeName = this.getEmployeeName(
             this.employeeSelected
           );
-          // this.advance.amount = parseInt(
-          //   this.advance.amount.split(".").join("")
-          // );
+
           this.$http
             .put(`/advances/update/${this.$route.params.id}`, this.advance)
             .then(response => {
@@ -161,10 +224,7 @@ export default {
           this.advance.employeeName = this.getEmployeeName(
             this.employeeSelected
           );
-          // debugger;
-          // this.advance.amount = parseInt(
-          //   this.advance.amount.split(".").join("")
-          // );
+
           this.$http
             .post(`/advances/add`, this.advance)
             .then(response => {
@@ -227,6 +287,11 @@ export default {
               employee.salary / 2
             ).toLocaleString();
           }
+
+          $(this.$el)
+            .find(".ui.fluid.search.selection.dropdown")
+            .dropdown("refresh")
+            .dropdown("set selected", this.employeeSelected);
         }
       });
     }

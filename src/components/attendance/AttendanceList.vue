@@ -15,9 +15,13 @@
 
           </thead>
           <tbody>
-            <tr v-for="att in attendanceModal" :key="att.id">
+            <tr
+              v-for="att in attendanceModal"
+              :key="att.id"
+            >
               <td>{{att.employeeName}}</td>
-              <td>{{moment(att.date).format("L")}}</td>
+              <td>{{att.date}}</td>
+              <!-- <td>{{moment(att.date).format("L")}}</td> -->
               <td>{{(att.entryTime || "--") + " hs"}}</td>
               <td>{{(att.exitTime || "--") + " hs"}}</td>
             </tr>
@@ -35,8 +39,15 @@
       </div>
       <div class="actions">
 
-        <button class="ui positive teal button" v-show="!warningMessage" @click="saveAttendance">Aceptar</button>
-        <div class="ui deny button" @click="cancelFile">Cancelar</div>
+        <button
+          class="ui positive teal button"
+          v-show="!warningMessage"
+          @click="saveAttendance"
+        >Aceptar</button>
+        <div
+          class="ui deny button"
+          @click="cancelFile"
+        >Cancelar</div>
 
       </div>
     </div>
@@ -53,7 +64,12 @@
             <div class="ten wide field">
 
               <div class="ui icon input">
-                <input type="text" placeholder="Buscar por nombre" @keydown="searchAttendance" v-model="query.parameter">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre"
+                  @keydown="searchAttendance"
+                  v-model="query.parameter"
+                >
                 <!-- <i class="search icon" v-if="parameterAvanzada"></i> -->
                 <!-- <i @click="searchAttendance" class="inverted teal circular search link icon" v-else></i> -->
 
@@ -82,20 +98,29 @@
               </vue-xlsx-table>
             </a>
 
-            <a class="icon item" @click="addAttendance">
+            <a
+              class="icon item"
+              @click="addAttendance"
+            >
               <span data-tooltip="Crear Asistencia Manualmente">
                 <i class="plus icon"></i>
               </span>
             </a>
 
-            <a class="icon item" @click="advancedSearch = !advancedSearch">
+            <a
+              class="icon item"
+              @click="advancedSearch = !advancedSearch"
+            >
               <span data-tooltip="Habilitar busqueda avanzada">
                 <i class="find icon"></i>
               </span>
             </a>
 
             <!-- <router-link :to="{name: 'AttendanceReport', query: {date: this.query.startDate}}" target="_blank"> -->
-            <a class="icon item" @click="generateReport">
+            <a
+              class="icon item"
+              @click="generateReport"
+            >
               <span data-tooltip="Generar informe">
                 <i class="file icon"></i>
               </span>
@@ -108,57 +133,100 @@
 
       </div>
 
-      <div class="fields" v-show="advancedSearch">
+      <div
+        class="fields"
+        v-show="advancedSearch"
+      >
         <div class="field">
           <label for="">Rango de Fechas:</label>
           <div class="inline fields">
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" value-format="yyyy-MM-dd" v-model="query.startDate">
+              <el-date-picker
+                type="date"
+                placeholder="Fecha inicio"
+                format="dd/MM/yyyy"
+                value-format="yyyy-MM-dd"
+                v-model="query.startDate"
+              >
               </el-date-picker>
             </div>
 
             <div class="field">
-              <el-date-picker type="date" placeholder="Fecha fin" format="dd/MM/yyyy" value-format="yyyy-MM-dd" v-model="query.endDate">
+              <el-date-picker
+                type="date"
+                placeholder="Fecha fin"
+                format="dd/MM/yyyy"
+                value-format="yyyy-MM-dd"
+                v-model="query.endDate"
+              >
               </el-date-picker>
             </div>
 
-            <div class="field" style="margin-left: 30px">
+            <div
+              class="field"
+              style="margin-left: 30px"
+            >
               <label for="">Estado:</label>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="todos" v-model="query.status">
+                <input
+                  type="radio"
+                  value="todos"
+                  v-model="query.status"
+                >
                 <label>Todos</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="ausentes" v-model="query.status">
+                <input
+                  type="radio"
+                  value="ausentes"
+                  v-model="query.status"
+                >
                 <label>Ausentes</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="incompletos" v-model="query.status">
+                <input
+                  type="radio"
+                  value="incompletos"
+                  v-model="query.status"
+                >
                 <label>Incompletos</label>
               </div>
             </div>
 
             <div class="field">
               <div class="ui radio checkbox">
-                <input type="radio" value="vacaciones" v-model="query.status">
+                <input
+                  type="radio"
+                  value="vacaciones"
+                  v-model="query.status"
+                >
                 <label>Vacaciones</label>
               </div>
             </div>
 
-            <div class="field" style="margin-left: 20px">
-              <button @click="searchAttendance" class="ui circular teal icon button">
+            <div
+              class="field"
+              style="margin-left: 20px"
+            >
+              <button
+                @click="searchAttendance"
+                class="ui circular teal icon button"
+              >
                 <i class="search icon"></i>
               </button>
-              <button @click="deleteQueryParameters" class="ui circular icon button">
+              <button
+                @click="deleteQueryParameters"
+                class="ui circular icon button"
+              >
                 <i class="close icon"></i>
               </button>
 
@@ -188,7 +256,11 @@
           </thead>
 
           <tbody>
-            <tr v-for="(attendance, index) in attendances" :key="attendance._id" v-bind:class="{negative: attendance.status.absence, positive: attendance.status.vacations, warning: attendance.status.incomplete}">
+            <tr
+              v-for="(attendance, index) in attendances"
+              :key="attendance._id"
+              v-bind:class="{negative: attendance.status.absence, positive: attendance.status.vacations, warning: attendance.status.incomplete}"
+            >
               <td>{{attendance.employeeName}}</td>
               <td>{{moment(attendance.date).format("L")}}</td>
               <td>{{(attendance.entryTime || "--") + " hs"}}</td>
@@ -199,8 +271,14 @@
               <td>{{attendance.remark || "--"}}</td>
 
               <td class="center aligned">
-                <i @click="savePaginationNumber(attendance._id)" class="edit row link icon"></i>
-                <i @click="deleteAttendance(attendance._id, index)" class="trash link icon"></i>
+                <i
+                  @click="savePaginationNumber(attendance._id)"
+                  class="edit row link icon"
+                ></i>
+                <i
+                  @click="deleteAttendance(attendance._id, index)"
+                  class="trash link icon"
+                ></i>
 
               </td>
             </tr>
@@ -223,7 +301,12 @@
 
             <tr v-if="pageOne.totalItems > 10">
               <th colspan="9">
-                <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+                <app-pagination
+                  :current-page="pageOne.currentPage"
+                  :total-items="pageOne.totalItems"
+                  :items-per-page="pageOne.itemsPerPage"
+                  @page-changed="pageOneChanged"
+                >
                 </app-pagination>
               </th>
             </tr>
@@ -383,17 +466,16 @@ export default {
 
       if (!this.query.startDate && !this.query.endDate) {
         this.query.startDate = moment()
-          
           .startOf("month")
           .format();
         this.query.endDate = moment()
-          
           .endOf("month")
           .format();
       }
 
       if (!this.query.startDate && this.query.endDate) {
-        this.query.startDate = moment().startOf("month")
+        this.query.startDate = moment()
+          .startOf("month")
           .format();
       }
 
@@ -862,7 +944,7 @@ export default {
         if (acnro === item["AC-No."]) {
           attModal.employeeId = employeeId;
           attModal.employeeName = employeeName;
-          attModal.date = moment(item.Horario, "DD/MM/YYYY").format();
+          attModal.date = moment(item.Horario, "DD/MM/YYYY").format("L");
           attModal.extraHours = moment
             .duration(workingHours, "HH:mm")
             .asMinutes();
