@@ -20,8 +20,8 @@
               :key="att.id"
             >
               <td>{{att.employeeName}}</td>
-              <td>{{att.date}}</td>
-              <!-- <td>{{moment(att.date).format("L")}}</td> -->
+              <!-- <td>{{att.date}}</td> -->
+              <td>{{moment(att.date).format("L")}}</td>
               <td>{{(att.entryTime || "--") + " hs"}}</td>
               <td>{{(att.exitTime || "--") + " hs"}}</td>
             </tr>
@@ -944,7 +944,7 @@ export default {
         if (acnro === item["AC-No."]) {
           attModal.employeeId = employeeId;
           attModal.employeeName = employeeName;
-          attModal.date = moment(item.Horario, "DD/MM/YYYY").format("L");
+          attModal.date = moment(item.Horario, "DD/MM/YYYY").format();
           attModal.extraHours = moment
             .duration(workingHours, "HH:mm")
             .asMinutes();
@@ -1069,8 +1069,8 @@ export default {
       this.absences.length = 0;
       this.attendanceModal.forEach(attModal => {
         var attSend = {};
-
-        attSend.date = attModal.date;
+        console.log("FECHA", attModal.date);
+        attSend.date = moment(attModal.date).format("L");
         attSend.employee = attModal.employeeId;
         attSend.employeeName = attModal.employeeName;
         attSend.entryTime = attModal.entryTime;
@@ -1129,10 +1129,14 @@ export default {
             getVacations = await this.$http.get(
               `/events/employee-vacation/${employee._id}`
             );
-            console.log("Resultado await", getVacations);
+            console.log("Resultado await Vacaciones", getVacations);
             // debugger;
             if (getVacations.data.length > 0) {
-              attDateFormat = moment(this.attendanceModal[0].date).format();
+              //setea la fecha con el timezone 4 y mantiene la hora por eso el parametro true en utcOffset
+              attDateFormat = moment(this.attendanceModal[0].date)
+                .utcOffset(-4, true)
+                .format();
+
               isVacationDate = getVacations.data.find(event => {
                 if (
                   moment(attDateFormat).isBetween(
@@ -1142,7 +1146,11 @@ export default {
                     "[]"
                   )
                 ) {
-                  eventRemark = event.eventType;
+                  if (event.remark !== null) {
+                    eventRemark = event.remark;
+                  } else {
+                    eventRemark = event.eventType;
+                  }
                   return true;
                 }
                 return false;
@@ -1156,7 +1164,10 @@ export default {
             }
 
             if (isVacationDate) {
-              attendance.date = this.attendanceModal[0].date;
+              console.log("FECHA A ENVIAR", this.attendanceModal[0].date);
+              attendance.date = moment(this.attendanceModal[0].date).format(
+                "L"
+              );
               attendance.employee = employee._id;
               attendance.employeeName = employee.name;
               attendance.entryTime = null;
@@ -1173,7 +1184,10 @@ export default {
               console.log(JSON.stringify(this.absences));
             } else {
               //si no cumplio condiciones anteriores, es una ausencia.
-              attendance.date = this.attendanceModal[0].date;
+              console.log("FECHAX", this.attendanceModal[0].date);
+              attendance.date = moment(this.attendanceModal[0].date).format(
+                "L"
+              );
               attendance.employee = employee._id;
               attendance.employeeName = employee.name;
               attendance.entryTime = null;

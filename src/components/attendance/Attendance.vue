@@ -9,7 +9,7 @@
         <label for="">Fecha</label>
         <div
           class="field"
-          :class="{error:errors.has('attDate')}"
+          :class="{error:errors.has('attDate'), disabled: dateFieldStatus}"
         >
           <el-date-picker
             name="attDate"
@@ -192,7 +192,8 @@ export default {
       },
       employeeSelected: null,
       holidaysPerYear: [],
-      employees: []
+      employees: [],
+      dateFieldStatus: false
     };
   },
   methods: {
@@ -493,6 +494,7 @@ export default {
             this.attendance.remark = response.data.remark;
             this.attendance.secondShift = response.data.secondShift;
             this.attendance.delaySecondShift = response.data.delay;
+            this.dateFieldStatus = true;
             // $(this.$el)
             //   .find(".ui.fluid.search.selection.dropdown")
             //   .dropdown("refresh")

@@ -9,7 +9,12 @@
 
             <div class="ten wide field field">
               <div class="ui icon input">
-                <input type="text" v-model="query.parameter" @keydown="searchLending" placeholder="Buscar por nombre del funcionario...">
+                <input
+                  type="text"
+                  v-model="query.parameter"
+                  @keydown="searchLending"
+                  placeholder="Buscar por nombre del funcionario..."
+                >
               </div>
             </div>
 
@@ -20,17 +25,38 @@
             <div class="four wide field">
 
               <div class="inline fields">
-                <div class="field" :class="{error: error.startDate}">
-                  <el-date-picker v-model="query.startDate" type="date" placeholder="Fecha inicio" format="dd/MM/yyyy" value-format="yyyy-MM-dd">
+                <div
+                  class="field"
+                  :class="{error: error.startDate}"
+                >
+                  <el-date-picker
+                    v-model="query.startDate"
+                    type="date"
+                    placeholder="Fecha inicio"
+                    format="dd/MM/yyyy"
+                    value-format="yyyy-MM-dd"
+                  >
                   </el-date-picker>
                 </div>
 
-                <div class="field" :class="{error: error.endDate}">
-                  <el-date-picker v-model="query.endDate" type="date" placeholder="Fecha fin" format="dd/MM/yyyy" value-format="yyyy-MM-dd">
+                <div
+                  class="field"
+                  :class="{error: error.endDate}"
+                >
+                  <el-date-picker
+                    v-model="query.endDate"
+                    type="date"
+                    placeholder="Fecha fin"
+                    format="dd/MM/yyyy"
+                    value-format="yyyy-MM-dd"
+                  >
                   </el-date-picker>
                 </div>
 
-                <button class="ui circular teal icon button" @click="searchLending">
+                <button
+                  class="ui circular teal icon button"
+                  @click="searchLending"
+                >
                   <i class="search icon"></i>
                 </button>
               </div>
@@ -40,7 +66,10 @@
 
         <div class="field">
           <div class="ui right floated main menu">
-            <a class="icon item" @click="addLending">
+            <a
+              class="icon item"
+              @click="addLending"
+            >
               <i class="plus icon"></i>
             </a>
           </div>
@@ -48,7 +77,10 @@
       </div>
     </div>
 
-    <div class="ui error message" v-show="error.hasError">
+    <div
+      class="ui error message"
+      v-show="error.hasError"
+    >
       <i class="close icon"></i>
       <div class="header">
         {{this.error.message}}
@@ -76,18 +108,30 @@
               <td>{{lending.employeeName}}</td>
               <td>{{lending.amount.toLocaleString()}} - {{lending.coin}}</td>
               <td class="center aligned">
-                <i class="browser link icon " @click="lending.showInstallments = !lending.showInstallments"></i>
+                <i
+                  class="browser link icon "
+                  @click="lending.showInstallments = !lending.showInstallments"
+                ></i>
               </td>
               <td class="center aligned">
                 <span>
-                  <i class="edit row link icon " @click="editLending(lending._id)"></i>
-                  <i class="trash link icon " @click="deleteLending(lending._id, index)"></i>
+                  <i
+                    class="edit row link icon "
+                    @click="editLending(lending._id)"
+                  ></i>
+                  <i
+                    class="trash link icon "
+                    @click="deleteLending(lending._id, index)"
+                  ></i>
                 </span>
 
               </td>
 
             </tr>
-            <tr v-show="lending.showInstallments" :key="lending.date">
+            <tr
+              v-show="lending.showInstallments"
+              :key="lending._id"
+            >
               <td colspan="5">
                 <div class="ui padded segments">
                   <div class="ui segment">
@@ -106,7 +150,11 @@
                           </div>
                         </div>
 
-                        <div class="item" :key="installment._id" v-for="installment in lending.installments">
+                        <div
+                          class="item"
+                          :key="installment._id"
+                          v-for="installment in lending.installments"
+                        >
                           <div class="middle aligned content">
                             <p>{{moment(installment.dueDate).format("L")}}</p>
                           </div>
@@ -115,9 +163,18 @@
                           </div>
 
                           <div class="middle aligned content">
-                            <div class="ui orange horizontal label" v-if="installment.state ===  'pendiente'">{{installment.state}}</div>
-                            <div class="ui blue horizontal label" v-if="installment.state ===  'procesado'">{{installment.state}}</div>
-                            <div class="ui olive horizontal label" v-if="installment.state ===  'pagado'">{{installment.state}}</div>
+                            <div
+                              class="ui orange horizontal label"
+                              v-if="installment.state ===  'pendiente'"
+                            >{{installment.state}}</div>
+                            <div
+                              class="ui blue horizontal label"
+                              v-if="installment.state ===  'procesado'"
+                            >{{installment.state}}</div>
+                            <div
+                              class="ui olive horizontal label"
+                              v-if="installment.state ===  'pagado'"
+                            >{{installment.state}}</div>
                           </div>
                         </div>
 
@@ -148,7 +205,12 @@
 
           <tr v-if="pageOne.totalItems > 10">
             <th colspan="5">
-              <app-pagination :current-page="pageOne.currentPage" :total-items="pageOne.totalItems" :items-per-page="pageOne.itemsPerPage" @page-changed="pageOneChanged">
+              <app-pagination
+                :current-page="pageOne.currentPage"
+                :total-items="pageOne.totalItems"
+                :items-per-page="pageOne.itemsPerPage"
+                @page-changed="pageOneChanged"
+              >
               </app-pagination>
             </th>
           </tr>

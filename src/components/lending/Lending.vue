@@ -1,24 +1,58 @@
 <template>
   <div class="ui twelve wide column">
-    <form class="ui form" @submit.prevent="saveLending()">
+    <form
+      class="ui form"
+      @submit.prevent="saveLending()"
+    >
       <div class="ui dividing header">Incluir Prestamo</div>
 
       <div class="ten wide required field">
         <label for="">Fecha</label>
-        <div class="field" :class="{error: errors.has('fechaPrestamo')}">
-          <el-date-picker name="fechaPrestamo" v-model="lending.date" format="dd/MM/yyyy" value-format="yyyy-MM-dd" type="date" v-validate="'required'"></el-date-picker>
-          <span class="info-error" v-show="errors.has('fechaPrestamo')">{{errors.first('fechaPrestamo')}}</span>
+        <div
+          class="field"
+          :class="{error: errors.has('fechaPrestamo')}"
+        >
+          <el-date-picker
+            name="fechaPrestamo"
+            v-model="lending.date"
+            format="dd/MM/yyyy"
+            value-format="yyyy-MM-dd"
+            type="date"
+            v-validate="'required'"
+          ></el-date-picker>
+          <span
+            class="info-error"
+            v-show="errors.has('fechaPrestamo')"
+          >{{errors.first('fechaPrestamo')}}</span>
         </div>
       </div>
 
       <div class="six wide required field">
         <label for="">Seleccionar Funcionario</label>
-        <div class="field" :class="{error: errors.has('employee')}">
-          <select name="employee" v-model="employeeSelected" class="ui fluid search selection dropdown" v-validate="'required'">
-            <option disabled value="">Seleccionar Funcionario..</option>
-            <option v-for="employee in employees" :key="employee._id" v-bind:value="employee._id">{{employee.name}}</option>
+        <div
+          class="field"
+          :class="{error: errors.has('employee')}"
+        >
+          <select
+            name="employee"
+            v-model="employeeSelected"
+            class="ui fluid search selection dropdown"
+            v-validate="'required'"
+          >
+            <option
+              disabled
+              value=""
+            >Seleccionar Funcionario..</option>
+            <option
+              v-for="employee in employees"
+              :key="employee._id"
+              v-bind:value="employee._id"
+            >{{employee.name}}</option>
           </select>
-          <span class="info-error" v-show="errors.has('employee')">{{errors.first('employee')}}</span>
+          <span
+            class="info-error"
+            v-show="errors.has('employee')"
+          >{{errors.first('employee')}}</span>
 
         </div>
 
@@ -33,16 +67,31 @@
 
             <div class="two fields">
 
-              <div class="five wide field" :class="{error: errors.has('amount')}">
+              <div
+                class="five wide field"
+                :class="{error: errors.has('amount')}"
+              >
                 <div class="ui input">
-                  <input name="amount" data-vv-as="monto" v-model.lazy="lending.amount" v-money="money" v-validate="'required|validar_monto'">
+                  <input
+                    name="amount"
+                    data-vv-as="monto"
+                    v-model.lazy="lending.amount"
+                    v-money="money"
+                    v-validate="'required|validar_monto'"
+                  >
                 </div>
-                <span class="info-error" v-show="errors.has('amount')">{{errors.first('amount')}}</span>
+                <span
+                  class="info-error"
+                  v-show="errors.has('amount')"
+                >{{errors.first('amount')}}</span>
               </div>
 
               <div class="two wide field">
                 <div class="ui disabled input field">
-                  <input type="text" v-model="lending.coin">
+                  <input
+                    type="text"
+                    v-model="lending.coin"
+                  >
                 </div>
               </div>
 
@@ -51,23 +100,53 @@
             <div class="two fields">
               <div class="five wide required field">
                 <label for="">Iniciar Pago en</label>
-                <div class="field" :class="{error: errors.has('mesPagos')}">
-                  <el-date-picker name="mesPagos" data-vv-as="mes" v-model="lending.startMonth" value-format="yyyy-MM-dd" type="month" placeholder="Seleccionar mes" v-validate="'required'">
+                <div
+                  class="field"
+                  :class="{error: errors.has('mesPagos')}"
+                >
+                  <el-date-picker
+                    name="mesPagos"
+                    data-vv-as="mes"
+                    v-model="lending.startMonth"
+                    value-format="yyyy-MM-dd"
+                    type="month"
+                    placeholder="Seleccionar mes"
+                    v-validate="'required'"
+                  >
                   </el-date-picker>
                 </div>
-                <span class="info-error" v-show="errors.has('mesPagos')">{{errors.first('mesPagos')}}</span>
+                <span
+                  class="info-error"
+                  v-show="errors.has('mesPagos')"
+                >{{errors.first('mesPagos')}}</span>
 
               </div>
               <div class="five wide required field">
                 <label for="">Fraccion de Cuotas</label>
                 <div class="inline fields">
                   <div class="field">
-                    <div class="field" :class="{error: errors.has('installmentNumber')}">
-                      <el-input-number name="installmentNumber" v-model="lending.installmentNumber" @change="handleChange" :min="1" data-vv-as="cuotas" v-validate="'required'"></el-input-number>
+                    <div
+                      class="field"
+                      :class="{error: errors.has('installmentNumber')}"
+                    >
+                      <el-input-number
+                        name="installmentNumber"
+                        v-model="lending.installmentNumber"
+                        @change="handleChange"
+                        :min="1"
+                        data-vv-as="cuotas"
+                        v-validate="'required'"
+                      ></el-input-number>
                     </div>
-                    <span class="info-error" v-show="errors.has('installmentNumber')">{{errors.first('installmentNumber')}}</span>
+                    <span
+                      class="info-error"
+                      v-show="errors.has('installmentNumber')"
+                    >{{errors.first('installmentNumber')}}</span>
                   </div>
-                  <div class="circular ui icon button" @click="generateInstallments(lending.installmentNumber)">
+                  <div
+                    class="circular ui icon button"
+                    @click="generateInstallments(lending.installmentNumber)"
+                  >
                     <i class="undo icon"></i>
                   </div>
                 </div>
@@ -97,7 +176,11 @@
                     </div>
                   </div>
 
-                  <div class="item" :key="installment.dueDate" v-for="installment in lending.installments">
+                  <div
+                    class="item"
+                    :key="installment.dueDate"
+                    v-for="installment in lending.installments"
+                  >
                     <div class="middle aligned content">
                       <p>{{moment.utc(installment.dueDate).format("L")}}</p>
                     </div>
@@ -120,8 +203,14 @@
       </div>
 
       <div class="field">
-        <button class="ui teal button" :class="{disabled: errors.any()}">Guardar</button>
-        <div class="ui button" @click="cancel()">Cancelar</div>
+        <button
+          class="ui teal button"
+          :class="{disabled: errors.any()}"
+        >Guardar</button>
+        <div
+          class="ui button"
+          @click="cancel()"
+        >Cancelar</div>
       </div>
 
     </form>
@@ -189,9 +278,8 @@ export default {
         do {
           var installment = {};
 
-          installment.amount = Math.floor(
-            parseInt(this.lending.amount.split(".").join("")) / value
-          );
+          installment.amount =
+            parseInt(this.lending.amount.split(".").join("")) / value;
           installment.coin = this.lending.coin;
           installment.state = "pendiente";
 
@@ -207,8 +295,8 @@ export default {
       }
     },
     findEmployee(id) {
-      var employee = this.employees.find(
-        item => (item._id === id ? item : null)
+      var employee = this.employees.find(item =>
+        item._id === id ? item : null
       );
       return employee.name;
     },
